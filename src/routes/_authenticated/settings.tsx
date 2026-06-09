@@ -273,12 +273,12 @@ function MembersSettings({ organizationId }: { organizationId: string | undefine
     enabled: !!organizationId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("organization_members")
+        .from("user_roles")
         .select(`
           id,
           role,
           user_id,
-          profiles (
+          profiles:user_id (
             full_name,
             id
           )
@@ -291,9 +291,9 @@ function MembersSettings({ organizationId }: { organizationId: string | undefine
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
+    mutationFn: async ({ memberId, role }: { memberId: string; role: any }) => {
       const { error } = await supabase
-        .from("organization_members")
+        .from("user_roles")
         .update({ role })
         .eq("id", memberId);
       if (error) throw error;
@@ -302,7 +302,7 @@ function MembersSettings({ organizationId }: { organizationId: string | undefine
       toast.success("Cargo atualizado");
       queryClient.invalidateQueries({ queryKey: ["org-members"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error("Erro ao atualizar cargo: " + error.message);
     }
   });
