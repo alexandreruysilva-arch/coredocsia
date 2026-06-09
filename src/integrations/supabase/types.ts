@@ -51,6 +51,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           document_type_id: string | null
+          drive_file_id: string | null
+          drive_web_view_link: string | null
           error_message: string | null
           id: string
           mime_type: string
@@ -60,7 +62,7 @@ export type Database = {
           page_count: number | null
           size_bytes: number
           status: Database["public"]["Enums"]["doc_status"]
-          storage_path: string
+          storage_path: string | null
           tags: string[]
           updated_at: string
           uploaded_by: string
@@ -69,6 +71,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           document_type_id?: string | null
+          drive_file_id?: string | null
+          drive_web_view_link?: string | null
           error_message?: string | null
           id?: string
           mime_type: string
@@ -78,7 +82,7 @@ export type Database = {
           page_count?: number | null
           size_bytes: number
           status?: Database["public"]["Enums"]["doc_status"]
-          storage_path: string
+          storage_path?: string | null
           tags?: string[]
           updated_at?: string
           uploaded_by: string
@@ -87,6 +91,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           document_type_id?: string | null
+          drive_file_id?: string | null
+          drive_web_view_link?: string | null
           error_message?: string | null
           id?: string
           mime_type?: string
@@ -96,7 +102,7 @@ export type Database = {
           page_count?: number | null
           size_bytes?: number
           status?: Database["public"]["Enums"]["doc_status"]
-          storage_path?: string
+          storage_path?: string | null
           tags?: string[]
           updated_at?: string
           uploaded_by?: string
@@ -147,6 +153,7 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          drive_folder_id: string | null
           id: string
           name: string
           slug: string
@@ -154,6 +161,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          drive_folder_id?: string | null
           id?: string
           name: string
           slug: string
@@ -161,6 +169,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          drive_folder_id?: string | null
           id?: string
           name?: string
           slug?: string

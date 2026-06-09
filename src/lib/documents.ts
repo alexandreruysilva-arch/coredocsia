@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { uploadDocumentToDrive } from "./drive.functions";
 
 export type DocStatus = Database["public"]["Enums"]["doc_status"];
 export type DocumentRow = Database["public"]["Tables"]["documents"]["Row"];
@@ -34,15 +35,19 @@ export const STATUS_LABEL: Record<DocStatus, string> = {
   failed: "Falhou",
 };
 
-export async function getSignedUrl(storagePath: string, expiresIn = 60): Promise<string | null> {
-  const { data, error } = await supabase.storage
-    .from("documents")
-    .createSignedUrl(storagePath, expiresIn);
-  if (error) {
-    console.error("signed url", error);
-    return null;
-  }
-  return data.signedUrl;
+/**
+ * Returns a URL the browser can use to view/download the file. The file is
+ * streamed from Google Drive via our authenticated /api/files/:id route.
+ * Uses the current Supabase session token as a short-lived query param so
+ * <iframe>/<img> elements (which can't send Authorization headers) still work.
+ */
+export async function getFileUrl(documentId: string, opts: { download?: boolean } = {}): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return null;
+  const params = new URLSearchParams({ token });
+  if (opts.download) params.set("download", "1");
+  return `/api/files/${documentId}?${params.toString()}`;
 }
 
 export interface UploadOptions {
@@ -58,7 +63,7 @@ export interface UploadOptions {
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
   const { file, orgId, userId, name, documentTypeId, tags } = opts;
 
-  // 1. Create draft row to get id
+  // 1. Create draft row (server fn needs the id to attach the Drive file).
   const { data: draft, error: insertErr } = await supabase
     .from("documents")
     .insert({
@@ -68,39 +73,27 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
       original_filename: file.name,
       mime_type: file.type,
       size_bytes: file.size,
-      storage_path: "pending",
       document_type_id: documentTypeId,
       tags,
-      status: "pending",
+      status: "processing",
     })
     .select("*")
     .single();
   if (insertErr || !draft) throw insertErr ?? new Error("Falha ao criar documento");
 
-  const storagePath = `${orgId}/${draft.id}/${file.name}`;
+  opts.onProgress?.(10);
 
-  // 2. Upload to storage
-  const { error: upErr } = await supabase.storage
-    .from("documents")
-    .upload(storagePath, file, { contentType: file.type, upsert: false });
+  // 2. Upload to Google Drive via server fn.
+  const form = new FormData();
+  form.append("file", file, file.name);
+  form.append("documentId", draft.id);
 
-  if (upErr) {
-    await supabase.from("documents").update({
-      status: "failed",
-      error_message: upErr.message,
-    }).eq("id", draft.id);
-    throw upErr;
+  try {
+    const final = await uploadDocumentToDrive({ data: form });
+    opts.onProgress?.(100);
+    return final as DocumentRow;
+  } catch (err) {
+    // Server fn already marks the doc as failed; surface the message.
+    throw err instanceof Error ? err : new Error(String(err));
   }
-
-  // 3. Finalize: mark processed (no OCR yet)
-  const { data: final, error: finErr } = await supabase
-    .from("documents")
-    .update({ status: "processed", storage_path: storagePath })
-    .eq("id", draft.id)
-    .select("*")
-    .single();
-
-  if (finErr || !final) throw finErr ?? new Error("Falha ao finalizar");
-  opts.onProgress?.(100);
-  return final;
 }
