@@ -46,7 +46,7 @@ export function useDocumentsList(params: ListDocumentsParams) {
         "postgres_changes",
         { event: "*", schema: "public", table: "documents", filter: `org_id=eq.${orgId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["documents", orgId] });
+          queryClient.invalidateQueries({ queryKey: ["documents"] });
         },
       )
       .subscribe();

@@ -106,7 +106,7 @@ function UploadPage() {
         setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "error", error: err } : i)));
         continue;
       }
-      setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "uploading", progress: 30 } : i)));
+      setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "uploading", progress: 0 } : i)));
       try {
         await uploadDocument({
           file: item.file,
@@ -115,6 +115,9 @@ function UploadPage() {
           name: item.file.name,
           documentTypeId: docTypeIdFinal,
           tags,
+          onProgress: (pct) => {
+            setItems(p => p.map(i => i.id === item.id ? { ...i, progress: pct } : i));
+          }
         });
         setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "done", progress: 100 } : i)));
       } catch (e: any) {

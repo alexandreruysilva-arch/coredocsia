@@ -55,7 +55,7 @@ function QueuePage() {
       .eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Reprocessamento agendado");
-    queryClient.invalidateQueries({ queryKey: ["documents", orgId] });
+    queryClient.invalidateQueries({ queryKey: ["documents"] });
   }
 
   async function remove(id: string) {
@@ -66,7 +66,7 @@ function QueuePage() {
       .eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Documento removido");
-    queryClient.invalidateQueries({ queryKey: ["documents", orgId] });
+    queryClient.invalidateQueries({ queryKey: ["documents"] });
   }
 
   return (

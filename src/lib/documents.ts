@@ -91,7 +91,8 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   try {
     const final = await uploadDocumentToDrive({ data: form });
     opts.onProgress?.(100);
-    return final as DocumentRow;
+    // Use type assertion for the returned value since server functions are wrapped
+    return final as any as DocumentRow;
   } catch (err) {
     // Server fn already marks the doc as failed; surface the message.
     throw err instanceof Error ? err : new Error(String(err));

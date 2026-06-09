@@ -300,7 +300,7 @@ function MembersSettings({ organizationId }: { organizationId: string | undefine
     },
     onSuccess: () => {
       toast.success("Cargo atualizado");
-      queryClient.invalidateQueries({ queryKey: ["org-members"] });
+      queryClient.invalidateQueries({ queryKey: ["org-members", organizationId] });
     },
     onError: (error: any) => {
       toast.error("Erro ao atualizar cargo: " + error.message);

@@ -59,14 +59,14 @@ function Dashboard() {
             key={s.to}
             asChild
             variant="outline"
-            className="h-auto py-5 justify-between"
+            className="h-auto py-5 justify-between group"
           >
             <Link to={s.to}>
               <span className="flex items-center gap-3">
                 <s.icon className="h-4 w-4 text-primary" />
                 {s.label}
               </span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </Link>
           </Button>
         ))}

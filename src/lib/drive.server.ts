@@ -21,6 +21,9 @@ async function driveFetch(path: string, init: RequestInit = {}, base = GATEWAY):
     ...init,
     headers: { ...authHeaders(), ...(init.headers as Record<string, string> | undefined) },
   });
+  if (res.status === 401 || res.status === 403) {
+     console.error("Google Drive Auth Error:", res.status, await res.clone().text());
+  }
   return res;
 }
 
