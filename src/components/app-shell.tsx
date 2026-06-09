@@ -1,0 +1,256 @@
+import type { ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  LayoutDashboard,
+  Upload,
+  ListChecks,
+  FolderOpen,
+  Tags,
+  FileText,
+  CheckSquare,
+  Archive,
+  ScrollText,
+  Wallet,
+  Settings,
+  Shield,
+  LogOut,
+  FileScan,
+  ChevronDown,
+  Check,
+} from "lucide-react";
+import { useProfileBundle } from "@/hooks/use-profile";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+
+const navMain = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/upload", label: "Upload", icon: Upload },
+  { to: "/queue", label: "Fila de processamento", icon: ListChecks },
+  { to: "/documents", label: "Documentos (GED)", icon: FolderOpen },
+];
+
+const navConfig = [
+  { to: "/groups", label: "Grupos & Metadados", icon: Tags },
+  { to: "/templates", label: "Templates de extração", icon: FileText },
+  { to: "/workflow", label: "Workflow de qualidade", icon: CheckSquare },
+  { to: "/retention", label: "Retenção documental", icon: Archive },
+];
+
+const navAccount = [
+  { to: "/audit", label: "Auditoria", icon: ScrollText },
+  { to: "/credits", label: "Créditos", icon: Wallet },
+  { to: "/settings", label: "Configurações", icon: Settings },
+];
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { data, loading } = useProfileBundle();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
+
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  const initials = (data?.profile.full_name ?? "?")
+    .split(" ")
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar collapsible="icon">
+          <SidebarHeader className="border-b border-sidebar-border">
+            <Link to="/dashboard" className="flex items-center gap-2 px-2 py-1.5">
+              <div className="h-8 w-8 rounded-md bg-sidebar-primary grid place-items-center shrink-0">
+                <FileScan className="h-4 w-4 text-sidebar-primary-foreground" />
+              </div>
+              <span className="font-display font-bold text-base group-data-[collapsible=icon]:hidden">
+                Doctena
+              </span>
+            </Link>
+          </SidebarHeader>
+
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Operação</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navMain.map((item) => (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
+                        <Link to={item.to}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Configuração</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navConfig.map((item) => (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
+                        <Link to={item.to}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Conta</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navAccount.map((item) => (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton asChild isActive={isActive(item.to)} tooltip={item.label}>
+                        <Link to={item.to}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                  {data?.isPlatformAdmin && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild isActive={isActive("/admin")} tooltip="Admin Plataforma">
+                        <Link to="/admin">
+                          <Shield className="h-4 w-4" />
+                          <span>Admin Plataforma</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-sidebar-border text-xs text-sidebar-foreground/60 px-3 py-2 group-data-[collapsible=icon]:hidden">
+            v2.0 — Lovable + Supabase
+          </SidebarFooter>
+        </Sidebar>
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 border-b border-border bg-card/30 backdrop-blur flex items-center gap-3 px-4">
+            <SidebarTrigger />
+            <div className="flex-1" />
+            <OrgSwitcher />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2 px-2">
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden md:inline text-sm">
+                    {loading ? "..." : data?.profile.full_name ?? "Usuário"}
+                  </span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                  Conta
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings">
+                    <Settings className="h-4 w-4 mr-2" /> Configurações
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleSignOut} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" /> Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </header>
+
+          <main className="flex-1 overflow-auto">{children}</main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function OrgSwitcher() {
+  const { data } = useProfileBundle();
+  const queryClient = useQueryClient();
+
+  if (!data?.currentOrg) return null;
+
+  async function switchTo(orgId: string) {
+    await supabase
+      .from("profiles")
+      .update({ current_org_id: orgId })
+      .eq("id", data!.profile.id);
+    queryClient.invalidateQueries({ queryKey: ["profile-bundle"] });
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 max-w-[220px]">
+          <span className="h-2 w-2 rounded-full bg-success shrink-0" />
+          <span className="truncate text-sm">{data.currentOrg.name}</span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
+          Organização ativa
+        </DropdownMenuLabel>
+        {data.organizations.map((org) => (
+          <DropdownMenuItem key={org.id} onSelect={() => switchTo(org.id)}>
+            <span className="flex-1 truncate">{org.name}</span>
+            {org.id === data.currentOrg?.id && <Check className="h-4 w-4 text-primary" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
