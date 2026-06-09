@@ -122,7 +122,8 @@ function DocumentsPage() {
                 {docs.map((doc) => (
                   <TableRow
                     key={doc.id}
-                    className="cursor-pointer"
+                    className="cursor-pointer transition-colors"
+                    data-state={preview?.id === doc.id ? "selected" : undefined}
                     onClick={() => setPreview(doc)}
                   >
                     <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
