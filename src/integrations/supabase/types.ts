@@ -14,6 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      document_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          org_id: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          org_id: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          org_id?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_types_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          document_type_id: string | null
+          error_message: string | null
+          id: string
+          mime_type: string
+          name: string
+          org_id: string
+          original_filename: string
+          page_count: number | null
+          size_bytes: number
+          status: Database["public"]["Enums"]["doc_status"]
+          storage_path: string
+          tags: string[]
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          document_type_id?: string | null
+          error_message?: string | null
+          id?: string
+          mime_type: string
+          name: string
+          org_id: string
+          original_filename: string
+          page_count?: number | null
+          size_bytes: number
+          status?: Database["public"]["Enums"]["doc_status"]
+          storage_path: string
+          tags?: string[]
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          document_type_id?: string | null
+          error_message?: string | null
+          id?: string
+          mime_type?: string
+          name?: string
+          org_id?: string
+          original_filename?: string
+          page_count?: number | null
+          size_bytes?: number
+          status?: Database["public"]["Enums"]["doc_status"]
+          storage_path?: string
+          tags?: string[]
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -152,6 +256,7 @@ export type Database = {
     }
     Enums: {
       app_role: "platform_admin" | "org_admin" | "operator" | "viewer"
+      doc_status: "pending" | "processing" | "processed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -280,6 +385,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["platform_admin", "org_admin", "operator", "viewer"],
+      doc_status: ["pending", "processing", "processed", "failed"],
     },
   },
 } as const
