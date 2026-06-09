@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { FileScan, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Entrar — Doctena" }] }),
+  head: () => ({ meta: [{ title: "Entrar — AP - CoreDocs IA" }] }),
   component: AuthPage,
 });
 
@@ -71,7 +71,7 @@ function AuthPage() {
           <div className="h-9 w-9 rounded-md bg-sidebar-primary grid place-items-center">
             <FileScan className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-xl">Doctena</span>
+          <span className="font-display font-bold text-xl">AP - CoreDocs IA</span>
         </Link>
         <div className="relative space-y-4 max-w-md">
           <h2 className="font-display text-3xl font-bold tracking-tight">
@@ -83,7 +83,7 @@ function AuthPage() {
           </p>
         </div>
         <div className="relative text-xs text-sidebar-foreground/60">
-          © {new Date().getFullYear()} Doctena
+          © {new Date().getFullYear()} AP - CoreDocs IA
         </div>
       </div>
 

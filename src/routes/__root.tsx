@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "SaaS multi-tenant para processamento documental, OCR, IA e GED com auditoria, retenção e créditos.",
       },
-      { name: "author", content: "Doctena" },
+      { name: "author", content: "AP - CoreDocs IA" },
       { property: "og:title", content: "CoreDocsIA — Plataforma Documental Inteligente" },
       {
         property: "og:description",
