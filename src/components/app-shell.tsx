@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <FileScan className="h-4 w-4 text-sidebar-primary-foreground" />
               </div>
               <span className="font-display font-bold text-base group-data-[collapsible=icon]:hidden">
-                Doctena
+                AP - CoreDocs IA
               </span>
             </Link>
           </SidebarHeader>

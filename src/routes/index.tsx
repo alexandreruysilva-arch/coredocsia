@@ -5,13 +5,13 @@ import { FileScan, ShieldCheck, Workflow, Database, Sparkles, Archive } from "lu
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Doctena — Plataforma Documental Inteligente" },
+      { title: "AP - CoreDocs IA — Plataforma Documental Inteligente" },
       {
         name: "description",
         content:
           "Digitalize, processe e gerencie documentos com OCR, IA e GED em uma plataforma SaaS multi-tenant.",
       },
-      { property: "og:title", content: "Doctena — Plataforma Documental Inteligente" },
+      { property: "og:title", content: "AP - CoreDocs IA — Plataforma Documental Inteligente" },
       {
         property: "og:description",
         content:
@@ -41,7 +41,7 @@ function Landing() {
             <div className="h-8 w-8 rounded-md bg-primary grid place-items-center">
               <FileScan className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-lg tracking-tight">Doctena</span>
+            <span className="font-display font-bold text-lg tracking-tight">AP - CoreDocs IA</span>
           </div>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost">
@@ -102,7 +102,7 @@ function Landing() {
 
       <footer className="border-t border-border/60 mt-8">
         <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex items-center justify-between">
-          <span>© {new Date().getFullYear()} Doctena. Todos os direitos reservados.</span>
+          <span>© {new Date().getFullYear()} AP - CoreDocs IA. Todos os direitos reservados.</span>
           <span>v2.0</span>
         </div>
       </footer>

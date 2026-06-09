@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Redefinir senha — Doctena" }] }),
+  head: () => ({ meta: [{ title: "Redefinir senha — AP - CoreDocs IA" }] }),
   component: ResetPasswordPage,
 });
 
