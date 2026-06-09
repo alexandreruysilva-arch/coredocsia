@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 import { Loader2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getSignedUrl, type DocumentRow } from "@/lib/documents";
+import { getFileUrl, type DocumentRow } from "@/lib/documents";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setUrl(null);
-    getSignedUrl(doc.storage_path, 300).then((u) => {
+    setDownloadUrl(null);
+    Promise.all([getFileUrl(doc.id), getFileUrl(doc.id, { download: true })]).then(([viewUrl, dlUrl]) => {
       if (!active) return;
-      setUrl(u);
+      setUrl(viewUrl);
+      setDownloadUrl(dlUrl);
       setLoading(false);
     });
     return () => {
       active = false;
     };
-  }, [doc.id, doc.storage_path]);
+  }, [doc.id]);
 
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
