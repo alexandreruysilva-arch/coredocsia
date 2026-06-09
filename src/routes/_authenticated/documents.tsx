@@ -47,7 +47,7 @@ function DocumentsPage() {
     orgId,
     status: "processed",
     typeId,
-    search,
+    search: search.length >= 2 ? search : "",
   });
 
   const typeName = (id: string | null) =>
