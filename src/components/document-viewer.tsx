@@ -42,23 +42,37 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </Button>
         )}
       </div>
-      <div className="flex-1 overflow-auto grid place-items-center">
-        {loading && <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />}
+      <div className="flex-1 overflow-hidden grid place-items-center relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/30 z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
         {!loading && !url && (
           <div className="text-center text-muted-foreground p-6">
-            <FileText className="h-10 w-10 mx-auto mb-2" />
+            <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
             Não foi possível carregar a pré-visualização
           </div>
         )}
-        {!loading && url && isImage && (
-          <img src={url} alt={doc.name} className="max-w-full max-h-full object-contain" />
+        {url && isImage && (
+          <div className="w-full h-full flex items-center justify-center p-4">
+            <img 
+              src={url} 
+              alt={doc.name} 
+              className={`max-w-full max-h-full object-contain shadow-sm transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`} 
+            />
+          </div>
         )}
-        {!loading && url && isPdf && (
-          <iframe src={url} title={doc.name} className="w-full h-full bg-white" />
+        {url && isPdf && (
+          <iframe 
+            src={url} 
+            title={doc.name} 
+            className={`w-full h-full bg-white transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`} 
+          />
         )}
-        {!loading && url && !isImage && !isPdf && (
+        {url && !isImage && !isPdf && (
           <div className="text-center text-muted-foreground p-6">
-            <FileText className="h-10 w-10 mx-auto mb-2" />
+            <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
             Formato sem pré-visualização. Use "Baixar".
           </div>
         )}

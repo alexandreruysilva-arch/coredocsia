@@ -16,6 +16,8 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { file, documentId } = data;
 
+    if (!userId) throw new Error("Usuário não autenticado");
+
     const { ensureOrgFolder, uploadFileToDrive } = await import("./drive.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -80,7 +82,9 @@ export const deleteDocumentFromDrive = createServerFn({ method: "POST" })
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
+
+    if (!userId) throw new Error("Usuário não autenticado");
     const { deleteDriveFile } = await import("./drive.server");
     const { data: doc, error } = await supabase
       .from("documents")
