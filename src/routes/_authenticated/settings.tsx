@@ -283,7 +283,7 @@ function MembersSettings({ organizationId }: { organizationId: string | undefine
             id
           )
         `)
-        .eq("org_id", organizationId);
+        .eq("org_id", organizationId as string);
       
       if (error) throw error;
       return data;
