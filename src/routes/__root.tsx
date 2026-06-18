@@ -95,11 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "CoreDocsIA — Plataforma Documental Inteligente" },
-      { name: "description", content: "Pixel Perfect Pixel is a SaaS platform for document management, featuring OCR, GED, and workflow capabilities." },
-      { property: "og:description", content: "Pixel Perfect Pixel is a SaaS platform for document management, featuring OCR, GED, and workflow capabilities." },
-      { name: "twitter:description", content: "Pixel Perfect Pixel is a SaaS platform for document management, featuring OCR, GED, and workflow capabilities." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d30b1964-1d5c-4b48-864e-544aae81a8ba/id-preview-7eb9c0f9--e7a199cb-3725-42b4-ae6e-8ce0e38c34c2.lovable.app-1780974139045.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d30b1964-1d5c-4b48-864e-544aae81a8ba/id-preview-7eb9c0f9--e7a199cb-3725-42b4-ae6e-8ce0e38c34c2.lovable.app-1780974139045.png" },
+      { name: "twitter:description", content: "Processamento documental, OCR, IA, GED e auditoria em uma plataforma SaaS multi-tenant." },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
