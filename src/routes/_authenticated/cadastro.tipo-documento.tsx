@@ -269,6 +269,14 @@ function TipoDocumentoPage() {
                   <TableCell className="text-muted-foreground">{r.slug}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setFieldsFor(r)}
+                        className="mr-1"
+                      >
+                        <ListChecks className="h-4 w-4 mr-1" /> Campos
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)} aria-label="Editar">
                         <Pencil className="h-4 w-4" />
                       </Button>
