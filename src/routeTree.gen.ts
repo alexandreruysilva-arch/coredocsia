@@ -27,6 +27,9 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiFilesIdRouteImport } from './routes/api/files/$id'
 import { Route as AuthenticatedDocumentsIdRouteImport } from './routes/_authenticated/documents.$id'
+import { Route as AuthenticatedCadastroUsuarioRouteImport } from './routes/_authenticated/cadastro.usuario'
+import { Route as AuthenticatedCadastroTipoDocumentoRouteImport } from './routes/_authenticated/cadastro.tipo-documento'
+import { Route as AuthenticatedCadastroEmpresaRouteImport } from './routes/_authenticated/cadastro.empresa'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -118,6 +121,24 @@ const AuthenticatedDocumentsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedDocumentsRoute,
   } as any)
+const AuthenticatedCadastroUsuarioRoute =
+  AuthenticatedCadastroUsuarioRouteImport.update({
+    id: '/cadastro/usuario',
+    path: '/cadastro/usuario',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCadastroTipoDocumentoRoute =
+  AuthenticatedCadastroTipoDocumentoRouteImport.update({
+    id: '/cadastro/tipo-documento',
+    path: '/cadastro/tipo-documento',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCadastroEmpresaRoute =
+  AuthenticatedCadastroEmpresaRouteImport.update({
+    id: '/cadastro/empresa',
+    path: '/cadastro/empresa',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -135,6 +156,9 @@ export interface FileRoutesByFullPath {
   '/templates': typeof AuthenticatedTemplatesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/workflow': typeof AuthenticatedWorkflowRoute
+  '/cadastro/empresa': typeof AuthenticatedCadastroEmpresaRoute
+  '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
+  '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
   '/api/files/$id': typeof ApiFilesIdRoute
 }
@@ -154,6 +178,9 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/workflow': typeof AuthenticatedWorkflowRoute
+  '/cadastro/empresa': typeof AuthenticatedCadastroEmpresaRoute
+  '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
+  '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
   '/api/files/$id': typeof ApiFilesIdRoute
 }
@@ -175,6 +202,9 @@ export interface FileRoutesById {
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/_authenticated/workflow': typeof AuthenticatedWorkflowRoute
+  '/_authenticated/cadastro/empresa': typeof AuthenticatedCadastroEmpresaRoute
+  '/_authenticated/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
+  '/_authenticated/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/_authenticated/documents/$id': typeof AuthenticatedDocumentsIdRoute
   '/api/files/$id': typeof ApiFilesIdRoute
 }
@@ -196,6 +226,9 @@ export interface FileRouteTypes {
     | '/templates'
     | '/upload'
     | '/workflow'
+    | '/cadastro/empresa'
+    | '/cadastro/tipo-documento'
+    | '/cadastro/usuario'
     | '/documents/$id'
     | '/api/files/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -215,6 +248,9 @@ export interface FileRouteTypes {
     | '/templates'
     | '/upload'
     | '/workflow'
+    | '/cadastro/empresa'
+    | '/cadastro/tipo-documento'
+    | '/cadastro/usuario'
     | '/documents/$id'
     | '/api/files/$id'
   id:
@@ -235,6 +271,9 @@ export interface FileRouteTypes {
     | '/_authenticated/templates'
     | '/_authenticated/upload'
     | '/_authenticated/workflow'
+    | '/_authenticated/cadastro/empresa'
+    | '/_authenticated/cadastro/tipo-documento'
+    | '/_authenticated/cadastro/usuario'
     | '/_authenticated/documents/$id'
     | '/api/files/$id'
   fileRoutesById: FileRoutesById
@@ -375,6 +414,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDocumentsIdRouteImport
       parentRoute: typeof AuthenticatedDocumentsRoute
     }
+    '/_authenticated/cadastro/usuario': {
+      id: '/_authenticated/cadastro/usuario'
+      path: '/cadastro/usuario'
+      fullPath: '/cadastro/usuario'
+      preLoaderRoute: typeof AuthenticatedCadastroUsuarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cadastro/tipo-documento': {
+      id: '/_authenticated/cadastro/tipo-documento'
+      path: '/cadastro/tipo-documento'
+      fullPath: '/cadastro/tipo-documento'
+      preLoaderRoute: typeof AuthenticatedCadastroTipoDocumentoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cadastro/empresa': {
+      id: '/_authenticated/cadastro/empresa'
+      path: '/cadastro/empresa'
+      fullPath: '/cadastro/empresa'
+      preLoaderRoute: typeof AuthenticatedCadastroEmpresaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -405,6 +465,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
   AuthenticatedWorkflowRoute: typeof AuthenticatedWorkflowRoute
+  AuthenticatedCadastroEmpresaRoute: typeof AuthenticatedCadastroEmpresaRoute
+  AuthenticatedCadastroTipoDocumentoRoute: typeof AuthenticatedCadastroTipoDocumentoRoute
+  AuthenticatedCadastroUsuarioRoute: typeof AuthenticatedCadastroUsuarioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -420,6 +483,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
   AuthenticatedWorkflowRoute: AuthenticatedWorkflowRoute,
+  AuthenticatedCadastroEmpresaRoute: AuthenticatedCadastroEmpresaRoute,
+  AuthenticatedCadastroTipoDocumentoRoute:
+    AuthenticatedCadastroTipoDocumentoRoute,
+  AuthenticatedCadastroUsuarioRoute: AuthenticatedCadastroUsuarioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

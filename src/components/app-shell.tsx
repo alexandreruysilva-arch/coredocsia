@@ -11,9 +11,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -40,7 +44,12 @@ import {
   LogOut,
   FileScan,
   ChevronDown,
+  ChevronRight,
   Check,
+  ClipboardList,
+  Building2,
+  FileType,
+  Users,
 } from "lucide-react";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +60,12 @@ const navMain = [
   { to: "/upload", label: "Upload", icon: Upload },
   { to: "/queue", label: "Fila de processamento", icon: ListChecks },
   { to: "/documents", label: "Documentos (GED)", icon: FolderOpen },
+];
+
+const navCadastro = [
+  { to: "/cadastro/empresa", label: "Empresa", icon: Building2 },
+  { to: "/cadastro/tipo-documento", label: "Tipo Documento", icon: FileType },
+  { to: "/cadastro/usuario", label: "Usuário", icon: Users },
 ];
 
 const navConfig = [
@@ -121,6 +136,44 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Cadastro</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <Collapsible
+                    defaultOpen={navCadastro.some((i) => isActive(i.to))}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip="Cadastro">
+                          <ClipboardList className="h-4 w-4" />
+                          <span>Cadastro</span>
+                          <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {navCadastro.map((item) => (
+                            <SidebarMenuSubItem key={item.to}>
+                              <SidebarMenuSubButton asChild isActive={isActive(item.to)}>
+                                <Link to={item.to}>
+                                  <item.icon className="h-4 w-4" />
+                                  <span>{item.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+
 
             <SidebarGroup>
               <SidebarGroupLabel>Configuração</SidebarGroupLabel>
