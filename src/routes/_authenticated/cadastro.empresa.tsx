@@ -104,10 +104,20 @@ function EmpresaPage() {
 
   const upsert = useMutation({
     mutationFn: async (payload: CompanyForm) => {
-      if (!orgId) throw new Error("Organização não selecionada");
+      let activeOrgId = orgId;
       const { data: userRes } = await supabase.auth.getUser();
+      if (!activeOrgId && userRes.user) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("current_org_id")
+          .eq("id", userRes.user.id)
+          .maybeSingle();
+        activeOrgId = prof?.current_org_id ?? null;
+      }
+      if (!activeOrgId) throw new Error("Organização não selecionada");
       const row = {
-        org_id: orgId,
+        org_id: activeOrgId,
+
         name: payload.name.trim(),
         cnpj: payload.cnpj?.trim() || null,
         address: payload.address?.trim() || null,
