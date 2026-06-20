@@ -138,6 +138,44 @@ export function AppShell({ children }: { children: ReactNode }) {
             </SidebarGroup>
 
             <SidebarGroup>
+              <SidebarGroupLabel>Cadastro</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <Collapsible
+                    defaultOpen={navCadastro.some((i) => isActive(i.to))}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton tooltip="Cadastro">
+                          <ClipboardList className="h-4 w-4" />
+                          <span>Cadastro</span>
+                          <ChevronRight className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub>
+                          {navCadastro.map((item) => (
+                            <SidebarMenuSubItem key={item.to}>
+                              <SidebarMenuSubButton asChild isActive={isActive(item.to)}>
+                                <Link to={item.to}>
+                                  <item.icon className="h-4 w-4" />
+                                  <span>{item.label}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          ))}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+
+
+            <SidebarGroup>
               <SidebarGroupLabel>Configuração</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
