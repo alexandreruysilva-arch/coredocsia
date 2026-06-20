@@ -62,6 +62,12 @@ const navMain = [
   { to: "/documents", label: "Documentos (GED)", icon: FolderOpen },
 ];
 
+const navCadastro = [
+  { to: "/cadastro/empresa", label: "Empresa", icon: Building2 },
+  { to: "/cadastro/tipo-documento", label: "Tipo Documento", icon: FileType },
+  { to: "/cadastro/usuario", label: "Usuário", icon: Users },
+];
+
 const navConfig = [
   { to: "/groups", label: "Grupos & Metadados", icon: Tags },
   { to: "/templates", label: "Templates de extração", icon: FileText },
