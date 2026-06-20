@@ -11,9 +11,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -40,7 +44,12 @@ import {
   LogOut,
   FileScan,
   ChevronDown,
+  ChevronRight,
   Check,
+  ClipboardList,
+  Building2,
+  FileType,
+  Users,
 } from "lucide-react";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
