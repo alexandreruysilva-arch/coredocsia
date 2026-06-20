@@ -67,6 +67,63 @@ export type Database = {
           },
         ]
       }
+      document_type_fields: {
+        Row: {
+          created_at: string
+          document_type_id: string
+          field_key: string
+          field_type: string
+          id: string
+          label: string
+          options: Json | null
+          org_id: string
+          position: number
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_type_id: string
+          field_key: string
+          field_type?: string
+          id?: string
+          label: string
+          options?: Json | null
+          org_id: string
+          position?: number
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_type_id?: string
+          field_key?: string
+          field_type?: string
+          id?: string
+          label?: string
+          options?: Json | null
+          org_id?: string
+          position?: number
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_type_fields_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_type_fields_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_types: {
         Row: {
           company_id: string | null
