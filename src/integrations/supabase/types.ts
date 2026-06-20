@@ -69,6 +69,7 @@ export type Database = {
       }
       document_types: {
         Row: {
+          company_id: string | null
           created_at: string
           id: string
           name: string
@@ -76,6 +77,7 @@ export type Database = {
           slug: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           id?: string
           name: string
@@ -83,6 +85,7 @@ export type Database = {
           slug: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -90,6 +93,13 @@ export type Database = {
           slug?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "document_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "document_types_org_id_fkey"
             columns: ["org_id"]
