@@ -551,7 +551,7 @@ function FieldsDialog({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            add.mutate();
+            save.mutate();
           }}
           className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2"
         >
@@ -592,12 +592,21 @@ function FieldsDialog({
             </label>
           </div>
           <div className="md:col-span-12 flex justify-end gap-2">
+            {editingId && (
+              <Button type="button" variant="ghost" onClick={resetForm}>
+                Cancelar edição
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={onClose}>
               Fechar
             </Button>
-            <Button type="submit" disabled={add.isPending}>
+            <Button type="submit" disabled={save.isPending}>
               <Plus className="h-4 w-4 mr-1" />
-              {add.isPending ? "Adicionando..." : "Adicionar campo"}
+              {save.isPending
+                ? "Salvando..."
+                : editingId
+                  ? "Salvar alterações"
+                  : "Adicionar campo"}
             </Button>
           </div>
         </form>
