@@ -29,6 +29,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
+import { ensureCurrentOrganization } from "@/lib/organizations.functions";
 
 export const Route = createFileRoute("/_authenticated/cadastro/empresa")({
   component: EmpresaPage,
@@ -69,6 +70,8 @@ const emptyForm: CompanyForm = {
 function EmpresaPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
+  const [resolvedOrgId, setResolvedOrgId] = useState<string | null>(null);
+  const effectiveOrgId = orgId ?? resolvedOrgId;
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -78,13 +81,13 @@ function EmpresaPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof CompanyForm, string>>>({});
 
   const list = useQuery({
-    queryKey: ["companies", orgId],
-    enabled: !!orgId,
+    queryKey: ["companies", effectiveOrgId],
+    enabled: !!effectiveOrgId,
     queryFn: async (): Promise<CompanyRow[]> => {
       const { data, error } = await supabase
         .from("companies")
         .select("*")
-        .eq("org_id", orgId!)
+        .eq("org_id", effectiveOrgId!)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -104,16 +107,18 @@ function EmpresaPage() {
 
   const upsert = useMutation({
     mutationFn: async (payload: CompanyForm) => {
-      let activeOrgId = orgId;
-      const { data: userRes } = await supabase.auth.getUser();
-      if (!activeOrgId && userRes.user) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("current_org_id")
-          .eq("id", userRes.user.id)
-          .maybeSingle();
-        activeOrgId = prof?.current_org_id ?? null;
+      let activeOrgId = effectiveOrgId;
+      const { data: userRes, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !userRes.user) {
+        throw new Error("Sessão expirada. Entre novamente para continuar.");
       }
+
+      if (!activeOrgId) {
+        const ensured = await ensureCurrentOrganization();
+        activeOrgId = ensured.orgId;
+      }
+
       if (!activeOrgId) throw new Error("Organização não selecionada");
       const row = {
         org_id: activeOrgId,
@@ -134,13 +139,16 @@ function EmpresaPage() {
       } else {
         const { error } = await supabase
           .from("companies")
-          .insert({ ...row, created_by: userRes.user?.id ?? null });
+          .insert({ ...row, created_by: userRes.user.id });
         if (error) throw error;
       }
+      return { orgId: activeOrgId };
     },
-    onSuccess: () => {
+    onSuccess: ({ orgId: savedOrgId }) => {
+      setResolvedOrgId(savedOrgId);
       toast.success(editing ? "Empresa atualizada" : "Empresa cadastrada");
-      queryClient.invalidateQueries({ queryKey: ["companies", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["profile-bundle"] });
+      queryClient.invalidateQueries({ queryKey: ["companies", savedOrgId] });
       closeDialog();
     },
     onError: (err: Error) => toast.error(err.message),
@@ -156,7 +164,7 @@ function EmpresaPage() {
     },
     onSuccess: () => {
       toast.success("Empresa removida");
-      queryClient.invalidateQueries({ queryKey: ["companies", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["companies", effectiveOrgId] });
     },
     onError: (err: Error) => toast.error(err.message),
   });
