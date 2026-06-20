@@ -83,6 +83,7 @@ function TipoDocumentoPage() {
   const [editing, setEditing] = useState<DocTypeRow | null>(null);
   const [form, setForm] = useState<FormVals>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormVals, string>>>({});
+  const [fieldsFor, setFieldsFor] = useState<DocTypeRow | null>(null);
 
   const companies = useQuery({
     queryKey: ["companies-min", orgId],
