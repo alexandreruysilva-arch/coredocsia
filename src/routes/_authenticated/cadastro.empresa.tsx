@@ -200,9 +200,10 @@ function EmpresaPage() {
         title="Empresa"
         description="Cadastro de empresas da organização."
         actions={
-          <Button onClick={openCreate} disabled={!orgId}>
+          <Button onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" /> Nova empresa
           </Button>
+
         }
       />
 
