@@ -101,7 +101,7 @@ function Landing() {
       </section>
 
       <footer className="border-t border-border/60 mt-8">
-        <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex items-center justify-between">
+        <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground text-center">
           <span>© {new Date().getFullYear()} AP - CoreDocs IA. Todos os direitos reservados.</span>
         </div>
       </footer>
