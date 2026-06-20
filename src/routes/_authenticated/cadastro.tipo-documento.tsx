@@ -398,10 +398,27 @@ function FieldsDialog({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [fieldKey, setFieldKey] = useState("");
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
+
+  const resetForm = () => {
+    setEditingId(null);
+    setLabel("");
+    setFieldKey("");
+    setFieldType("text");
+    setRequired(false);
+  };
+
+  const startEdit = (f: FieldRow) => {
+    setEditingId(f.id);
+    setLabel(f.label);
+    setFieldKey(f.field_key);
+    setFieldType(f.field_type);
+    setRequired(f.required);
+  };
 
   const fields = useQuery({
     queryKey: ["doc-type-fields", docType?.id],
@@ -418,30 +435,40 @@ function FieldsDialog({
     },
   });
 
-  const add = useMutation({
+  const save = useMutation({
     mutationFn: async () => {
       if (!docType || !orgId) throw new Error("Contexto inválido");
       const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
       if (!label.trim()) throw new Error("Informe o rótulo");
       if (!key) throw new Error("Informe a chave do campo");
-      const position = (fields.data?.length ?? 0) + 1;
-      const { error } = await supabase.from("document_type_fields").insert({
-        org_id: orgId,
-        document_type_id: docType.id,
-        label: label.trim(),
-        field_key: key,
-        field_type: fieldType,
-        required,
-        position,
-      });
-      if (error) throw error;
+      if (editingId) {
+        const { error } = await supabase
+          .from("document_type_fields")
+          .update({
+            label: label.trim(),
+            field_key: key,
+            field_type: fieldType,
+            required,
+          })
+          .eq("id", editingId);
+        if (error) throw error;
+      } else {
+        const position = (fields.data?.length ?? 0) + 1;
+        const { error } = await supabase.from("document_type_fields").insert({
+          org_id: orgId,
+          document_type_id: docType.id,
+          label: label.trim(),
+          field_key: key,
+          field_type: fieldType,
+          required,
+          position,
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success("Campo adicionado");
-      setLabel("");
-      setFieldKey("");
-      setFieldType("text");
-      setRequired(false);
+      toast.success(editingId ? "Campo atualizado" : "Campo adicionado");
+      resetForm();
       queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -495,14 +522,24 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => removeField.mutate(f.id)}
-                        aria-label="Remover"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startEdit(f)}
+                          aria-label="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => removeField.mutate(f.id)}
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -514,7 +551,7 @@ function FieldsDialog({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            add.mutate();
+            save.mutate();
           }}
           className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2"
         >
@@ -555,12 +592,21 @@ function FieldsDialog({
             </label>
           </div>
           <div className="md:col-span-12 flex justify-end gap-2">
+            {editingId && (
+              <Button type="button" variant="ghost" onClick={resetForm}>
+                Cancelar edição
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={onClose}>
               Fechar
             </Button>
-            <Button type="submit" disabled={add.isPending}>
+            <Button type="submit" disabled={save.isPending}>
               <Plus className="h-4 w-4 mr-1" />
-              {add.isPending ? "Adicionando..." : "Adicionar campo"}
+              {save.isPending
+                ? "Salvando..."
+                : editingId
+                  ? "Salvar alterações"
+                  : "Adicionar campo"}
             </Button>
           </div>
         </form>
