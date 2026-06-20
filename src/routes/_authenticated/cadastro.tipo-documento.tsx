@@ -367,6 +367,204 @@ function TipoDocumentoPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <FieldsDialog
+        docType={fieldsFor}
+        orgId={orgId}
+        onClose={() => setFieldsFor(null)}
+      />
     </div>
+  );
+}
+
+interface FieldRow {
+  id: string;
+  document_type_id: string;
+  org_id: string;
+  label: string;
+  field_key: string;
+  field_type: "text" | "number" | "date" | "boolean" | "select";
+  required: boolean;
+  position: number;
+}
+
+function FieldsDialog({
+  docType,
+  orgId,
+  onClose,
+}: {
+  docType: DocTypeRow | null;
+  orgId: string | null;
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [label, setLabel] = useState("");
+  const [fieldKey, setFieldKey] = useState("");
+  const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
+  const [required, setRequired] = useState(false);
+
+  const fields = useQuery({
+    queryKey: ["doc-type-fields", docType?.id],
+    enabled: !!docType,
+    queryFn: async (): Promise<FieldRow[]> => {
+      const { data, error } = await supabase
+        .from("document_type_fields")
+        .select("*")
+        .eq("document_type_id", docType!.id)
+        .order("position")
+        .order("created_at");
+      if (error) throw error;
+      return (data ?? []) as FieldRow[];
+    },
+  });
+
+  const add = useMutation({
+    mutationFn: async () => {
+      if (!docType || !orgId) throw new Error("Contexto inválido");
+      const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
+      if (!label.trim()) throw new Error("Informe o rótulo");
+      if (!key) throw new Error("Informe a chave do campo");
+      const position = (fields.data?.length ?? 0) + 1;
+      const { error } = await supabase.from("document_type_fields").insert({
+        org_id: orgId,
+        document_type_id: docType.id,
+        label: label.trim(),
+        field_key: key,
+        field_type: fieldType,
+        required,
+        position,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campo adicionado");
+      setLabel("");
+      setFieldKey("");
+      setFieldType("text");
+      setRequired(false);
+      queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeField = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("document_type_fields").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Campo removido");
+      queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={!!docType} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Campos de indexação — {docType?.name}</DialogTitle>
+          <DialogDescription>
+            Defina os campos usados para indexar e buscar documentos deste tipo.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded-lg border bg-card overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Rótulo</TableHead>
+                <TableHead>Chave</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Obrig.</TableHead>
+                <TableHead className="w-12"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(fields.data ?? []).length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6 text-sm text-muted-foreground">
+                    Nenhum campo definido.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                (fields.data ?? []).map((f) => (
+                  <TableRow key={f.id}>
+                    <TableCell className="font-medium">{f.label}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeField.mutate(f.id)}
+                        aria-label="Remover"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            add.mutate();
+          }}
+          className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2"
+        >
+          <div className="md:col-span-4 space-y-1.5">
+            <Label>Rótulo</Label>
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex.: Número NF" />
+          </div>
+          <div className="md:col-span-3 space-y-1.5">
+            <Label>Chave</Label>
+            <Input
+              value={fieldKey}
+              onChange={(e) => setFieldKey(e.target.value)}
+              placeholder="numero_nf"
+            />
+          </div>
+          <div className="md:col-span-3 space-y-1.5">
+            <Label>Tipo</Label>
+            <Select value={fieldType} onValueChange={(v) => setFieldType(v as FieldRow["field_type"])}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Texto</SelectItem>
+                <SelectItem value="number">Número</SelectItem>
+                <SelectItem value="date">Data</SelectItem>
+                <SelectItem value="boolean">Sim/Não</SelectItem>
+                <SelectItem value="select">Lista</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="md:col-span-2 flex items-end gap-2">
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={required}
+                onCheckedChange={(c) => setRequired(c === true)}
+              />
+              Obrig.
+            </label>
+          </div>
+          <div className="md:col-span-12 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+            <Button type="submit" disabled={add.isPending}>
+              <Plus className="h-4 w-4 mr-1" />
+              {add.isPending ? "Adicionando..." : "Adicionar campo"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
