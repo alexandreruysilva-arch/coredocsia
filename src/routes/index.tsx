@@ -55,10 +55,25 @@ function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pt-20 pb-16">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
+      <section className="relative mx-auto max-w-6xl px-6 pt-20 pb-20 overflow-hidden">
+        {/* subtle ambient glow */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-32 -left-20 h-[480px] w-[480px] rounded-full opacity-[0.18] blur-3xl"
+          style={{ background: "radial-gradient(circle, var(--color-primary), transparent 60%)" }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-10 right-0 h-[360px] w-[360px] rounded-full opacity-[0.12] blur-3xl"
+          style={{ background: "radial-gradient(circle, var(--color-accent), transparent 60%)" }}
+        />
+
+        <div className="relative max-w-3xl animate-fade-up">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground shadow-xs">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
+            </span>
             Plataforma inteligente de documentos
           </div>
           <h1 className="mt-6 font-display text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.05]">
@@ -83,14 +98,23 @@ function Landing() {
       </section>
 
       {/* Features */}
-      <section id="recursos" className="mx-auto max-w-6xl px-6 py-16 border-t border-border/60">
+      <section id="recursos" className="mx-auto max-w-6xl px-6 py-20 border-t border-border/60">
+        <div className="max-w-2xl mb-12">
+          <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
+            Tudo o que sua operação precisa.
+          </h2>
+          <p className="mt-3 text-muted-foreground leading-relaxed">
+            Componentes integrados de ponta a ponta — do upload à eliminação, com trilha completa.
+          </p>
+        </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f) => (
+          {features.map((f, i) => (
             <div
               key={f.title}
-              className="rounded-xl border border-border bg-card p-6 transition-colors hover:border-primary/40"
+              className="group relative rounded-xl border border-border bg-card p-6 hover-lift hover:border-primary/40 animate-fade-up"
+              style={{ animationDelay: `${i * 60}ms` }}
             >
-              <div className="h-10 w-10 rounded-lg bg-accent grid place-items-center">
+              <div className="h-10 w-10 rounded-lg bg-accent grid place-items-center transition-transform duration-300 ease-out group-hover:scale-110 group-hover:rotate-[-4deg]">
                 <f.icon className="h-5 w-5 text-accent-foreground" />
               </div>
               <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
