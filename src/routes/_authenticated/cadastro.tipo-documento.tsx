@@ -522,14 +522,24 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => removeField.mutate(f.id)}
-                        aria-label="Remover"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => startEdit(f)}
+                          aria-label="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => removeField.mutate(f.id)}
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
