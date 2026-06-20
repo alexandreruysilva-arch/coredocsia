@@ -332,6 +332,55 @@ export type Database = {
           },
         ]
       }
+      user_document_access: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_type_id: string
+          id: string
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_type_id: string
+          id?: string
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_type_id?: string
+          id?: string
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_document_access_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_document_access_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_document_access_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
