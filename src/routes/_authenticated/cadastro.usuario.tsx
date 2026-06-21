@@ -295,6 +295,8 @@ function UsuarioPage() {
     setForm({
       email: g.email ?? "",
       fullName: g.name,
+      password: "",
+      role: g.role,
       companyId: g.companyId,
       documentTypeIds: g.types.map((t) => t.documentTypeId),
     });
