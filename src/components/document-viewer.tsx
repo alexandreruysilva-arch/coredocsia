@@ -34,13 +34,20 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           <p className="text-sm font-medium truncate">{doc.name}</p>
           <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
         </div>
-        {downloadUrl && (
-          <Button asChild size="sm" variant="outline">
-            <a href={downloadUrl} target="_blank" rel="noreferrer">
-              <Download className="h-4 w-4 mr-1.5" /> Baixar
-            </a>
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {url && (
+            <Button asChild size="sm" variant="outline">
+              <a href={url} target="_blank" rel="noreferrer">Abrir</a>
+            </Button>
+          )}
+          {downloadUrl && (
+            <Button asChild size="sm" variant="outline">
+              <a href={downloadUrl} target="_blank" rel="noreferrer">
+                <Download className="h-4 w-4 mr-1.5" /> Baixar
+              </a>
+            </Button>
+          )}
+        </div>
       </div>
       <div className="flex-1 overflow-hidden grid place-items-center relative">
         {loading && (
@@ -64,11 +71,9 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
         {url && isPdf && (
-          <iframe 
-            src={url} 
-            title={doc.name} 
-            className={`w-full h-full bg-white transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`} 
-          />
+          <object data={url} type="application/pdf" className="w-full h-full bg-white">
+            <iframe src={url} title={doc.name} className="w-full h-full bg-white" />
+          </object>
         )}
         {url && !isImage && !isPdf && (
           <div className="text-center text-muted-foreground p-6">
