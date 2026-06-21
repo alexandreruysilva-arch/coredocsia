@@ -28,6 +28,8 @@ import { useProfileBundle } from "@/hooks/use-profile";
 import { useDocumentsList } from "@/hooks/use-documents";
 import { useDocumentTypes } from "@/hooks/use-document-types";
 import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
+import { useCompanies } from "@/hooks/use-companies";
+
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents")({
@@ -39,6 +41,7 @@ function DocumentsPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const { data: allTypes = [] } = useDocumentTypes(orgId);
+  const { data: companies = [] } = useCompanies(orgId);
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
 
   // Restrict the type filter dropdown to allowed types as well.
@@ -49,18 +52,25 @@ function DocumentsPage() {
 
   const [search, setSearch] = useState("");
   const [typeId, setTypeId] = useState<string>("all");
+  const [companyId, setCompanyId] = useState<string>("all");
   const [preview, setPreview] = useState<DocumentRow | null>(null);
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
-    status: "processed",
+    status: "all",
     typeId,
     search: search.length >= 2 ? search : "",
     allowedTypeIds,
   });
 
+  const filteredDocs =
+    companyId === "all" ? docs : docs.filter((d: any) => d.company_id === companyId);
+
   const typeName = (id: string | null) =>
-    id ? types.find((t) => t.id === id)?.name ?? "—" : "—";
+    id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
+  const companyName = (id: string | null | undefined) =>
+    id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
+
 
   return (
     <div className="flex h-full">
@@ -85,6 +95,19 @@ function DocumentsPage() {
                 className="pl-9"
               />
             </div>
+            <Select value={companyId} onValueChange={setCompanyId}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as empresas</SelectItem>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={typeId} onValueChange={setTypeId}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Tipo" />
@@ -105,6 +128,7 @@ function DocumentsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Empresa</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Tags</TableHead>
                   <TableHead>Tamanho</TableHead>
@@ -116,19 +140,19 @@ function DocumentsPage() {
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && docs.length === 0 && (
+                {!isLoading && filteredDocs.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                       Nenhum documento encontrado.
                     </TableCell>
                   </TableRow>
                 )}
-                {docs.map((doc) => (
+                {filteredDocs.map((doc: any) => (
                   <TableRow
                     key={doc.id}
                     className="cursor-pointer transition-colors"
@@ -136,10 +160,11 @@ function DocumentsPage() {
                     onClick={() => setPreview(doc)}
                   >
                     <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
+                    <TableCell className="text-sm">{companyName(doc.company_id)}</TableCell>
                     <TableCell className="text-sm">{typeName(doc.document_type_id)}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {doc.tags.slice(0, 3).map((t) => (
+                        {doc.tags.slice(0, 3).map((t: string) => (
                           <Badge key={t} variant="secondary" className="text-xs font-normal">
                             {t}
                           </Badge>
@@ -180,6 +205,7 @@ function DocumentsPage() {
           </Card>
         </div>
       </div>
+
 
       {preview && (
         <aside className="w-[480px] border-l border-border flex flex-col bg-background shrink-0">
