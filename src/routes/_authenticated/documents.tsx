@@ -256,31 +256,46 @@ function DocumentsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Tags</TableHead>
+                  {typeId !== "all" &&
+                    typeFields.map((f) => (
+                      <TableHead key={f.id}>{f.label}</TableHead>
+                    ))}
                   <TableHead>Tamanho</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Criado</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                      Carregando...
-                    </TableCell>
-                  </TableRow>
-                )}
-                {!isLoading && filteredDocs.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                      Nenhum documento encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-                {filteredDocs.map((doc: any) => (
+                {(() => {
+                  const colSpan =
+                    4 + (typeId !== "all" ? typeFields.length : 0);
+                  return (
+                    <>
+                      {isLoading && (
+                        <TableRow>
+                          <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
+                            Carregando...
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {!isLoading && filteredDocs.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
+                            Nenhum documento encontrado.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  );
+                })()}
+                {filteredDocs.map((doc: any) => {
+                  const fv = (doc.field_values ?? {}) as Record<string, unknown>;
+                  const fmt = (v: unknown) => {
+                    if (v === null || v === undefined || v === "") return "—";
+                    if (typeof v === "boolean") return v ? "Sim" : "Não";
+                    return String(v);
+                  };
+                  return (
                   <TableRow
                     key={doc.id}
                     className="cursor-pointer transition-colors"
@@ -288,26 +303,13 @@ function DocumentsPage() {
                     onClick={() => setPreview(doc)}
                   >
                     <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
-                    <TableCell className="text-sm">{companyName(doc.company_id)}</TableCell>
-                    <TableCell className="text-sm">{typeName(doc.document_type_id)}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {doc.tags.slice(0, 3).map((t: string) => (
-                          <Badge key={t} variant="secondary" className="text-xs font-normal">
-                            {t}
-                          </Badge>
-                        ))}
-                        {doc.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs font-normal">
-                            +{doc.tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
+                    {typeId !== "all" &&
+                      typeFields.map((f) => (
+                        <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
+                          {fmt(fv[f.field_key])}
+                        </TableCell>
+                      ))}
                     <TableCell className="text-sm">{formatBytes(Number(doc.size_bytes))}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={doc.status} />
-                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {formatDistanceToNow(new Date(doc.created_at), {
                         addSuffix: true,
@@ -342,10 +344,12 @@ function DocumentsPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
+
         </div>
       </div>
 
