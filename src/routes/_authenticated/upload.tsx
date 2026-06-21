@@ -115,6 +115,21 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   );
 }
 
+function PdfFilePreview({ file }: { file: File }) {
+  const [data, setData] = useState<ArrayBuffer | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    file.arrayBuffer().then((b) => {
+      if (!cancelled) setData(b);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [file]);
+  if (!data) return <div className="text-xs text-muted-foreground">Carregando PDF…</div>;
+  return <PdfPreview data={data} title={file.name} />;
+}
+
 function UploadPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
