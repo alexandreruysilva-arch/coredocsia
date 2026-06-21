@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
+import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
