@@ -3,9 +3,11 @@ import { Loader2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
+import { PdfPreview } from "@/components/pdf-preview";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,6 +16,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
 
     setLoading(true);
     setUrl(null);
+    setFileData(null);
 
     getFileUrl(doc.id)
       .then(async (viewUrl) => {
@@ -22,7 +25,8 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         const response = await fetch(viewUrl);
         if (!response.ok) throw new Error(`Falha ao carregar arquivo (${response.status})`);
 
-        const blob = await response.blob();
+        const data = await response.arrayBuffer();
+        const blob = new Blob([data], { type: doc.mime_type || "application/octet-stream" });
         objectUrl = URL.createObjectURL(blob);
 
         if (!active) {
@@ -31,6 +35,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         }
 
         setUrl(objectUrl);
+        setFileData(data);
       })
       .catch(() => {
         if (active) setUrl(null);
@@ -43,7 +48,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [doc.id]);
+  }, [doc.id, doc.mime_type]);
 
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
@@ -101,11 +106,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
         {url && isPdf && (
-          <iframe 
-            src={`${url}#toolbar=0`}
-            title={doc.name}
-            className="w-full h-full bg-white border-0"
-          />
+          fileData ? <PdfPreview data={fileData} title={doc.name} /> : null
         )}
         {url && !isImage && !isPdf && (
           <div className="text-center text-muted-foreground p-6">
