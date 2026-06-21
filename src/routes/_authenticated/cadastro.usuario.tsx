@@ -49,10 +49,20 @@ export const Route = createFileRoute("/_authenticated/cadastro/usuario")({
   component: UsuarioPage,
 });
 
+const ROLE_OPTIONS = [
+  { value: "org_admin", label: "Administrador" },
+  { value: "operator", label: "Operador" },
+  { value: "viewer", label: "Visualizador" },
+] as const;
+type Role = (typeof ROLE_OPTIONS)[number]["value"];
+
 const formSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().trim().min(1, "Informe o nome").max(150),
   password: z.string().max(72).optional().or(z.literal("")),
+  role: z.enum(["org_admin", "operator", "viewer"], {
+    message: "Selecione o nível de acesso",
+  }),
   companyId: z.string().uuid("Selecione a empresa"),
   documentTypeIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um tipo"),
 });
@@ -76,6 +86,7 @@ interface AccessItem {
   full_name: string;
   email: string | null;
   suspended: boolean;
+  role: Role;
 }
 interface EditingCtx {
   userId: string;
@@ -86,9 +97,11 @@ const emptyForm: FormVals = {
   email: "",
   fullName: "",
   password: "",
+  role: "viewer",
   companyId: "",
   documentTypeIds: [],
 };
+
 
 function UsuarioPage() {
   const { data: profile } = useProfileBundle();
