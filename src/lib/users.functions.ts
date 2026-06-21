@@ -157,7 +157,10 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     const userIds = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
-    const profilesById = new Map<string, { fullName: string; email: string | null }>();
+    const profilesById = new Map<
+      string,
+      { fullName: string; email: string | null; suspended: boolean }
+    >();
 
     if (userIds.length > 0) {
       const { data: profs } = await supabaseAdmin
@@ -165,16 +168,18 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
         .select("id, full_name")
         .in("id", userIds);
       (profs ?? []).forEach((p: any) =>
-        profilesById.set(p.id, { fullName: p.full_name ?? "—", email: null }),
+        profilesById.set(p.id, { fullName: p.full_name ?? "—", email: null, suspended: false }),
       );
 
-      // Augment with auth emails.
+      // Augment with auth emails + suspension status.
       const list = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
       if (!list.error) {
         list.data.users.forEach((u) => {
           if (userIds.includes(u.id)) {
-            const cur = profilesById.get(u.id) ?? { fullName: "—", email: null };
-            profilesById.set(u.id, { ...cur, email: u.email ?? null });
+            const cur = profilesById.get(u.id) ?? { fullName: "—", email: null, suspended: false };
+            const banned = (u as any).banned_until;
+            const isSuspended = !!banned && new Date(banned).getTime() > Date.now();
+            profilesById.set(u.id, { ...cur, email: u.email ?? null, suspended: isSuspended });
           }
         });
       }
@@ -189,5 +194,76 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       document_type_name: r.document_types?.name ?? "—",
       full_name: profilesById.get(r.user_id)?.fullName ?? "—",
       email: profilesById.get(r.user_id)?.email ?? null,
+      suspended: profilesById.get(r.user_id)?.suspended ?? false,
     }));
+  });
+
+const userActionSchema = z.object({ userId: z.string().uuid() });
+const setSuspendSchema = z.object({
+  userId: z.string().uuid(),
+  suspend: z.boolean(),
+});
+
+/** Deletes a user from auth + revokes all access in current org. */
+export const deleteUserAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => userActionSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const orgId = await resolveOrgId(supabase, userId);
+    if (data.userId === userId) throw new Error("Você não pode excluir o próprio usuário");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    await supabaseAdmin
+      .from("user_document_access")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("org_id", orgId);
+
+    await supabaseAdmin
+      .from("organization_members")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("org_id", orgId);
+
+    const del = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (del.error) throw new Error(del.error.message);
+
+    return { ok: true };
+  });
+
+/** Suspends (bans) or reactivates a user. */
+export const setUserSuspended = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => setSuspendSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    if (data.userId === userId) throw new Error("Você não pode suspender o próprio usuário");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const res = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+      ban_duration: data.suspend ? "876000h" : "none",
+    } as any);
+    if (res.error) throw new Error(res.error.message);
+    return { ok: true, suspended: data.suspend };
+  });
+
+/** Returns the set of suspended user ids among the given ids. */
+export const listSuspendedUserIds = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { userIds: string[] }) =>
+    z.object({ userIds: z.array(z.string().uuid()) }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    if (data.userIds.length === 0) return { suspended: [] as string[] };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const list = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (list.error) throw new Error(list.error.message);
+    const set = new Set(data.userIds);
+    const suspended = list.data.users
+      .filter((u) => set.has(u.id) && (u as any).banned_until)
+      .filter((u) => new Date((u as any).banned_until).getTime() > Date.now())
+      .map((u) => u.id);
+    return { suspended };
   });

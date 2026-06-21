@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Ban, CircleCheck, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/page-stub";
@@ -38,8 +38,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
 import {
+  deleteUserAccount,
   inviteUserAccess,
   listOrgUserAccess,
+  setUserSuspended,
   updateUserAccess,
 } from "@/lib/users.functions";
 
@@ -73,6 +75,7 @@ interface AccessItem {
   document_type_name: string;
   full_name: string;
   email: string | null;
+  suspended: boolean;
 }
 interface EditingCtx {
   userId: string;
@@ -94,6 +97,10 @@ function UsuarioPage() {
   const inviteFn = useServerFn(inviteUserAccess);
   const updateFn = useServerFn(updateUserAccess);
   const listFn = useServerFn(listOrgUserAccess);
+  const deleteFn = useServerFn(deleteUserAccount);
+  const suspendFn = useServerFn(setUserSuspended);
+
+
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<EditingCtx | null>(null);
@@ -147,6 +154,7 @@ function UsuarioPage() {
         name: string;
         email: string | null;
         companyName: string;
+        suspended: boolean;
         types: { id: string; documentTypeId: string; name: string }[];
       }
     >();
@@ -158,6 +166,7 @@ function UsuarioPage() {
         name: r.full_name,
         email: r.email,
         companyName: r.company_name,
+        suspended: r.suspended,
         types: [],
       };
       entry.types.push({
@@ -169,6 +178,7 @@ function UsuarioPage() {
     });
     return Array.from(map.values());
   }, [access.data]);
+
 
   const invite = useMutation({
     mutationFn: async (vals: FormVals) => {
@@ -220,6 +230,25 @@ function UsuarioPage() {
     },
     onSuccess: () => {
       toast.success("Acesso revogado");
+      queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeUser = useMutation({
+    mutationFn: async (userId: string) => deleteFn({ data: { userId } }),
+    onSuccess: () => {
+      toast.success("Usuário excluído");
+      queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleSuspend = useMutation({
+    mutationFn: async (v: { userId: string; suspend: boolean }) =>
+      suspendFn({ data: v }),
+    onSuccess: (_d, v) => {
+      toast.success(v.suspend ? "Usuário suspenso" : "Usuário reativado");
       queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -308,7 +337,7 @@ function UsuarioPage() {
               <TableHead>E-mail</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead>Tipos de Documento</TableHead>
-              <TableHead className="w-24 text-right">Ações</TableHead>
+              <TableHead className="w-40 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -336,7 +365,16 @@ function UsuarioPage() {
             ) : (
               grouped.map((g) => (
                 <TableRow key={`${g.userId}-${g.companyId}`}>
-                  <TableCell className="font-medium">{g.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {g.name}
+                      {g.suspended && (
+                        <span className="rounded-md bg-destructive/10 text-destructive px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                          Suspenso
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{g.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{g.companyName}</TableCell>
                   <TableCell>
@@ -360,15 +398,50 @@ function UsuarioPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => openEdit(g)}
-                      aria-label="Editar"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => openEdit(g)}
+                        aria-label="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          toggleSuspend.mutate({ userId: g.userId, suspend: !g.suspended })
+                        }
+                        aria-label={g.suspended ? "Reativar" : "Suspender"}
+                        title={g.suspended ? "Reativar" : "Suspender"}
+                      >
+                        {g.suspended ? (
+                          <CircleCheck className="h-4 w-4 text-emerald-600" />
+                        ) : (
+                          <Ban className="h-4 w-4 text-amber-600" />
+                        )}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Excluir o usuário "${g.name}"? Esta ação remove o acesso a todos os tipos de documento.`,
+                            )
+                          ) {
+                            removeUser.mutate(g.userId);
+                          }
+                        }}
+                        aria-label="Excluir"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
+
                 </TableRow>
               ))
             )}
