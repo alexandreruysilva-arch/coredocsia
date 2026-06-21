@@ -2,7 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Eye, X, Trash2, Loader2 } from "lucide-react";
+import { FolderOpen, Search, Eye, X, Trash2, Loader2, Plus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
@@ -70,6 +76,7 @@ function DocumentsPage() {
   const [typeId, setTypeId] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string>("all");
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
+  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
   const [preview, setPreview] = useState<DocumentRow | null>(null);
   const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -176,6 +183,7 @@ function DocumentsPage() {
               onValueChange={(v) => {
                 setTypeId(v);
                 setFieldFilters({});
+                setActiveFieldKeys([]);
               }}
             >
               <SelectTrigger className="w-[220px]">
@@ -194,60 +202,124 @@ function DocumentsPage() {
 
           {typeId !== "all" && typeFields.length > 0 && (
             <Card className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-sm font-medium">Filtrar pelos campos do tipo</h3>
-                {Object.values(fieldFilters).some((v) => v.trim() !== "") && (
-                  <Button size="sm" variant="ghost" onClick={() => setFieldFilters({})}>
-                    Limpar
-                  </Button>
-                )}
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {typeFields.map((f) => {
-                  const val = fieldFilters[f.field_key] ?? "";
-                  const set = (v: string) =>
-                    setFieldFilters((prev) => ({ ...prev, [f.field_key]: v }));
-                  return (
-                    <div key={f.id} className="space-y-1.5">
-                      <Label htmlFor={`ff-${f.id}`} className="text-xs">
-                        {f.label}
-                      </Label>
-                      {f.field_type === "select" && Array.isArray(f.options) ? (
-                        <Select
-                          value={val || "all"}
-                          onValueChange={(v) => set(v === "all" ? "" : v)}
-                        >
-                          <SelectTrigger id={`ff-${f.id}`}>
-                            <SelectValue placeholder="Todos" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Todos</SelectItem>
-                            {(f.options as string[]).map((o) => (
-                              <SelectItem key={o} value={o}>
-                                {o}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <Plus className="h-4 w-4 mr-1" /> Adicionar filtro
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
+                      {typeFields.filter((f) => !activeFieldKeys.includes(f.field_key)).length === 0 ? (
+                        <DropdownMenuItem disabled>Nenhum campo disponível</DropdownMenuItem>
                       ) : (
-                        <Input
-                          id={`ff-${f.id}`}
-                          value={val}
-                          onChange={(e) => set(e.target.value)}
-                          type={
-                            f.field_type === "number"
-                              ? "number"
-                              : f.field_type === "date"
-                              ? "date"
-                              : "text"
-                          }
-                          placeholder={`Filtrar ${f.label.toLowerCase()}`}
-                        />
+                        typeFields
+                          .filter((f) => !activeFieldKeys.includes(f.field_key))
+                          .map((f) => (
+                            <DropdownMenuItem
+                              key={f.id}
+                              onSelect={() =>
+                                setActiveFieldKeys((prev) => [...prev, f.field_key])
+                              }
+                            >
+                              {f.label}
+                            </DropdownMenuItem>
+                          ))
                       )}
-                    </div>
-                  );
-                })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  {activeFieldKeys.length > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setActiveFieldKeys([]);
+                        setFieldFilters({});
+                      }}
+                    >
+                      Limpar
+                    </Button>
+                  )}
+                </div>
               </div>
+              {activeFieldKeys.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Clique em "Adicionar filtro" para escolher os campos da indexação que deseja usar na pesquisa.
+                </p>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {activeFieldKeys
+                    .map((k) => typeFields.find((f) => f.field_key === k))
+                    .filter((f): f is NonNullable<typeof f> => !!f)
+                    .map((f) => {
+                      const val = fieldFilters[f.field_key] ?? "";
+                      const set = (v: string) =>
+                        setFieldFilters((prev) => ({ ...prev, [f.field_key]: v }));
+                      const remove = () => {
+                        setActiveFieldKeys((prev) =>
+                          prev.filter((k) => k !== f.field_key),
+                        );
+                        setFieldFilters((prev) => {
+                          const n = { ...prev };
+                          delete n[f.field_key];
+                          return n;
+                        });
+                      };
+                      return (
+                        <div key={f.id} className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor={`ff-${f.id}`} className="text-xs">
+                              {f.label}
+                            </Label>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-5 w-5"
+                              onClick={remove}
+                              aria-label={`Remover filtro ${f.label}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          {f.field_type === "select" && Array.isArray(f.options) ? (
+                            <Select
+                              value={val || "all"}
+                              onValueChange={(v) => set(v === "all" ? "" : v)}
+                            >
+                              <SelectTrigger id={`ff-${f.id}`}>
+                                <SelectValue placeholder="Todos" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Todos</SelectItem>
+                                {(f.options as string[]).map((o) => (
+                                  <SelectItem key={o} value={o}>
+                                    {o}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              id={`ff-${f.id}`}
+                              value={val}
+                              onChange={(e) => set(e.target.value)}
+                              type={
+                                f.field_type === "number"
+                                  ? "number"
+                                  : f.field_type === "date"
+                                  ? "date"
+                                  : "text"
+                              }
+                              placeholder={`Filtrar ${f.label.toLowerCase()}`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </Card>
           )}
 
