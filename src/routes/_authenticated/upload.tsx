@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { PdfPreview } from "@/components/pdf-preview";
 import { useDropzone } from "react-dropzone";
 import { createFileRoute } from "@tanstack/react-router";
 import {
