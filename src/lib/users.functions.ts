@@ -2,10 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const roleEnum = z.enum(["org_admin", "operator", "viewer"]);
+
 const inviteSchema = z.object({
   email: z.string().email(),
   fullName: z.string().trim().min(1).max(150),
   password: z.string().min(6).max(72),
+  role: roleEnum,
   companyId: z.string().uuid(),
   documentTypeIds: z.array(z.string().uuid()).min(1),
 });
@@ -13,6 +16,7 @@ const inviteSchema = z.object({
 const updateSchema = z.object({
   userId: z.string().uuid(),
   fullName: z.string().trim().min(1).max(150),
+  role: roleEnum,
   companyId: z.string().uuid(),
   documentTypeIds: z.array(z.string().uuid()).min(1),
 });
