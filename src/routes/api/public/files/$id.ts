@@ -21,7 +21,8 @@ export const Route = createFileRoute("/api/public/files/$id")({
         const { data: userRes, error: userErr } = await authed.auth.getUser();
         if (userErr || !userRes.user) return new Response("Unauthorized", { status: 401 });
 
-        // RLS-scoped read
+        // RLS-scoped read: the user token above is applied to this client, so
+        // the document is only returned when backend access rules allow it.
         const { data: doc, error } = await authed
           .from("documents")
           .select("id, drive_file_id, mime_type, original_filename, org_id")
@@ -30,15 +31,6 @@ export const Route = createFileRoute("/api/public/files/$id")({
         if (error || !doc || !doc.drive_file_id) {
           return new Response("Não encontrado", { status: 404 });
         }
-        // Defense-in-depth: re-verify membership with admin client
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: member } = await supabaseAdmin
-          .from("organization_members")
-          .select("user_id")
-          .eq("org_id", doc.org_id)
-          .eq("user_id", userRes.user.id)
-          .maybeSingle();
-        if (!member) return new Response("Forbidden", { status: 403 });
 
         const { streamDriveFile } = await import("@/lib/drive.server");
         const driveRes = await streamDriveFile(doc.drive_file_id);

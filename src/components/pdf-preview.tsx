@@ -25,7 +25,12 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           import.meta.url,
         ).toString();
 
-        const loadingTask = pdfjs.getDocument({ data: data.slice(0) });
+        const loadingTask = pdfjs.getDocument({
+          data: data.slice(0),
+          isOffscreenCanvasSupported: false,
+          isImageDecoderSupported: false,
+          useWorkerFetch: false,
+        });
         const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
         const canvas = canvasRef.current;
@@ -45,7 +50,8 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
 
         await page.render({ canvas, canvasContext: context, viewport }).promise;
         await loadingTask.destroy();
-      } catch {
+      } catch (error) {
+        console.error("Falha ao renderizar PDF", error);
         if (!cancelled) setFailed(true);
       } finally {
         if (!cancelled) setIsRendering(false);
@@ -68,7 +74,10 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           </div>
         )}
         {failed ? (
-          <p className="text-sm text-muted-foreground">Não foi possível pré-visualizar este PDF.</p>
+          <div className="max-w-sm text-center text-sm text-muted-foreground p-6">
+            <p>Não foi possível renderizar a página do PDF.</p>
+            <p className="mt-1">Use “Baixar” para abrir o arquivo original.</p>
+          </div>
         ) : (
           <canvas ref={canvasRef} aria-label={title} className="max-w-full bg-card shadow-sm" />
         )}
