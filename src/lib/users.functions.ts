@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const inviteSchema = z.object({
   email: z.string().email(),
   fullName: z.string().trim().min(1).max(150),
+  password: z.string().min(6).max(72),
   companyId: z.string().uuid(),
   documentTypeIds: z.array(z.string().uuid()).min(1),
 });
@@ -55,6 +56,7 @@ export const inviteUserAccess = createServerFn({ method: "POST" })
     } else {
       const created = await supabaseAdmin.auth.admin.createUser({
         email: data.email,
+        password: data.password,
         email_confirm: true,
         user_metadata: { full_name: data.fullName },
       });

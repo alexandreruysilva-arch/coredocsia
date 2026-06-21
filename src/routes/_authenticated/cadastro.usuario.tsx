@@ -50,6 +50,7 @@ export const Route = createFileRoute("/_authenticated/cadastro/usuario")({
 const formSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().trim().min(1, "Informe o nome").max(150),
+  password: z.string().max(72).optional().or(z.literal("")),
   companyId: z.string().uuid("Selecione a empresa"),
   documentTypeIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um tipo"),
 });
@@ -81,6 +82,7 @@ interface EditingCtx {
 const emptyForm: FormVals = {
   email: "",
   fullName: "",
+  password: "",
   companyId: "",
   documentTypeIds: [],
 };
@@ -169,15 +171,20 @@ function UsuarioPage() {
   }, [access.data]);
 
   const invite = useMutation({
-    mutationFn: async (vals: FormVals) =>
-      inviteFn({
+    mutationFn: async (vals: FormVals) => {
+      if (!vals.password || vals.password.length < 6) {
+        throw new Error("A senha deve ter pelo menos 6 caracteres");
+      }
+      return inviteFn({
         data: {
           email: vals.email.trim(),
           fullName: vals.fullName.trim(),
+          password: vals.password,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Usuário cadastrado");
       queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
@@ -403,6 +410,22 @@ function UsuarioPage() {
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
+            {!editing && (
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Senha *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={form.password ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Empresa *</Label>
               <Select
