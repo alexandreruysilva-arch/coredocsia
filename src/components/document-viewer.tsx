@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Maximize2 } from "lucide-react";
+import { Download, FileText, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
@@ -10,6 +10,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
   const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -19,13 +20,17 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
     setLoading(true);
     setUrl(null);
     setFileData(null);
+    setError(null);
 
     getFileUrl(doc.id)
       .then(async (viewUrl) => {
         if (!viewUrl) throw new Error("Sessão não encontrada");
 
         const response = await fetch(viewUrl);
-        if (!response.ok) throw new Error(`Falha ao carregar arquivo (${response.status})`);
+        if (!response.ok) {
+          const message = await response.text().catch(() => "");
+          throw new Error(message || `Falha ao carregar arquivo (${response.status})`);
+        }
 
         const data = await response.arrayBuffer();
         const blob = new Blob([data], { type: doc.mime_type || "application/octet-stream" });
@@ -39,8 +44,12 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         setUrl(objectUrl);
         setFileData(data);
       })
-      .catch(() => {
-        if (active) setUrl(null);
+      .catch((err) => {
+        if (active) {
+          setUrl(null);
+          setFileData(null);
+          setError(err instanceof Error ? err.message : "Falha ao carregar arquivo");
+        }
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -88,14 +97,34 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           )}
         </div>
       </div>
-      <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+      {error ? (
+        <div className="flex-1 grid place-items-center p-6 text-center text-muted-foreground">
+          <div>
+            <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
+            <p className="text-sm">Não foi possível carregar a pré-visualização.</p>
+            <p className="mt-1 text-xs">{error}</p>
+          </div>
+        </div>
+      ) : (
+        <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+      )}
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-card min-w-0">
             <DialogTitle className="text-sm truncate pr-8">{doc.name}</DialogTitle>
             <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
           </div>
-          <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+          {error ? (
+            <div className="flex-1 grid place-items-center p-6 text-center text-muted-foreground">
+              <div>
+                <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
+                <p className="text-sm">Não foi possível carregar a pré-visualização.</p>
+                <p className="mt-1 text-xs">{error}</p>
+              </div>
+            </div>
+          ) : (
+            <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+          )}
         </DialogContent>
       </Dialog>
       {fields && fields.length > 0 && (
