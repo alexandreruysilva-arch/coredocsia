@@ -43,8 +43,8 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
 
-        await page.render({ canvasContext: context, viewport }).promise;
-        await pdf.destroy();
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
+        await loadingTask.destroy();
       } catch {
         if (!cancelled) setFailed(true);
       } finally {
