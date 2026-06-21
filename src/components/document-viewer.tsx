@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
+import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -26,6 +27,15 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
 
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
+
+  const { data: fields } = useDocumentTypeFields(doc.document_type_id);
+  const values = (doc.field_values ?? {}) as Record<string, unknown>;
+  const formatValue = (v: unknown) => {
+    if (v === null || v === undefined || v === "") return "—";
+    if (typeof v === "boolean") return v ? "Sim" : "Não";
+    return String(v);
+  };
+
 
   return (
     <div className="flex flex-col h-full bg-muted/30">
@@ -82,6 +92,21 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
       </div>
+      {fields && fields.length > 0 && (
+        <div className="border-t border-border bg-card p-4 max-h-[40%] overflow-y-auto">
+          <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
+            Campos de indexação
+          </h3>
+          <dl className="grid grid-cols-1 gap-y-2 text-sm">
+            {fields.map((f) => (
+              <div key={f.id} className="flex flex-col">
+                <dt className="text-xs text-muted-foreground">{f.label}</dt>
+                <dd className="font-medium break-words">{formatValue(values[f.field_key])}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </div>
   );
 }
