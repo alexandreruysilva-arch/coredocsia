@@ -129,7 +129,13 @@ function DocumentsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={typeId} onValueChange={setTypeId}>
+            <Select
+              value={typeId}
+              onValueChange={(v) => {
+                setTypeId(v);
+                setFieldFilters({});
+              }}
+            >
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
@@ -143,6 +149,65 @@ function DocumentsPage() {
               </SelectContent>
             </Select>
           </Card>
+
+          {typeId !== "all" && typeFields.length > 0 && (
+            <Card className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Filtrar pelos campos do tipo</h3>
+                {Object.values(fieldFilters).some((v) => v.trim() !== "") && (
+                  <Button size="sm" variant="ghost" onClick={() => setFieldFilters({})}>
+                    Limpar
+                  </Button>
+                )}
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {typeFields.map((f) => {
+                  const val = fieldFilters[f.field_key] ?? "";
+                  const set = (v: string) =>
+                    setFieldFilters((prev) => ({ ...prev, [f.field_key]: v }));
+                  return (
+                    <div key={f.id} className="space-y-1.5">
+                      <Label htmlFor={`ff-${f.id}`} className="text-xs">
+                        {f.label}
+                      </Label>
+                      {f.field_type === "select" && Array.isArray(f.options) ? (
+                        <Select
+                          value={val || "all"}
+                          onValueChange={(v) => set(v === "all" ? "" : v)}
+                        >
+                          <SelectTrigger id={`ff-${f.id}`}>
+                            <SelectValue placeholder="Todos" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todos</SelectItem>
+                            {(f.options as string[]).map((o) => (
+                              <SelectItem key={o} value={o}>
+                                {o}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          id={`ff-${f.id}`}
+                          value={val}
+                          onChange={(e) => set(e.target.value)}
+                          type={
+                            f.field_type === "number"
+                              ? "number"
+                              : f.field_type === "date"
+                              ? "date"
+                              : "text"
+                          }
+                          placeholder={`Filtrar ${f.label.toLowerCase()}`}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
 
           <Card>
             <Table>
