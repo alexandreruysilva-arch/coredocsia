@@ -337,7 +337,7 @@ function UsuarioPage() {
               <TableHead>E-mail</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead>Tipos de Documento</TableHead>
-              <TableHead className="w-24 text-right">Ações</TableHead>
+              <TableHead className="w-40 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
