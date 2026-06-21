@@ -67,7 +67,6 @@ interface AccessRow {
   document_type_id: string;
   companies: { name: string } | null;
   document_types: { name: string } | null;
-  profiles: { full_name: string | null } | null;
 }
 
 const emptyForm: FormVals = {
