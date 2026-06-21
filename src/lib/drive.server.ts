@@ -110,7 +110,7 @@ export async function uploadFileToDrive(params: {
   body.set(tail, head.length + fileBytes.length);
 
   const res = await driveFetch(
-    `/files?uploadType=multipart&fields=id,webViewLink`,
+    `/files?uploadType=multipart&fields=id,webViewLink&${SHARED_DRIVE_PARAMS}`,
     {
       method: "POST",
       headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
@@ -125,12 +125,13 @@ export async function uploadFileToDrive(params: {
 }
 
 export async function deleteDriveFile(fileId: string): Promise<void> {
-  const res = await driveFetch(`/files/${fileId}`, { method: "DELETE" });
+  const res = await driveFetch(`/files/${fileId}?${SHARED_DRIVE_PARAMS}`, { method: "DELETE" });
   if (!res.ok && res.status !== 404) {
     throw new Error(`Falha ao deletar do Drive: ${res.status} ${await res.text()}`);
   }
 }
 
 export async function streamDriveFile(fileId: string): Promise<Response> {
-  return driveFetch(`/files/${fileId}?alt=media`);
+  return driveFetch(`/files/${fileId}?alt=media&${SHARED_DRIVE_PARAMS}`);
+
 }
