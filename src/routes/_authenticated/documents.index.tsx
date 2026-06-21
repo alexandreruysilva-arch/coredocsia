@@ -54,7 +54,7 @@ import { deleteDocumentFromDrive } from "@/lib/drive.functions";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
-export const Route = createFileRoute("/_authenticated/documents")({
+export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,
 });
 
