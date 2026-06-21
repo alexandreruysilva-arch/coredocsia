@@ -96,6 +96,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     data.roles.length > 0 &&
     data.roles.every((r) => r === "viewer");
 
+  const isOperatorOnly =
+    !loading &&
+    !!data &&
+    !data.isPlatformAdmin &&
+    data.roles.length > 0 &&
+    data.roles.every((r) => r === "operator" || r === "viewer") &&
+    data.roles.includes("operator");
+
+  const showSecondary = !isViewerOnly && !isOperatorOnly;
+
   async function handleSignOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -148,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {!isViewerOnly && (
+            {showSecondary && (
               <SidebarGroup>
                 <SidebarGroupLabel>Cadastro</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -186,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SidebarGroup>
             )}
 
-            {!isViewerOnly && (
+            {showSecondary && (
               <SidebarGroup>
                 <SidebarGroupLabel>Configuração</SidebarGroupLabel>
                 <SidebarGroupContent>
@@ -206,7 +216,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SidebarGroup>
             )}
 
-            {!isViewerOnly && (
+            {showSecondary && (
               <SidebarGroup>
                 <SidebarGroupLabel>Conta</SidebarGroupLabel>
                 <SidebarGroupContent>
