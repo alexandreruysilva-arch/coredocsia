@@ -397,6 +397,9 @@ function UsuarioPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{g.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{g.companyName}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {ROLE_OPTIONS.find((r) => r.value === g.role)?.label ?? g.role}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {g.types.map((t) => (
