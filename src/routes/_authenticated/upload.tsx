@@ -175,7 +175,11 @@ function UploadPage() {
   });
 
   function removeItem(id: string) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => {
+      const it = prev.find((i) => i.id === id);
+      if (it) URL.revokeObjectURL(it.previewUrl);
+      return prev.filter((i) => i.id !== id);
+    });
   }
 
   function updateItem(id: string, patch: Partial<QueueItem>) {
