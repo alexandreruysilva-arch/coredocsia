@@ -56,12 +56,14 @@ export interface UploadOptions {
   userId: string;
   name: string;
   documentTypeId: string | null;
+  companyId?: string | null;
+  fieldValues?: Record<string, unknown>;
   tags: string[];
   onProgress?: (pct: number) => void;
 }
 
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
-  const { file, orgId, userId, name, documentTypeId, tags } = opts;
+  const { file, orgId, userId, name, documentTypeId, companyId, fieldValues, tags } = opts;
 
   // 1. Create draft row (server fn needs the id to attach the Drive file).
   const { data: draft, error: insertErr } = await supabase
@@ -74,12 +76,15 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
       mime_type: file.type,
       size_bytes: file.size,
       document_type_id: documentTypeId,
+      company_id: companyId ?? null,
+      field_values: (fieldValues ?? {}) as any,
       tags,
       status: "processing",
     })
     .select("*")
     .single();
   if (insertErr || !draft) throw insertErr ?? new Error("Falha ao criar documento");
+
 
   opts.onProgress?.(10);
 
