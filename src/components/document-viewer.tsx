@@ -47,12 +47,12 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         <div className="flex items-center gap-2">
           {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={url} target="_blank" rel="noreferrer">Abrir</a>
+              <a href={url} target="_blank" rel="noopener noreferrer">Abrir</a>
             </Button>
           )}
           {downloadUrl && (
             <Button asChild size="sm" variant="outline">
-              <a href={downloadUrl} target="_blank" rel="noreferrer">
+              <a href={downloadUrl} download={doc.original_filename}>
                 <Download className="h-4 w-4 mr-1.5" /> Baixar
               </a>
             </Button>
