@@ -66,15 +66,16 @@ function DocumentsPage() {
   const { data: companies = [] } = useCompanies(orgId);
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
 
-  // Restrict the type filter dropdown to allowed types as well.
-  const types =
-    allowedTypeIds === null
-      ? allTypes
-      : allTypes.filter((t) => allowedTypeIds.includes(t.id));
-
   const [search, setSearch] = useState("");
   const [typeId, setTypeId] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string>("all");
+
+  // Restrict types to allowed ones AND to the selected company.
+  const types = allTypes
+    .filter((t) => allowedTypeIds === null || allowedTypeIds.includes(t.id))
+    .filter((t: any) =>
+      companyId === "all" ? true : t.company_id === companyId,
+    );
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
   const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
   const [preview, setPreview] = useState<DocumentRow | null>(null);
