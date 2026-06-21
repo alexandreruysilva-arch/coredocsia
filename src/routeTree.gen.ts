@@ -20,12 +20,12 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedRetentionRouteImport } from './routes/_authenticated/retention'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
-import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated/documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreditsRouteImport } from './routes/_authenticated/credits'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAlterarSenhaRouteImport } from './routes/_authenticated/alterar-senha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedDocumentsIndexRouteImport } from './routes/_authenticated/documents.index'
 import { Route as AuthenticatedDocumentsIdRouteImport } from './routes/_authenticated/documents.$id'
 import { Route as AuthenticatedCadastroUsuarioRouteImport } from './routes/_authenticated/cadastro.usuario'
 import { Route as AuthenticatedCadastroTipoDocumentoRouteImport } from './routes/_authenticated/cadastro.tipo-documento'
@@ -86,11 +86,6 @@ const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -117,11 +112,17 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDocumentsIndexRoute =
+  AuthenticatedDocumentsIndexRouteImport.update({
+    id: '/documents/',
+    path: '/documents/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDocumentsIdRoute =
   AuthenticatedDocumentsIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthenticatedDocumentsRoute,
+    id: '/documents/$id',
+    path: '/documents/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCadastroUsuarioRoute =
   AuthenticatedCadastroUsuarioRouteImport.update({
@@ -156,7 +157,6 @@ export interface FileRoutesByFullPath {
   '/audit': typeof AuthenticatedAuditRoute
   '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/groups': typeof AuthenticatedGroupsRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/retention': typeof AuthenticatedRetentionRoute
@@ -168,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
+  '/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRoutesByTo {
@@ -179,7 +180,6 @@ export interface FileRoutesByTo {
   '/audit': typeof AuthenticatedAuditRoute
   '/credits': typeof AuthenticatedCreditsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/groups': typeof AuthenticatedGroupsRoute
   '/queue': typeof AuthenticatedQueueRoute
   '/retention': typeof AuthenticatedRetentionRoute
@@ -191,6 +191,7 @@ export interface FileRoutesByTo {
   '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
+  '/documents': typeof AuthenticatedDocumentsIndexRoute
   '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRoutesById {
@@ -204,7 +205,6 @@ export interface FileRoutesById {
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/credits': typeof AuthenticatedCreditsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/retention': typeof AuthenticatedRetentionRoute
@@ -216,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/_authenticated/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/_authenticated/documents/$id': typeof AuthenticatedDocumentsIdRoute
+  '/_authenticated/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRouteTypes {
@@ -229,7 +230,6 @@ export interface FileRouteTypes {
     | '/audit'
     | '/credits'
     | '/dashboard'
-    | '/documents'
     | '/groups'
     | '/queue'
     | '/retention'
@@ -241,6 +241,7 @@ export interface FileRouteTypes {
     | '/cadastro/tipo-documento'
     | '/cadastro/usuario'
     | '/documents/$id'
+    | '/documents/'
     | '/api/public/files/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -252,7 +253,6 @@ export interface FileRouteTypes {
     | '/audit'
     | '/credits'
     | '/dashboard'
-    | '/documents'
     | '/groups'
     | '/queue'
     | '/retention'
@@ -264,6 +264,7 @@ export interface FileRouteTypes {
     | '/cadastro/tipo-documento'
     | '/cadastro/usuario'
     | '/documents/$id'
+    | '/documents'
     | '/api/public/files/$id'
   id:
     | '__root__'
@@ -276,7 +277,6 @@ export interface FileRouteTypes {
     | '/_authenticated/audit'
     | '/_authenticated/credits'
     | '/_authenticated/dashboard'
-    | '/_authenticated/documents'
     | '/_authenticated/groups'
     | '/_authenticated/queue'
     | '/_authenticated/retention'
@@ -288,6 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cadastro/tipo-documento'
     | '/_authenticated/cadastro/usuario'
     | '/_authenticated/documents/$id'
+    | '/_authenticated/documents/'
     | '/api/public/files/$id'
   fileRoutesById: FileRoutesById
 }
@@ -378,13 +379,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/documents': {
-      id: '/_authenticated/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof AuthenticatedDocumentsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -420,12 +414,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/documents/': {
+      id: '/_authenticated/documents/'
+      path: '/documents'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof AuthenticatedDocumentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/documents/$id': {
       id: '/_authenticated/documents/$id'
-      path: '/$id'
+      path: '/documents/$id'
       fullPath: '/documents/$id'
       preLoaderRoute: typeof AuthenticatedDocumentsIdRouteImport
-      parentRoute: typeof AuthenticatedDocumentsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cadastro/usuario': {
       id: '/_authenticated/cadastro/usuario'
@@ -458,27 +459,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedDocumentsRouteChildren {
-  AuthenticatedDocumentsIdRoute: typeof AuthenticatedDocumentsIdRoute
-}
-
-const AuthenticatedDocumentsRouteChildren: AuthenticatedDocumentsRouteChildren =
-  {
-    AuthenticatedDocumentsIdRoute: AuthenticatedDocumentsIdRoute,
-  }
-
-const AuthenticatedDocumentsRouteWithChildren =
-  AuthenticatedDocumentsRoute._addFileChildren(
-    AuthenticatedDocumentsRouteChildren,
-  )
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAlterarSenhaRoute: typeof AuthenticatedAlterarSenhaRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedCreditsRoute: typeof AuthenticatedCreditsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRouteWithChildren
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRetentionRoute: typeof AuthenticatedRetentionRoute
@@ -489,6 +475,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCadastroEmpresaRoute: typeof AuthenticatedCadastroEmpresaRoute
   AuthenticatedCadastroTipoDocumentoRoute: typeof AuthenticatedCadastroTipoDocumentoRoute
   AuthenticatedCadastroUsuarioRoute: typeof AuthenticatedCadastroUsuarioRoute
+  AuthenticatedDocumentsIdRoute: typeof AuthenticatedDocumentsIdRoute
+  AuthenticatedDocumentsIndexRoute: typeof AuthenticatedDocumentsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -497,7 +485,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedCreditsRoute: AuthenticatedCreditsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRouteWithChildren,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRetentionRoute: AuthenticatedRetentionRoute,
@@ -509,6 +496,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCadastroTipoDocumentoRoute:
     AuthenticatedCadastroTipoDocumentoRoute,
   AuthenticatedCadastroUsuarioRoute: AuthenticatedCadastroUsuarioRoute,
+  AuthenticatedDocumentsIdRoute: AuthenticatedDocumentsIdRoute,
+  AuthenticatedDocumentsIndexRoute: AuthenticatedDocumentsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
