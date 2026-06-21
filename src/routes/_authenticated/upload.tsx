@@ -14,8 +14,12 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -214,6 +218,8 @@ function UploadPage() {
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const extractFn = useServerFn(extractFieldsWithGemini);
 
   const types = useMemo(() => {
     let list = allTypes;
@@ -280,6 +286,54 @@ function UploadPage() {
       ),
     );
   }
+
+  async function handleAutoFillAll() {
+    if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
+    if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
+
+    const queued = items.filter((i) => i.status === "queued");
+    if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
+
+    setIsExtracting(true);
+    const fieldDefs = fields.map((f) => ({
+      label: f.label,
+      field_key: f.field_key,
+      field_type: f.field_type,
+      options: f.options,
+    }));
+    const fieldsJson = JSON.stringify(fieldDefs);
+
+    let ok = 0;
+    let fail = 0;
+    for (const item of queued) {
+      try {
+        const form = new FormData();
+        form.append("file", item.file);
+        form.append("fields", fieldsJson);
+        const res = (await extractFn({ data: form })) as {
+          values: Record<string, string>;
+        };
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  fieldValues: { ...i.fieldValues, ...res.values },
+                  expanded: true,
+                }
+              : i,
+          ),
+        );
+        ok++;
+      } catch (e: any) {
+        fail++;
+        toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
+      }
+    }
+    setIsExtracting(false);
+    if (ok > 0) toast.success(`Preenchimento IA concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+  }
+
 
   async function handleUploadAll() {
     if (!orgId || !userId) return toast.error("Organização não definida");
@@ -417,12 +471,32 @@ function UploadPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-sm">{items.length} arquivo(s) na fila</h3>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {items.some((i) => i.status === "done") && (
                   <Button size="sm" variant="ghost" onClick={clearDone}>
                     Limpar finalizados
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAutoFillAll}
+                  disabled={
+                    isExtracting ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
+                >
+                  {isExtracting ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
+                  Preencher com IA
+                </Button>
                 <Button
                   size="sm"
                   onClick={handleUploadAll}
