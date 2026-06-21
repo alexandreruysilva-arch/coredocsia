@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     data.roles.every((r) => r === "operator" || r === "viewer") &&
     data.roles.includes("operator");
 
-  const showSecondary = showSecondary && !isOperatorOnly;
+  const showSecondary = !isViewerOnly && !isOperatorOnly;
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
