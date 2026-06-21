@@ -3,27 +3,52 @@ import { Loader2, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
+import { PdfPreview } from "@/components/pdf-preview";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
+    let objectUrl: string | null = null;
+
     setLoading(true);
     setUrl(null);
-    setDownloadUrl(null);
-    Promise.all([getFileUrl(doc.id), getFileUrl(doc.id, { download: true })]).then(([viewUrl, dlUrl]) => {
-      if (!active) return;
-      setUrl(viewUrl);
-      setDownloadUrl(dlUrl);
-      setLoading(false);
-    });
+    setFileData(null);
+
+    getFileUrl(doc.id)
+      .then(async (viewUrl) => {
+        if (!viewUrl) throw new Error("Sessão não encontrada");
+
+        const response = await fetch(viewUrl);
+        if (!response.ok) throw new Error(`Falha ao carregar arquivo (${response.status})`);
+
+        const data = await response.arrayBuffer();
+        const blob = new Blob([data], { type: doc.mime_type || "application/octet-stream" });
+        objectUrl = URL.createObjectURL(blob);
+
+        if (!active) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        setUrl(objectUrl);
+        setFileData(data);
+      })
+      .catch(() => {
+        if (active) setUrl(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [doc.id]);
+  }, [doc.id, doc.mime_type]);
 
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
@@ -47,12 +72,12 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         <div className="flex items-center gap-2">
           {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={url} target="_blank" rel="noopener noreferrer">Abrir</a>
+              <a href={url}>Abrir</a>
             </Button>
           )}
-          {downloadUrl && (
+          {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={downloadUrl} download={doc.original_filename}>
+              <a href={url} download={doc.original_filename}>
                 <Download className="h-4 w-4 mr-1.5" /> Baixar
               </a>
             </Button>
@@ -81,9 +106,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
         {url && isPdf && (
-          <object data={url} type="application/pdf" className="w-full h-full bg-white">
-            <iframe src={url} title={doc.name} className="w-full h-full bg-white" />
-          </object>
+          fileData ? <PdfPreview data={fileData} title={doc.name} /> : null
         )}
         {url && !isImage && !isPdf && (
           <div className="text-center text-muted-foreground p-6">
