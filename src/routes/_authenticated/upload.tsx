@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { PdfPreview } from "@/components/pdf-preview";
 import { useDropzone } from "react-dropzone";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -112,6 +113,21 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
       })}
     </div>
   );
+}
+
+function PdfFilePreview({ file }: { file: File }) {
+  const [data, setData] = useState<ArrayBuffer | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    file.arrayBuffer().then((b) => {
+      if (!cancelled) setData(b);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [file]);
+  if (!data) return <div className="text-xs text-muted-foreground">Carregando PDF…</div>;
+  return <PdfPreview data={data} title={file.name} />;
 }
 
 function UploadPage() {
@@ -415,11 +431,9 @@ function UploadPage() {
                               className="max-h-full max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <iframe
-                              src={item.previewUrl}
-                              title={item.file.name}
-                              className="w-full h-full"
-                            />
+                            <div className="w-full h-full">
+                              <PdfFilePreview file={item.file} />
+                            </div>
                           ) : (
                             <div className="text-xs text-muted-foreground p-4 text-center">
                               Pré-visualização indisponível para este tipo de arquivo.
