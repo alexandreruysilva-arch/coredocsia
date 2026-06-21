@@ -431,11 +431,9 @@ function UploadPage() {
                               className="max-h-full max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <iframe
-                              src={item.previewUrl}
-                              title={item.file.name}
-                              className="w-full h-full"
-                            />
+                            <div className="w-full h-full">
+                              <PdfFilePreview file={item.file} />
+                            </div>
                           ) : (
                             <div className="text-xs text-muted-foreground p-4 text-center">
                               Pré-visualização indisponível para este tipo de arquivo.
