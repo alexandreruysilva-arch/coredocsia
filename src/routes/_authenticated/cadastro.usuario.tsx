@@ -97,6 +97,10 @@ function UsuarioPage() {
   const inviteFn = useServerFn(inviteUserAccess);
   const updateFn = useServerFn(updateUserAccess);
   const listFn = useServerFn(listOrgUserAccess);
+  const deleteFn = useServerFn(deleteUserAccount);
+  const suspendFn = useServerFn(setUserSuspended);
+
+
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<EditingCtx | null>(null);
