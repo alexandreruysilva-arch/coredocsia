@@ -457,7 +457,7 @@ function UploadPage() {
                     {item.status === "done" && (
                       <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                     )}
-                    {fields.length > 0 && item.status !== "done" && (
+                    {!batchMode && fields.length > 0 && item.status !== "done" && (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -484,7 +484,7 @@ function UploadPage() {
                       </Button>
                     )}
                   </div>
-                  {item.expanded && fields.length > 0 && item.status !== "done" && (
+                  {!batchMode && item.expanded && fields.length > 0 && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
                       <FieldEditor
                         fields={fields}
