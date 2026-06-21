@@ -154,6 +154,7 @@ function UsuarioPage() {
         name: string;
         email: string | null;
         companyName: string;
+        suspended: boolean;
         types: { id: string; documentTypeId: string; name: string }[];
       }
     >();
@@ -165,6 +166,7 @@ function UsuarioPage() {
         name: r.full_name,
         email: r.email,
         companyName: r.company_name,
+        suspended: r.suspended,
         types: [],
       };
       entry.types.push({
@@ -176,6 +178,7 @@ function UsuarioPage() {
     });
     return Array.from(map.values());
   }, [access.data]);
+
 
   const invite = useMutation({
     mutationFn: async (vals: FormVals) => {
