@@ -29,7 +29,7 @@ import { useDocumentsList } from "@/hooks/use-documents";
 import { useDocumentTypes } from "@/hooks/use-document-types";
 import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import { useCompanies } from "@/hooks/use-companies";
-import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
+
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents")({
