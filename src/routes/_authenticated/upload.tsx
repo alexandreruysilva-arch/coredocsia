@@ -287,6 +287,54 @@ function UploadPage() {
     );
   }
 
+  async function handleAutoFillAll() {
+    if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
+    if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
+
+    const queued = items.filter((i) => i.status === "queued");
+    if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
+
+    setIsExtracting(true);
+    const fieldDefs = fields.map((f) => ({
+      label: f.label,
+      field_key: f.field_key,
+      field_type: f.field_type,
+      options: f.options,
+    }));
+    const fieldsJson = JSON.stringify(fieldDefs);
+
+    let ok = 0;
+    let fail = 0;
+    for (const item of queued) {
+      try {
+        const form = new FormData();
+        form.append("file", item.file);
+        form.append("fields", fieldsJson);
+        const res = (await extractFn({ data: form })) as {
+          values: Record<string, string>;
+        };
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  fieldValues: { ...i.fieldValues, ...res.values },
+                  expanded: true,
+                }
+              : i,
+          ),
+        );
+        ok++;
+      } catch (e: any) {
+        fail++;
+        toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
+      }
+    }
+    setIsExtracting(false);
+    if (ok > 0) toast.success(`Preenchimento IA concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+  }
+
+
   async function handleUploadAll() {
     if (!orgId || !userId) return toast.error("Organização não definida");
     if (companyId === "none") return toast.error("Selecione a empresa");
