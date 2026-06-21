@@ -2,7 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Eye, X } from "lucide-react";
+import { FolderOpen, Search, Eye, X, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { DocumentViewer } from "@/components/document-viewer";
 import { useProfileBundle } from "@/hooks/use-profile";
@@ -31,6 +44,7 @@ import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
+import { deleteDocumentFromDrive } from "@/lib/drive.functions";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
@@ -57,10 +71,38 @@ function DocumentsPage() {
   const [companyId, setCompanyId] = useState<string>("all");
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState<DocumentRow | null>(null);
+  const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const queryClient = useQueryClient();
+  const deleteFn = useServerFn(deleteDocumentFromDrive);
+
+  const isViewer =
+    !!profile &&
+    profile.roles.length > 0 &&
+    profile.roles.every((r) => r === "viewer");
+  const canDelete = !isViewer;
+
+  async function handleDelete() {
+    if (!toDelete) return;
+    setDeleting(true);
+    try {
+      await deleteFn({ data: { documentId: toDelete.id } });
+      toast.success("Documento excluído");
+      if (preview?.id === toDelete.id) setPreview(null);
+      setToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao excluir");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const { data: typeFields = [] } = useDocumentTypeFields(
     typeId !== "all" ? typeId : null,
   );
+
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
@@ -273,16 +315,31 @@ function DocumentsPage() {
                       })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate({ to: "/documents/$id", params: { id: doc.id } });
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-1" /> Detalhes
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate({ to: "/documents/$id", params: { id: doc.id } });
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" /> Detalhes
+                        </Button>
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setToDelete(doc);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -306,6 +363,31 @@ function DocumentsPage() {
           </div>
         </aside>
       )}
+
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {toDelete?.name} será removido do Google Drive e seus metadados (campos, tags e histórico) serão apagados. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
