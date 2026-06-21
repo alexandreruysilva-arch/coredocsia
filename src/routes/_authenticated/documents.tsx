@@ -27,6 +27,7 @@ import { DocumentViewer } from "@/components/document-viewer";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { useDocumentsList } from "@/hooks/use-documents";
 import { useDocumentTypes } from "@/hooks/use-document-types";
+import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents")({
@@ -37,7 +38,14 @@ function DocumentsPage() {
   const navigate = useNavigate();
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
-  const { data: types = [] } = useDocumentTypes(orgId);
+  const { data: allTypes = [] } = useDocumentTypes(orgId);
+  const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
+
+  // Restrict the type filter dropdown to allowed types as well.
+  const types =
+    allowedTypeIds === null
+      ? allTypes
+      : allTypes.filter((t) => allowedTypeIds.includes(t.id));
 
   const [search, setSearch] = useState("");
   const [typeId, setTypeId] = useState<string>("all");
@@ -48,6 +56,7 @@ function DocumentsPage() {
     status: "processed",
     typeId,
     search: search.length >= 2 ? search : "",
+    allowedTypeIds,
   });
 
   const typeName = (id: string | null) =>
