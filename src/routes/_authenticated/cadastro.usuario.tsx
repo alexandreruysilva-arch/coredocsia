@@ -355,6 +355,7 @@ function UsuarioPage() {
               <TableHead>Usuário</TableHead>
               <TableHead>E-mail</TableHead>
               <TableHead>Empresa</TableHead>
+              <TableHead>Nível</TableHead>
               <TableHead>Tipos de Documento</TableHead>
               <TableHead className="w-40 text-right">Ações</TableHead>
             </TableRow>
