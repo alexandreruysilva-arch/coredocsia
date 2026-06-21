@@ -365,7 +365,6 @@ function DocumentsPage() {
                     data-state={preview?.id === doc.id ? "selected" : undefined}
                     onClick={() => setPreview(doc)}
                   >
-                    <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
                     {typeId !== "all" &&
                       typeFields.map((f) => (
                         <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
@@ -379,6 +378,7 @@ function DocumentsPage() {
                         locale: ptBR,
                       })}
                     </TableCell>
+                    <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
