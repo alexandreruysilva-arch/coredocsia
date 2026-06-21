@@ -410,6 +410,22 @@ function UsuarioPage() {
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
+            {!editing && (
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Senha *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={form.password ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Empresa *</Label>
               <Select
