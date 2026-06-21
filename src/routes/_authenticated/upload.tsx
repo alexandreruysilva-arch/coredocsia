@@ -10,7 +10,6 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -126,8 +125,6 @@ function UploadPage() {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
-  const [defaultTags, setDefaultTags] = useState("");
-  const [defaultValues, setDefaultValues] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
 
   const types = useMemo(() => {
@@ -141,31 +138,28 @@ function UploadPage() {
     docTypeId !== "none" ? docTypeId : null,
   );
 
-  const onDrop = useCallback(
-    (accepted: File[], rejected: any[]) => {
-      rejected.forEach((r) => {
-        toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
-      });
-      setItems((prev) => {
-        const room = MAX_FILES_PER_BATCH - prev.length;
-        if (room <= 0) {
-          toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
-          return prev;
-        }
-        const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
-          id: crypto.randomUUID(),
-          file,
-          status: "queued",
-          progress: 0,
-          fieldValues: { ...defaultValues },
-          tags: defaultTags,
-          expanded: false,
-        }));
-        return [...prev, ...toAdd];
-      });
-    },
-    [defaultValues, defaultTags],
-  );
+  const onDrop = useCallback((accepted: File[], rejected: any[]) => {
+    rejected.forEach((r) => {
+      toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
+    });
+    setItems((prev) => {
+      const room = MAX_FILES_PER_BATCH - prev.length;
+      if (room <= 0) {
+        toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
+        return prev;
+      }
+      const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
+        id: crypto.randomUUID(),
+        file,
+        status: "queued",
+        progress: 0,
+        fieldValues: {},
+        tags: "",
+        expanded: true,
+      }));
+      return [...prev, ...toAdd];
+    });
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -192,17 +186,6 @@ function UploadPage() {
         i.id === id ? { ...i, fieldValues: { ...i.fieldValues, [key]: value } } : i,
       ),
     );
-  }
-
-  function applyDefaultsToAll() {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.status === "queued"
-          ? { ...i, fieldValues: { ...defaultValues }, tags: defaultTags }
-          : i,
-      ),
-    );
-    toast.success("Valores aplicados a todos os arquivos pendentes");
   }
 
   async function handleUploadAll() {
@@ -268,7 +251,7 @@ function UploadPage() {
       <header>
         <h1 className="text-3xl font-display font-bold tracking-tight">Upload de documentos</h1>
         <p className="text-muted-foreground mt-1">
-          Selecione empresa e tipo, preencha valores padrão e ajuste a indexação de cada arquivo.
+          Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
           Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 25 MB cada.
         </p>
       </header>
@@ -282,7 +265,6 @@ function UploadPage() {
               onValueChange={(v) => {
                 setCompanyId(v);
                 setDocTypeId("none");
-                setDefaultValues({});
               }}
             >
               <SelectTrigger>
@@ -304,7 +286,6 @@ function UploadPage() {
               value={docTypeId}
               onValueChange={(v) => {
                 setDocTypeId(v);
-                setDefaultValues({});
               }}
               disabled={companyId === "none"}
             >
@@ -325,43 +306,6 @@ function UploadPage() {
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        {fields.length > 0 && (
-          <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <h3 className="text-sm font-medium">Valores padrão de indexação</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Preencha valores iniciais e ajuste a indexação de cada arquivo conforme
-                  necessário.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {items.some((i) => i.status === "queued") && (
-                  <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
-                    <Copy className="h-3.5 w-3.5 mr-1.5" />
-                    Aplicar a todos
-                  </Button>
-                )}
-              </div>
-            </div>
-            <FieldEditor
-              fields={fields}
-              values={defaultValues}
-              onChange={(k, v) => setDefaultValues((p) => ({ ...p, [k]: v }))}
-              idPrefix="default"
-            />
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <Label>Tags padrão (separadas por vírgula)</Label>
-          <Input
-            value={defaultTags}
-            onChange={(e) => setDefaultTags(e.target.value)}
-            placeholder="ex: jan/2026, cliente-x"
-          />
         </div>
 
         <div
