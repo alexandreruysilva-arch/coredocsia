@@ -82,6 +82,7 @@ interface EditingCtx {
 const emptyForm: FormVals = {
   email: "",
   fullName: "",
+  password: "",
   companyId: "",
   documentTypeIds: [],
 };
