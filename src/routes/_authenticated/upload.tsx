@@ -183,8 +183,12 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
         </Button>
       </div>
       <div
-        className="min-w-full min-h-full flex items-center justify-center origin-center transition-transform"
-        style={{ transform: `scale(${scale})` }}
+        className="origin-top-left transition-transform"
+        style={{
+          transform: `scale(${scale})`,
+          width: `${100 / scale}%`,
+          height: `${100 / scale}%`,
+        }}
       >
         {children}
       </div>
