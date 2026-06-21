@@ -122,12 +122,34 @@ function UsuarioPage() {
       const { data, error } = await supabase
         .from("user_document_access")
         .select(
-          "id, user_id, company_id, document_type_id, companies(name), document_types(name), profiles(full_name)",
+          "id, user_id, company_id, document_type_id, companies(name), document_types(name)",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as AccessRow[];
+    },
+  });
+
+  const userIds = useMemo(
+    () => Array.from(new Set((access.data ?? []).map((r) => r.user_id))),
+    [access.data],
+  );
+
+  const profiles = useQuery({
+    queryKey: ["profiles-by-ids", userIds],
+    enabled: userIds.length > 0,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", userIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((p) => {
+        map[p.id] = p.full_name ?? "—";
+      });
+      return map;
     },
   });
 
@@ -140,15 +162,15 @@ function UsuarioPage() {
       const key = `${r.user_id}:${r.company_id}`;
       const entry = map.get(key) ?? {
         userId: r.user_id,
-        name: r.profiles?.full_name ?? "—",
+        name: profiles.data?.[r.user_id] ?? "—",
         companyName: r.companies?.name ?? "—",
-        types: [],
+        types: [] as { id: string; name: string }[],
       };
       entry.types.push({ id: r.id, name: r.document_types?.name ?? "—" });
       map.set(key, entry);
     });
     return Array.from(map.values());
-  }, [access.data]);
+  }, [access.data, profiles.data]);
 
   const invite = useMutation({
     mutationFn: async (vals: FormVals) =>
