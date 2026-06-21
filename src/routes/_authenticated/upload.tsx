@@ -404,21 +404,50 @@ function UploadPage() {
                       </Button>
                     )}
                   </div>
-                  {item.expanded && fields.length > 0 && item.status !== "done" && (
+                  {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
-                      <FieldEditor
-                        fields={fields}
-                        values={item.fieldValues}
-                        onChange={(k, v) => setItemFieldValue(item.id, k, v)}
-                        idPrefix={item.id}
-                      />
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Tags</Label>
-                        <Input
-                          value={item.tags}
-                          onChange={(e) => updateItem(item.id, { tags: e.target.value })}
-                          placeholder="separadas por vírgula"
-                        />
+                      <div className="grid lg:grid-cols-2 gap-4 pt-2">
+                        <div className="rounded-md border border-border bg-muted/30 overflow-hidden h-[420px] flex items-center justify-center">
+                          {item.file.type.startsWith("image/") ? (
+                            <img
+                              src={item.previewUrl}
+                              alt={item.file.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : item.file.type === "application/pdf" ? (
+                            <iframe
+                              src={item.previewUrl}
+                              title={item.file.name}
+                              className="w-full h-full"
+                            />
+                          ) : (
+                            <div className="text-xs text-muted-foreground p-4 text-center">
+                              Pré-visualização indisponível para este tipo de arquivo.
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-3">
+                          {fields.length > 0 ? (
+                            <FieldEditor
+                              fields={fields}
+                              values={item.fieldValues}
+                              onChange={(k, v) => setItemFieldValue(item.id, k, v)}
+                              idPrefix={item.id}
+                            />
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Selecione um tipo de documento para preencher a indexação.
+                            </p>
+                          )}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Tags</Label>
+                            <Input
+                              value={item.tags}
+                              onChange={(e) => updateItem(item.id, { tags: e.target.value })}
+                              placeholder="separadas por vírgula"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
