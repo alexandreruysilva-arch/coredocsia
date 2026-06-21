@@ -71,10 +71,34 @@ function DocumentsPage() {
   const [companyId, setCompanyId] = useState<string>("all");
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState<DocumentRow | null>(null);
+  const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const { data: typeFields = [] } = useDocumentTypeFields(
-    typeId !== "all" ? typeId : null,
-  );
+  const queryClient = useQueryClient();
+  const deleteFn = useServerFn(deleteDocumentFromDrive);
+
+  const isViewer =
+    !!profile &&
+    profile.roles.length > 0 &&
+    profile.roles.every((r) => r === "viewer");
+  const canDelete = !isViewer;
+
+  async function handleDelete() {
+    if (!toDelete) return;
+    setDeleting(true);
+    try {
+      await deleteFn({ data: { documentId: toDelete.id } });
+      toast.success("Documento excluído");
+      if (preview?.id === toDelete.id) setPreview(null);
+      setToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Falha ao excluir");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
