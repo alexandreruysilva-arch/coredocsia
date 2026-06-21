@@ -156,9 +156,6 @@ function DocumentsPage() {
           </header>
 
           <Card className="p-4 flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-[240px] hidden">
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
             <Select value={companyId} onValueChange={setCompanyId}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Empresa" />
