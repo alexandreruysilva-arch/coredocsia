@@ -55,9 +55,9 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
-  tags: string;
   expanded: boolean;
 }
+
 
 interface FieldEditorProps {
   fields: DocTypeField[];
@@ -238,9 +238,9 @@ function UploadPage() {
         status: "queued",
         progress: 0,
         fieldValues: {},
-        tags: "",
         expanded: true,
       }));
+
       return [...prev, ...toAdd];
     });
   }, []);
@@ -304,10 +304,6 @@ function UploadPage() {
       }
       updateItem(item.id, { status: "uploading", progress: 0 });
       try {
-        const tags = item.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
         await uploadDocument({
           file: item.file,
           orgId,
@@ -316,9 +312,9 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
-          tags,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
+
         updateItem(item.id, { status: "done", progress: 100 });
       } catch (e: any) {
         updateItem(item.id, { status: "error", error: e.message ?? "Erro" });
@@ -519,14 +515,6 @@ function UploadPage() {
                               Selecione um tipo de documento para preencher a indexação.
                             </p>
                           )}
-                          <div className="space-y-1.5">
-                            <Label className="text-xs">Tags</Label>
-                            <Input
-                              value={item.tags}
-                              onChange={(e) => updateItem(item.id, { tags: e.target.value })}
-                              placeholder="separadas por vírgula"
-                            />
-                          </div>
                         </div>
                       </div>
                     </div>

@@ -59,12 +59,13 @@ export interface UploadOptions {
   documentTypeId: string;
   companyId: string;
   fieldValues?: Record<string, unknown>;
-  tags: string[];
+  tags?: string[];
   onProgress?: (pct: number) => void;
 }
 
+
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
-  const { file, name, documentTypeId, companyId, fieldValues, tags } = opts;
+  const { file, name, documentTypeId, companyId, fieldValues, tags = [] } = opts;
 
   opts.onProgress?.(10);
 
@@ -83,5 +84,6 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   opts.onProgress?.(100);
   return row as DocumentRow;
 }
+
 
 
