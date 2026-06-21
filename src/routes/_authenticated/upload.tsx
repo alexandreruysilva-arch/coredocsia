@@ -485,15 +485,15 @@ function UploadPage() {
                   {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
                       <div className="grid lg:grid-cols-2 gap-4 pt-2">
-                        <div className="rounded-md border border-border bg-muted/30 overflow-hidden h-[420px] flex items-center justify-center">
+                        <ZoomablePreview>
                           {item.file.type.startsWith("image/") ? (
                             <img
                               src={item.previewUrl}
                               alt={item.file.name}
-                              className="max-h-full max-w-full object-contain"
+                              className="max-h-[420px] max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <div className="w-full h-full">
+                            <div className="w-[800px] h-[420px]">
                               <PdfFilePreview file={item.file} />
                             </div>
                           ) : (
@@ -501,7 +501,7 @@ function UploadPage() {
                               Pré-visualização indisponível para este tipo de arquivo.
                             </div>
                           )}
-                        </div>
+                        </ZoomablePreview>
                         <div className="space-y-3">
                           {fields.length > 0 ? (
                             <FieldEditor
