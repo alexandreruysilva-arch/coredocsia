@@ -134,7 +134,7 @@ function PdfFilePreview({ file }: { file: File }) {
 }
 
 interface ZoomablePreviewProps {
-  children: React.ReactNode;
+  children: ReactNode;
   initialScale?: number;
 }
 
