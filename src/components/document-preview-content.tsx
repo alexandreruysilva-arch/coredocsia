@@ -14,7 +14,7 @@ export function DocumentPreviewContent({ doc, url, fileData, loading }: Document
   const isPdf = doc.mime_type === "application/pdf";
 
   return (
-    <div className="flex-1 overflow-hidden grid place-items-center relative min-h-0">
+    <div className="flex-1 h-full w-full overflow-hidden grid place-items-center relative min-h-0">
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/30 z-10">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
