@@ -27,11 +27,13 @@ async function driveFetch(path: string, init: RequestInit = {}, base = GATEWAY):
   return res;
 }
 
+const SHARED_DRIVE_PARAMS = "supportsAllDrives=true&includeItemsFromAllDrives=true";
+
 async function findFolderByAppProperty(key: string, value: string): Promise<string | null> {
   const q = encodeURIComponent(
     `mimeType='application/vnd.google-apps.folder' and trashed=false and appProperties has { key='${key}' and value='${value}' }`
   );
-  const res = await driveFetch(`/files?q=${q}&fields=files(id)&spaces=drive`);
+  const res = await driveFetch(`/files?q=${q}&fields=files(id)&corpora=allDrives&${SHARED_DRIVE_PARAMS}`);
   if (!res.ok) return null;
   const json = (await res.json()) as { files?: Array<{ id: string }> };
   return json.files?.[0]?.id ?? null;
@@ -44,7 +46,7 @@ async function createFolder(name: string, parentId: string | null, appProperties
     appProperties,
   };
   if (parentId) body.parents = [parentId];
-  const res = await driveFetch("/files?fields=id", {
+  const res = await driveFetch(`/files?fields=id&${SHARED_DRIVE_PARAMS}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -55,6 +57,7 @@ async function createFolder(name: string, parentId: string | null, appProperties
   const created = (await res.json()) as { id: string };
   return created.id;
 }
+
 
 export async function ensureOrgFolder(orgId: string, orgName: string): Promise<string> {
   const existing = await findFolderByAppProperty("lovableOrgId", orgId);
@@ -107,7 +110,7 @@ export async function uploadFileToDrive(params: {
   body.set(tail, head.length + fileBytes.length);
 
   const res = await driveFetch(
-    `/files?uploadType=multipart&fields=id,webViewLink`,
+    `/files?uploadType=multipart&fields=id,webViewLink&${SHARED_DRIVE_PARAMS}`,
     {
       method: "POST",
       headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
@@ -122,12 +125,13 @@ export async function uploadFileToDrive(params: {
 }
 
 export async function deleteDriveFile(fileId: string): Promise<void> {
-  const res = await driveFetch(`/files/${fileId}`, { method: "DELETE" });
+  const res = await driveFetch(`/files/${fileId}?${SHARED_DRIVE_PARAMS}`, { method: "DELETE" });
   if (!res.ok && res.status !== 404) {
     throw new Error(`Falha ao deletar do Drive: ${res.status} ${await res.text()}`);
   }
 }
 
 export async function streamDriveFile(fileId: string): Promise<Response> {
-  return driveFetch(`/files/${fileId}?alt=media`);
+  return driveFetch(`/files/${fileId}?alt=media&${SHARED_DRIVE_PARAMS}`);
+
 }
