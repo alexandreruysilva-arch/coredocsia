@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { uploadDocumentToDrive } from "./drive.functions";
+
 
 export type DocStatus = Database["public"]["Enums"]["doc_status"];
 export type DocumentRow = Database["public"]["Tables"]["documents"]["Row"];
@@ -36,18 +36,28 @@ export const STATUS_LABEL: Record<DocStatus, string> = {
 };
 
 /**
- * Returns a URL the browser can use to view/download the file. The file is
- * streamed from Google Drive via our authenticated /api/files/:id route.
- * Uses the current Supabase session token as a short-lived query param so
- * <iframe>/<img> elements (which can't send Authorization headers) still work.
+ * Returns a signed URL for the file stored in Supabase Storage (private
+ * bucket "documents"). The URL is valid for 1 hour and can be used directly
+ * by <img>/<iframe> tags.
  */
-export async function getFileUrl(documentId: string, opts: { download?: boolean } = {}): Promise<string | null> {
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
-  if (!token) return null;
-  const params = new URLSearchParams({ token });
-  if (opts.download) params.set("download", "1");
-  return `/api/files/${documentId}?${params.toString()}`;
+export async function getFileUrl(
+  documentId: string,
+  opts: { download?: boolean } = {},
+): Promise<string | null> {
+  const { data: doc, error } = await supabase
+    .from("documents")
+    .select("storage_path, original_filename")
+    .eq("id", documentId)
+    .maybeSingle();
+  if (error || !doc?.storage_path) return null;
+
+  const { data, error: signErr } = await supabase.storage
+    .from("documents")
+    .createSignedUrl(doc.storage_path, 3600, {
+      download: opts.download ? doc.original_filename : false,
+    });
+  if (signErr || !data) return null;
+  return data.signedUrl;
 }
 
 export interface UploadOptions {
@@ -65,8 +75,25 @@ export interface UploadOptions {
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
   const { file, orgId, userId, name, documentTypeId, companyId, fieldValues, tags } = opts;
 
-  // 1. Create draft row (server fn needs the id to attach the Drive file).
-  const { data: draft, error: insertErr } = await supabase
+  opts.onProgress?.(10);
+
+  // 1. Upload binary to Supabase Storage (private bucket).
+  const ext = file.name.includes(".") ? file.name.split(".").pop() : "";
+  const objectName = `${crypto.randomUUID()}${ext ? "." + ext : ""}`;
+  const storagePath = `${orgId}/${objectName}`;
+
+  const { error: upErr } = await supabase.storage
+    .from("documents")
+    .upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+  if (upErr) throw upErr;
+
+  opts.onProgress?.(80);
+
+  // 2. Create the document row pointing at the uploaded object.
+  const { data: row, error: insertErr } = await supabase
     .from("documents")
     .insert({
       org_id: orgId,
@@ -79,27 +106,19 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
       company_id: companyId ?? null,
       field_values: (fieldValues ?? {}) as any,
       tags,
-      status: "processing",
+      storage_path: storagePath,
+      status: "processed",
     })
     .select("*")
     .single();
-  if (insertErr || !draft) throw insertErr ?? new Error("Falha ao criar documento");
 
-
-  opts.onProgress?.(10);
-
-  // 2. Upload to Google Drive via server fn.
-  const form = new FormData();
-  form.append("file", file, file.name);
-  form.append("documentId", draft.id);
-
-  try {
-    const final = await uploadDocumentToDrive({ data: form });
-    opts.onProgress?.(100);
-    // Use type assertion for the returned value since server functions are wrapped
-    return final as any as DocumentRow;
-  } catch (err) {
-    // Server fn already marks the doc as failed; surface the message.
-    throw err instanceof Error ? err : new Error(String(err));
+  if (insertErr || !row) {
+    // Roll back the orphan storage object.
+    await supabase.storage.from("documents").remove([storagePath]).catch(() => {});
+    throw insertErr ?? new Error("Falha ao criar documento");
   }
+
+  opts.onProgress?.(100);
+  return row;
 }
+
