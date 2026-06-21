@@ -89,6 +89,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const isActive = (to: string) => pathname === to || pathname.startsWith(to + "/");
 
+  const isViewerOnly =
+    !loading &&
+    !!data &&
+    !data.isPlatformAdmin &&
+    data.roles.length > 0 &&
+    data.roles.every((r) => r === "viewer");
+
   async function handleSignOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -102,6 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     .map((p) => p[0])
     .join("")
     .toUpperCase();
+
 
   return (
     <SidebarProvider>
