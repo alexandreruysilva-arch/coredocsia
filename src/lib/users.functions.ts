@@ -53,11 +53,13 @@ export const inviteUserAccess = createServerFn({ method: "POST" })
     if (found) {
       targetUserId = found.id;
     } else {
-      const created = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
-        data: { full_name: data.fullName },
+      const created = await supabaseAdmin.auth.admin.createUser({
+        email: data.email,
+        email_confirm: true,
+        user_metadata: { full_name: data.fullName },
       });
       if (created.error || !created.data.user) {
-        throw new Error(created.error?.message ?? "Falha ao convidar usuário");
+        throw new Error(created.error?.message ?? "Falha ao criar usuário");
       }
       targetUserId = created.data.user.id;
     }
