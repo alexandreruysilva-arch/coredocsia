@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Eye, X, Trash2, Loader2, Plus } from "lucide-react";
+import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
