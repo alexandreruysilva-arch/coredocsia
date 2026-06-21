@@ -152,6 +152,7 @@ function UploadPage() {
       const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
         id: crypto.randomUUID(),
         file,
+        previewUrl: URL.createObjectURL(file),
         status: "queued",
         progress: 0,
         fieldValues: {},
