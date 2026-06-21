@@ -389,7 +389,7 @@ function DocumentsPage() {
                             navigate({ to: "/documents/$id", params: { id: doc.id } });
                           }}
                         >
-                          <Eye className="h-4 w-4 mr-1" /> Detalhes
+                          <Pencil className="h-4 w-4 mr-1" /> Editar
                         </Button>
                         {canDelete && (
                           <Button
