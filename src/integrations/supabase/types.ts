@@ -168,12 +168,14 @@ export type Database = {
       }
       documents: {
         Row: {
+          company_id: string | null
           created_at: string
           deleted_at: string | null
           document_type_id: string | null
           drive_file_id: string | null
           drive_web_view_link: string | null
           error_message: string | null
+          field_values: Json
           id: string
           mime_type: string
           name: string
@@ -188,12 +190,14 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           deleted_at?: string | null
           document_type_id?: string | null
           drive_file_id?: string | null
           drive_web_view_link?: string | null
           error_message?: string | null
+          field_values?: Json
           id?: string
           mime_type: string
           name: string
@@ -208,12 +212,14 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           deleted_at?: string | null
           document_type_id?: string | null
           drive_file_id?: string | null
           drive_web_view_link?: string | null
           error_message?: string | null
+          field_values?: Json
           id?: string
           mime_type?: string
           name?: string
@@ -228,6 +234,13 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "documents_document_type_id_fkey"
             columns: ["document_type_id"]
