@@ -45,7 +45,7 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     if (!userId) throw new Error("Usuário não autenticado");
     const { file, name, companyId, documentTypeId, tags, fieldValues } = data;
 
-    const { ensureOrgFolder, ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
+    const { ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
       await import("./drive.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -65,29 +65,16 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     if (dtErr || !docType) throw new Error("Tipo de documento não encontrado");
     if (docType.org_id !== company.org_id) throw new Error("Tipo de documento de outra organização");
 
-    // 2. Garante pasta da organização.
-    const { data: org } = await supabaseAdmin
-      .from("organizations")
-      .select("id, name, drive_folder_id")
-      .eq("id", company.org_id)
-      .single();
-    if (!org) throw new Error("Organização não encontrada");
-
-    let orgFolderId = org.drive_folder_id;
-    if (!orgFolderId) {
-      orgFolderId = await ensureOrgFolder(org.id, org.name);
-      await supabaseAdmin.from("organizations").update({ drive_folder_id: orgFolderId }).eq("id", org.id);
-    }
-
-    // 3. Garante pasta da empresa.
+    // 2. Garante pasta da empresa na raiz do Drive: "Lovable - <Empresa>".
     let companyFolderId = company.drive_folder_id;
     if (!companyFolderId) {
-      companyFolderId = await ensureCompanyFolder(orgFolderId, company.id, company.name);
+      companyFolderId = await ensureCompanyFolder(null, company.id, company.name);
       await supabaseAdmin
         .from("companies")
         .update({ drive_folder_id: companyFolderId })
         .eq("id", company.id);
     }
+
 
     // 4. Garante pasta do tipo de documento (cache global no tipo, mas única por empresa via scopeKey).
     const scopeKey = `${company.id}:${docType.id}`;
