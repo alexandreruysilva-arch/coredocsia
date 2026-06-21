@@ -168,6 +168,7 @@ function UsuarioPage() {
         email: string | null;
         companyName: string;
         suspended: boolean;
+        role: Role;
         types: { id: string; documentTypeId: string; name: string }[];
       }
     >();
@@ -180,6 +181,7 @@ function UsuarioPage() {
         email: r.email,
         companyName: r.company_name,
         suspended: r.suspended,
+        role: r.role,
         types: [],
       };
       entry.types.push({
