@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
-import { uploadDocumentToDrive } from "./drive.functions";
+
 
 export type DocStatus = Database["public"]["Enums"]["doc_status"];
 export type DocumentRow = Database["public"]["Tables"]["documents"]["Row"];
