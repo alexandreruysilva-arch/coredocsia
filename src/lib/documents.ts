@@ -62,7 +62,10 @@ export async function getFileUrl(
   }
 
   // Legacy fallback: documents uploaded before storage migration live on Drive.
-  return doc.drive_web_view_link ?? null;
+  // Use the /preview endpoint which is embeddable in iframes.
+  const link = doc.drive_web_view_link;
+  if (!link) return null;
+  return link.replace("/view", "/preview");
 }
 
 export interface UploadOptions {
