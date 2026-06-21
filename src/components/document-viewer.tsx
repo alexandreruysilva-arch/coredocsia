@@ -71,11 +71,9 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
         {url && isPdf && (
-          <iframe 
-            src={url} 
-            title={doc.name} 
-            className={`w-full h-full bg-white transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`} 
-          />
+          <object data={url} type="application/pdf" className="w-full h-full bg-white">
+            <iframe src={url} title={doc.name} className="w-full h-full bg-white" />
+          </object>
         )}
         {url && !isImage && !isPdf && (
           <div className="text-center text-muted-foreground p-6">
