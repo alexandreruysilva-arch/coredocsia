@@ -92,6 +92,21 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           </div>
         )}
       </div>
+      {fields && fields.length > 0 && (
+        <div className="border-t border-border bg-card p-4 max-h-[40%] overflow-y-auto">
+          <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
+            Campos de indexação
+          </h3>
+          <dl className="grid grid-cols-1 gap-y-2 text-sm">
+            {fields.map((f) => (
+              <div key={f.id} className="flex flex-col">
+                <dt className="text-xs text-muted-foreground">{f.label}</dt>
+                <dd className="font-medium break-words">{formatValue(values[f.field_key])}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </div>
   );
 }
