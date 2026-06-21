@@ -205,6 +205,7 @@ function UsuarioPage() {
           email: vals.email.trim(),
           fullName: vals.fullName.trim(),
           password: vals.password,
+          role: vals.role,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
