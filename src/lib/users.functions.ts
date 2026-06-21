@@ -157,7 +157,10 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     const userIds = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
-    const profilesById = new Map<string, { fullName: string; email: string | null }>();
+    const profilesById = new Map<
+      string,
+      { fullName: string; email: string | null; suspended: boolean }
+    >();
 
     if (userIds.length > 0) {
       const { data: profs } = await supabaseAdmin
@@ -165,16 +168,18 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
         .select("id, full_name")
         .in("id", userIds);
       (profs ?? []).forEach((p: any) =>
-        profilesById.set(p.id, { fullName: p.full_name ?? "—", email: null }),
+        profilesById.set(p.id, { fullName: p.full_name ?? "—", email: null, suspended: false }),
       );
 
-      // Augment with auth emails.
+      // Augment with auth emails + suspension status.
       const list = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
       if (!list.error) {
         list.data.users.forEach((u) => {
           if (userIds.includes(u.id)) {
-            const cur = profilesById.get(u.id) ?? { fullName: "—", email: null };
-            profilesById.set(u.id, { ...cur, email: u.email ?? null });
+            const cur = profilesById.get(u.id) ?? { fullName: "—", email: null, suspended: false };
+            const banned = (u as any).banned_until;
+            const isSuspended = !!banned && new Date(banned).getTime() > Date.now();
+            profilesById.set(u.id, { ...cur, email: u.email ?? null, suspended: isSuspended });
           }
         });
       }
@@ -189,6 +194,7 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       document_type_name: r.document_types?.name ?? "—",
       full_name: profilesById.get(r.user_id)?.fullName ?? "—",
       email: profilesById.get(r.user_id)?.email ?? null,
+      suspended: profilesById.get(r.user_id)?.suspended ?? false,
     }));
   });
 
