@@ -28,6 +28,8 @@ import { useProfileBundle } from "@/hooks/use-profile";
 import { useDocumentsList } from "@/hooks/use-documents";
 import { useDocumentTypes } from "@/hooks/use-document-types";
 import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
+import { useCompanies } from "@/hooks/use-companies";
+import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents")({
@@ -39,6 +41,7 @@ function DocumentsPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const { data: allTypes = [] } = useDocumentTypes(orgId);
+  const { data: companies = [] } = useCompanies(orgId);
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
 
   // Restrict the type filter dropdown to allowed types as well.
@@ -49,18 +52,25 @@ function DocumentsPage() {
 
   const [search, setSearch] = useState("");
   const [typeId, setTypeId] = useState<string>("all");
+  const [companyId, setCompanyId] = useState<string>("all");
   const [preview, setPreview] = useState<DocumentRow | null>(null);
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
-    status: "processed",
+    status: "all",
     typeId,
     search: search.length >= 2 ? search : "",
     allowedTypeIds,
   });
 
+  const filteredDocs =
+    companyId === "all" ? docs : docs.filter((d: any) => d.company_id === companyId);
+
   const typeName = (id: string | null) =>
-    id ? types.find((t) => t.id === id)?.name ?? "—" : "—";
+    id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
+  const companyName = (id: string | null | undefined) =>
+    id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
+
 
   return (
     <div className="flex h-full">
