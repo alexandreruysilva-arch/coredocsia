@@ -29,6 +29,8 @@ import { useDocumentsList } from "@/hooks/use-documents";
 import { useDocumentTypes } from "@/hooks/use-document-types";
 import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import { useCompanies } from "@/hooks/use-companies";
+import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
+import { Label } from "@/components/ui/label";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
@@ -53,7 +55,12 @@ function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [typeId, setTypeId] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string>("all");
+  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState<DocumentRow | null>(null);
+
+  const { data: typeFields = [] } = useDocumentTypeFields(
+    typeId !== "all" ? typeId : null,
+  );
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
@@ -63,13 +70,27 @@ function DocumentsPage() {
     allowedTypeIds,
   });
 
-  const filteredDocs =
-    companyId === "all" ? docs : docs.filter((d: any) => d.company_id === companyId);
+  const activeFieldFilters = Object.entries(fieldFilters).filter(
+    ([, v]) => v.trim() !== "",
+  );
+
+  const filteredDocs = docs.filter((d: any) => {
+    if (companyId !== "all" && d.company_id !== companyId) return false;
+    if (activeFieldFilters.length > 0) {
+      const fv = (d.field_values ?? {}) as Record<string, unknown>;
+      for (const [key, val] of activeFieldFilters) {
+        const docVal = String(fv[key] ?? "").toLowerCase();
+        if (!docVal.includes(val.trim().toLowerCase())) return false;
+      }
+    }
+    return true;
+  });
 
   const typeName = (id: string | null) =>
     id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
   const companyName = (id: string | null | undefined) =>
     id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
+
 
 
   return (
