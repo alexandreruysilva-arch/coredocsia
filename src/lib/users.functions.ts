@@ -81,6 +81,17 @@ export const inviteUserAccess = createServerFn({ method: "POST" })
       .from("organization_members")
       .upsert({ org_id: orgId, user_id: targetUserId }, { onConflict: "org_id,user_id" });
 
+    // Replace this user's role in the current org with the selected one.
+    await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", targetUserId!)
+      .eq("org_id", orgId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: targetUserId!, org_id: orgId, role: data.role });
+    if (roleErr) throw new Error(roleErr.message);
+
     const rows = data.documentTypeIds.map((dt) => ({
       org_id: orgId,
       user_id: targetUserId!,
