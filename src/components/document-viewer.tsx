@@ -90,7 +90,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           )}
           {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={url} download={doc.original_filename}>
+              <a href={url} download={doc.original_filename || doc.name}>
                 <Download className="h-4 w-4 mr-1.5" /> Baixar
               </a>
             </Button>
