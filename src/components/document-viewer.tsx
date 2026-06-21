@@ -67,7 +67,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         <div className="flex items-center gap-2">
           {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={url} target="_blank" rel="noopener noreferrer">Abrir</a>
+              <a href={url}>Abrir</a>
             </Button>
           )}
           {url && (
