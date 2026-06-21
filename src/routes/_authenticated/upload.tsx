@@ -471,12 +471,32 @@ function UploadPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-sm">{items.length} arquivo(s) na fila</h3>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {items.some((i) => i.status === "done") && (
                   <Button size="sm" variant="ghost" onClick={clearDone}>
                     Limpar finalizados
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAutoFillAll}
+                  disabled={
+                    isExtracting ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
+                >
+                  {isExtracting ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1" />
+                  )}
+                  Preencher com IA
+                </Button>
                 <Button
                   size="sm"
                   onClick={handleUploadAll}
