@@ -99,6 +99,10 @@ function DocumentsPage() {
     }
   }
 
+  const { data: typeFields = [] } = useDocumentTypeFields(
+    typeId !== "all" ? typeId : null,
+  );
+
 
   const { data: docs = [], isLoading } = useDocumentsList({
     orgId,
