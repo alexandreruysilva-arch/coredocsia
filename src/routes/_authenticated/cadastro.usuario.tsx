@@ -373,7 +373,7 @@ function UsuarioPage() {
               ))
             ) : grouped.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={6} className="text-center py-12">
                   <div className="mx-auto h-12 w-12 rounded-lg bg-accent grid place-items-center mb-3">
                     <Users className="h-6 w-6 text-accent-foreground" />
                   </div>
