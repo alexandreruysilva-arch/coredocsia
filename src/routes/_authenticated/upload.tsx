@@ -244,7 +244,9 @@ function UploadPage() {
       }
       updateItem(item.id, { status: "uploading", progress: 0 });
       try {
-        const tags = item.tags
+        const effectiveValues = batchMode ? defaultValues : item.fieldValues;
+        const effectiveTagsStr = batchMode ? defaultTags : item.tags;
+        const tags = effectiveTagsStr
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean);
@@ -255,7 +257,7 @@ function UploadPage() {
           name: item.file.name,
           documentTypeId: docTypeId,
           companyId,
-          fieldValues: item.fieldValues,
+          fieldValues: effectiveValues,
           tags,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
