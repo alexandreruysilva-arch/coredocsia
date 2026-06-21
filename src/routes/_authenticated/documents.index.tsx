@@ -161,7 +161,15 @@ function DocumentsPage() {
           </header>
 
           <Card className="p-4 flex flex-wrap gap-3">
-            <Select value={companyId} onValueChange={setCompanyId}>
+            <Select
+              value={companyId}
+              onValueChange={(v) => {
+                setCompanyId(v);
+                setTypeId("all");
+                setFieldFilters({});
+                setActiveFieldKeys([]);
+              }}
+            >
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
