@@ -81,17 +81,18 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
               <Textarea
                 id={id}
                 value={val}
-                onChange={(e) => onChange(f.field_key, e.target.value)}
+                onChange={(e) => onChange(f.field_key, e.target.value.toUpperCase())}
                 rows={2}
+                className="uppercase"
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
-              <Select value={val} onValueChange={(v) => onChange(f.field_key, v)}>
-                <SelectTrigger>
+              <Select value={val} onValueChange={(v) => onChange(f.field_key, v.toUpperCase())}>
+                <SelectTrigger className="uppercase">
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
                   {(f.options as string[]).map((o) => (
-                    <SelectItem key={o} value={o}>
+                    <SelectItem key={o} value={o} className="uppercase">
                       {o}
                     </SelectItem>
                   ))}
@@ -101,7 +102,11 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
               <Input
                 id={id}
                 value={val}
-                onChange={(e) => onChange(f.field_key, e.target.value)}
+                onChange={(e) => {
+                  const isText = f.field_type !== "number" && f.field_type !== "date";
+                  onChange(f.field_key, isText ? e.target.value.toUpperCase() : e.target.value);
+                }}
+                className={f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined}
                 type={
                   f.field_type === "number"
                     ? "number"
