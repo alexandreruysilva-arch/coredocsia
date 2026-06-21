@@ -129,6 +129,7 @@ function UploadPage() {
   const [defaultTags, setDefaultTags] = useState("");
   const [defaultValues, setDefaultValues] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [batchMode, setBatchMode] = useState(true);
 
   const types = useMemo(() => {
     let list = allTypes;
@@ -213,13 +214,22 @@ function UploadPage() {
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return;
 
-    // Per-file required validation
-    for (const item of queued) {
+    // In batch mode, apply defaults to every queued item before validating
+    if (batchMode) {
       for (const f of fields) {
-        if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
-          toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
-          updateItem(item.id, { expanded: true });
+        if (f.required && !String(defaultValues[f.field_key] ?? "").trim()) {
+          toast.error(`Campo obrigatório no lote: "${f.label}"`);
           return;
+        }
+      }
+    } else {
+      for (const item of queued) {
+        for (const f of fields) {
+          if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
+            toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
+            updateItem(item.id, { expanded: true });
+            return;
+          }
         }
       }
     }
@@ -234,7 +244,9 @@ function UploadPage() {
       }
       updateItem(item.id, { status: "uploading", progress: 0 });
       try {
-        const tags = item.tags
+        const effectiveValues = batchMode ? defaultValues : item.fieldValues;
+        const effectiveTagsStr = batchMode ? defaultTags : item.tags;
+        const tags = effectiveTagsStr
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean);
@@ -245,7 +257,7 @@ function UploadPage() {
           name: item.file.name,
           documentTypeId: docTypeId,
           companyId,
-          fieldValues: item.fieldValues,
+          fieldValues: effectiveValues,
           tags,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
@@ -330,14 +342,39 @@ function UploadPage() {
 
         {fields.length > 0 && (
           <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Valores padrão de indexação</h3>
-              {items.some((i) => i.status === "queued") && (
-                <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
-                  <Copy className="h-3.5 w-3.5 mr-1.5" />
-                  Aplicar a todos
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-sm font-medium">
+                  {batchMode ? "Indexação em lote (aplicada a todos)" : "Valores padrão de indexação"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {batchMode
+                    ? "Os valores abaixo serão usados em todos os arquivos do lote."
+                    : "Preencha valores padrão e ajuste por arquivo conforme necessário."}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={batchMode ? "default" : "outline"}
+                  onClick={() => setBatchMode(true)}
+                >
+                  Lote
                 </Button>
-              )}
+                <Button
+                  size="sm"
+                  variant={!batchMode ? "default" : "outline"}
+                  onClick={() => setBatchMode(false)}
+                >
+                  Por arquivo
+                </Button>
+                {!batchMode && items.some((i) => i.status === "queued") && (
+                  <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
+                    <Copy className="h-3.5 w-3.5 mr-1.5" />
+                    Aplicar a todos
+                  </Button>
+                )}
+              </div>
             </div>
             <FieldEditor
               fields={fields}
@@ -420,7 +457,7 @@ function UploadPage() {
                     {item.status === "done" && (
                       <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                     )}
-                    {fields.length > 0 && item.status !== "done" && (
+                    {!batchMode && fields.length > 0 && item.status !== "done" && (
                       <Button
                         size="icon"
                         variant="ghost"
@@ -447,7 +484,7 @@ function UploadPage() {
                       </Button>
                     )}
                   </div>
-                  {item.expanded && fields.length > 0 && item.status !== "done" && (
+                  {!batchMode && item.expanded && fields.length > 0 && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
                       <FieldEditor
                         fields={fields}
