@@ -22,6 +22,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          drive_folder_id: string | null
           email: string | null
           id: string
           name: string
@@ -36,6 +37,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          drive_folder_id?: string | null
           email?: string | null
           id?: string
           name: string
@@ -50,6 +52,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          drive_folder_id?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -128,6 +131,7 @@ export type Database = {
         Row: {
           company_id: string | null
           created_at: string
+          drive_folder_id: string | null
           id: string
           name: string
           org_id: string
@@ -136,6 +140,7 @@ export type Database = {
         Insert: {
           company_id?: string | null
           created_at?: string
+          drive_folder_id?: string | null
           id?: string
           name: string
           org_id: string
@@ -144,6 +149,7 @@ export type Database = {
         Update: {
           company_id?: string | null
           created_at?: string
+          drive_folder_id?: string | null
           id?: string
           name?: string
           org_id?: string
