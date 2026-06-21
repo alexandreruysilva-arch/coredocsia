@@ -38,8 +38,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
 import {
+  deleteUserAccount,
   inviteUserAccess,
   listOrgUserAccess,
+  setUserSuspended,
   updateUserAccess,
 } from "@/lib/users.functions";
 
