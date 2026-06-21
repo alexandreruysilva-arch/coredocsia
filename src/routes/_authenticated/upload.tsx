@@ -46,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/upload")({
 interface QueueItem {
   id: string;
   file: File;
+  previewUrl: string;
   status: "queued" | "uploading" | "done" | "error";
   progress: number;
   error?: string;
