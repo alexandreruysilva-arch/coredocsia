@@ -1,89 +1,158 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// Upload via multipart FormData: fields = file, documentId, name, documentTypeId?, tags (comma-sep)
+// Upload via multipart FormData. Server fn cria a hierarquia de pastas
+// (Org → Empresa → Tipo) no Google Drive, faz o upload binário e
+// insere a linha em `documents`. Retorna a row final.
+//
+// Campos esperados:
+//   file              File (obrigatório)
+//   name              string (obrigatório)
+//   companyId         uuid (obrigatório)
+//   documentTypeId    uuid (obrigatório)
+//   tags              string CSV (opcional)
+//   fieldValues       JSON string (opcional)
 export const uploadDocumentToDrive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => {
     if (!(data instanceof FormData)) throw new Error("FormData esperado");
     const file = data.get("file");
-    const documentId = data.get("documentId");
+    const name = data.get("name");
+    const companyId = data.get("companyId");
+    const documentTypeId = data.get("documentTypeId");
+    const tagsRaw = data.get("tags");
+    const fieldValuesRaw = data.get("fieldValues");
     if (!(file instanceof File)) throw new Error("Arquivo ausente");
-    if (typeof documentId !== "string") throw new Error("documentId ausente");
-    return { file, documentId };
+    if (typeof name !== "string" || !name.trim()) throw new Error("Nome ausente");
+    if (typeof companyId !== "string") throw new Error("companyId ausente");
+    if (typeof documentTypeId !== "string") throw new Error("documentTypeId ausente");
+    const tags =
+      typeof tagsRaw === "string" && tagsRaw.trim()
+        ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean)
+        : [];
+    let fieldValues: Record<string, unknown> = {};
+    if (typeof fieldValuesRaw === "string" && fieldValuesRaw.trim()) {
+      try {
+        fieldValues = JSON.parse(fieldValuesRaw) as Record<string, unknown>;
+      } catch {
+        throw new Error("fieldValues inválido");
+      }
+    }
+    return { file, name, companyId, documentTypeId, tags, fieldValues };
   })
-  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { file, documentId } = data;
-
     if (!userId) throw new Error("Usuário não autenticado");
+    const { file, name, companyId, documentTypeId, tags, fieldValues } = data;
 
-    const { ensureOrgFolder, uploadFileToDrive } = await import("./drive.server");
+    const { ensureOrgFolder, ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
+      await import("./drive.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Load doc + verify ownership via RLS-authed client
-    const { data: doc, error: docErr } = await supabase
-      .from("documents")
-      .select("id, org_id, status")
-      .eq("id", documentId)
+    // 1. Verifica empresa + tipo e descobre org_id via RLS.
+    const { data: company, error: compErr } = await supabase
+      .from("companies")
+      .select("id, org_id, name, drive_folder_id")
+      .eq("id", companyId)
       .single();
-    if (docErr || !doc) throw new Error("Documento não encontrado ou sem acesso");
+    if (compErr || !company) throw new Error("Empresa não encontrada ou sem acesso");
 
-    // Get/create org folder
+    const { data: docType, error: dtErr } = await supabase
+      .from("document_types")
+      .select("id, org_id, name, drive_folder_id, company_id")
+      .eq("id", documentTypeId)
+      .single();
+    if (dtErr || !docType) throw new Error("Tipo de documento não encontrado");
+    if (docType.org_id !== company.org_id) throw new Error("Tipo de documento de outra organização");
+
+    // 2. Garante pasta da organização.
     const { data: org } = await supabaseAdmin
       .from("organizations")
       .select("id, name, drive_folder_id")
-      .eq("id", doc.org_id)
+      .eq("id", company.org_id)
       .single();
     if (!org) throw new Error("Organização não encontrada");
 
-    let folderId = org.drive_folder_id;
-    if (!folderId) {
-      folderId = await ensureOrgFolder(org.id, org.name);
-      await supabaseAdmin.from("organizations").update({ drive_folder_id: folderId }).eq("id", org.id);
+    let orgFolderId = org.drive_folder_id;
+    if (!orgFolderId) {
+      orgFolderId = await ensureOrgFolder(org.id, org.name);
+      await supabaseAdmin.from("organizations").update({ drive_folder_id: orgFolderId }).eq("id", org.id);
     }
 
+    // 3. Garante pasta da empresa.
+    let companyFolderId = company.drive_folder_id;
+    if (!companyFolderId) {
+      companyFolderId = await ensureCompanyFolder(orgFolderId, company.id, company.name);
+      await supabaseAdmin
+        .from("companies")
+        .update({ drive_folder_id: companyFolderId })
+        .eq("id", company.id);
+    }
+
+    // 4. Garante pasta do tipo de documento (cache global no tipo, mas única por empresa via scopeKey).
+    const scopeKey = `${company.id}:${docType.id}`;
+    let docTypeFolderId = docType.drive_folder_id;
+    if (!docTypeFolderId) {
+      docTypeFolderId = await ensureDocTypeFolder(companyFolderId, scopeKey, docType.name);
+      await supabaseAdmin
+        .from("document_types")
+        .update({ drive_folder_id: docTypeFolderId })
+        .eq("id", docType.id);
+    }
+
+    // 5. Upload binário.
     const buffer = await file.arrayBuffer();
-    try {
-      const uploaded = await uploadFileToDrive({
-        folderId,
-        filename: file.name,
-        mimeType: file.type || "application/octet-stream",
-        body: buffer,
-        appProperties: { lovableDocumentId: documentId, lovableOrgId: doc.org_id, uploadedBy: userId },
-      });
+    const uploaded = await uploadFileToDrive({
+      folderId: docTypeFolderId,
+      filename: file.name,
+      mimeType: file.type || "application/octet-stream",
+      body: buffer,
+      appProperties: {
+        lovableOrgId: company.org_id,
+        lovableCompanyId: company.id,
+        lovableDocTypeId: docType.id,
+        uploadedBy: userId,
+      },
+    });
 
-      const { data: final, error: updErr } = await supabase
-        .from("documents")
-        .update({
-          status: "processed",
-          drive_file_id: uploaded.id,
-          drive_web_view_link: uploaded.webViewLink ?? null,
-          storage_path: null,
-        })
-        .eq("id", documentId)
-        .select("*")
-        .single();
-      if (updErr || !final) throw updErr ?? new Error("Falha ao finalizar documento");
-      return final;
-    } catch (err) {
-      await supabase
-        .from("documents")
-        .update({ status: "failed", error_message: err instanceof Error ? err.message : String(err) })
-        .eq("id", documentId);
-      throw err;
+    // 6. Cria a linha em documents.
+    const { data: row, error: insertErr } = await supabase
+      .from("documents")
+      .insert({
+        org_id: company.org_id,
+        uploaded_by: userId,
+        name,
+        original_filename: file.name,
+        mime_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+        document_type_id: docType.id,
+        company_id: company.id,
+        field_values: fieldValues as never,
+        tags,
+        storage_path: null,
+        drive_file_id: uploaded.id,
+        drive_web_view_link: uploaded.webViewLink ?? null,
+        status: "processed",
+      })
+      .select("*")
+      .single();
+
+    if (insertErr || !row) {
+      const { deleteDriveFile } = await import("./drive.server");
+      await deleteDriveFile(uploaded.id).catch(() => {});
+      throw insertErr ?? new Error("Falha ao criar documento");
     }
+    return row;
   });
 
 export const deleteDocumentFromDrive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((data: { documentId: string }) => {
     if (!data || typeof data.documentId !== "string") throw new Error("documentId ausente");
     return data;
   })
-  .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-
     if (!userId) throw new Error("Usuário não autenticado");
     const { deleteDriveFile } = await import("./drive.server");
     const { data: doc, error } = await supabase
