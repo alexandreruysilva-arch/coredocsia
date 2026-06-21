@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { streamDriveFile } from "@/lib/drive.server";
 
 export const Route = createFileRoute("/api/public/files/$id")({
   server: {
@@ -41,6 +40,7 @@ export const Route = createFileRoute("/api/public/files/$id")({
           .maybeSingle();
         if (!member) return new Response("Forbidden", { status: 403 });
 
+        const { streamDriveFile } = await import("@/lib/drive.server");
         const driveRes = await streamDriveFile(doc.drive_file_id);
         if (!driveRes.ok || !driveRes.body) {
           return new Response(`Drive error: ${driveRes.status}`, { status: 502 });
