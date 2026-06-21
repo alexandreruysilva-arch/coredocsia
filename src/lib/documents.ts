@@ -37,7 +37,7 @@ export const STATUS_LABEL: Record<DocStatus, string> = {
 
 /**
  * Retorna URL para visualizar/baixar o arquivo. Usa a rota TanStack
- * /api/files/$id que faz proxy autenticado para o Google Drive.
+ * /api/public/files/$id que faz proxy autenticado para o Google Drive.
  */
 export async function getFileUrl(
   documentId: string,
