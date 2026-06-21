@@ -58,7 +58,7 @@ export const inviteUserAccess = createServerFn({ method: "POST" })
         email: data.email,
         password: data.password,
         email_confirm: true,
-        user_metadata: { full_name: data.fullName },
+        user_metadata: { full_name: data.fullName, must_change_password: true },
       });
       if (created.error || !created.data.user) {
         throw new Error(created.error?.message ?? "Falha ao criar usuário");
