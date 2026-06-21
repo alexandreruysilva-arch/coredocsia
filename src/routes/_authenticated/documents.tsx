@@ -76,6 +76,7 @@ function DocumentsPage() {
   const [typeId, setTypeId] = useState<string>("all");
   const [companyId, setCompanyId] = useState<string>("all");
   const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
+  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
   const [preview, setPreview] = useState<DocumentRow | null>(null);
   const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
   const [deleting, setDeleting] = useState(false);
