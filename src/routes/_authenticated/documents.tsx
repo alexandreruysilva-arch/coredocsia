@@ -338,14 +338,21 @@ function DocumentsPage() {
                     4 + (typeId !== "all" ? typeFields.length : 0);
                   return (
                     <>
-                      {isLoading && (
+                      {!filtersSelected && (
+                        <TableRow>
+                          <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
+                            Selecione uma empresa e um tipo de documento para visualizar os resultados.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {filtersSelected && isLoading && (
                         <TableRow>
                           <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
                             Carregando...
                           </TableCell>
                         </TableRow>
                       )}
-                      {!isLoading && filteredDocs.length === 0 && (
+                      {filtersSelected && !isLoading && filteredDocs.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
                             Nenhum documento encontrado.
