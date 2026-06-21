@@ -130,6 +130,17 @@ export const updateUserAccess = createServerFn({ method: "POST" })
         { onConflict: "id" },
       );
 
+    // Replace role for this org.
+    await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("org_id", orgId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.userId, org_id: orgId, role: data.role });
+    if (roleErr) throw new Error(roleErr.message);
+
     // Replace access: delete current and insert new set.
     const { error: delErr } = await supabaseAdmin
       .from("user_document_access")
