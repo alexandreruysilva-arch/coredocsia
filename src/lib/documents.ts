@@ -48,7 +48,7 @@ export async function getFileUrl(
   if (!token) return null;
   const qs = new URLSearchParams({ token });
   if (opts.download) qs.set("download", "1");
-  return `/api/files/${documentId}?${qs.toString()}`;
+  return `/api/public/files/${documentId}?${qs.toString()}`;
 }
 
 export interface UploadOptions {

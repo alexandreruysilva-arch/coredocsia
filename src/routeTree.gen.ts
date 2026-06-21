@@ -26,11 +26,11 @@ import { Route as AuthenticatedCreditsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedAlterarSenhaRouteImport } from './routes/_authenticated/alterar-senha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiFilesIdRouteImport } from './routes/api/files/$id'
 import { Route as AuthenticatedDocumentsIdRouteImport } from './routes/_authenticated/documents.$id'
 import { Route as AuthenticatedCadastroUsuarioRouteImport } from './routes/_authenticated/cadastro.usuario'
 import { Route as AuthenticatedCadastroTipoDocumentoRouteImport } from './routes/_authenticated/cadastro.tipo-documento'
 import { Route as AuthenticatedCadastroEmpresaRouteImport } from './routes/_authenticated/cadastro.empresa'
+import { Route as ApiPublicFilesIdRouteImport } from './routes/api/public/files/$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -117,11 +117,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiFilesIdRoute = ApiFilesIdRouteImport.update({
-  id: '/api/files/$id',
-  path: '/api/files/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedDocumentsIdRoute =
   AuthenticatedDocumentsIdRouteImport.update({
     id: '/$id',
@@ -146,6 +141,11 @@ const AuthenticatedCadastroEmpresaRoute =
     path: '/cadastro/empresa',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicFilesIdRoute = ApiPublicFilesIdRouteImport.update({
+  id: '/api/public/files/$id',
+  path: '/api/public/files/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -168,7 +168,7 @@ export interface FileRoutesByFullPath {
   '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
-  '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -191,7 +191,7 @@ export interface FileRoutesByTo {
   '/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/documents/$id': typeof AuthenticatedDocumentsIdRoute
-  '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -216,7 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/cadastro/tipo-documento': typeof AuthenticatedCadastroTipoDocumentoRoute
   '/_authenticated/cadastro/usuario': typeof AuthenticatedCadastroUsuarioRoute
   '/_authenticated/documents/$id': typeof AuthenticatedDocumentsIdRoute
-  '/api/files/$id': typeof ApiFilesIdRoute
+  '/api/public/files/$id': typeof ApiPublicFilesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -241,7 +241,7 @@ export interface FileRouteTypes {
     | '/cadastro/tipo-documento'
     | '/cadastro/usuario'
     | '/documents/$id'
-    | '/api/files/$id'
+    | '/api/public/files/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -264,7 +264,7 @@ export interface FileRouteTypes {
     | '/cadastro/tipo-documento'
     | '/cadastro/usuario'
     | '/documents/$id'
-    | '/api/files/$id'
+    | '/api/public/files/$id'
   id:
     | '__root__'
     | '/'
@@ -288,7 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cadastro/tipo-documento'
     | '/_authenticated/cadastro/usuario'
     | '/_authenticated/documents/$id'
-    | '/api/files/$id'
+    | '/api/public/files/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -296,7 +296,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ApiFilesIdRoute: typeof ApiFilesIdRoute
+  ApiPublicFilesIdRoute: typeof ApiPublicFilesIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -420,13 +420,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/files/$id': {
-      id: '/api/files/$id'
-      path: '/api/files/$id'
-      fullPath: '/api/files/$id'
-      preLoaderRoute: typeof ApiFilesIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/documents/$id': {
       id: '/_authenticated/documents/$id'
       path: '/$id'
@@ -454,6 +447,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cadastro/empresa'
       preLoaderRoute: typeof AuthenticatedCadastroEmpresaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/files/$id': {
+      id: '/api/public/files/$id'
+      path: '/api/public/files/$id'
+      fullPath: '/api/public/files/$id'
+      preLoaderRoute: typeof ApiPublicFilesIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -519,7 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ApiFilesIdRoute: ApiFilesIdRoute,
+  ApiPublicFilesIdRoute: ApiPublicFilesIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
