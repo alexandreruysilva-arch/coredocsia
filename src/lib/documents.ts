@@ -46,18 +46,26 @@ export async function getFileUrl(
 ): Promise<string | null> {
   const { data: doc, error } = await supabase
     .from("documents")
-    .select("storage_path, original_filename")
+    .select("storage_path, original_filename, drive_web_view_link")
     .eq("id", documentId)
     .maybeSingle();
-  if (error || !doc?.storage_path) return null;
+  if (error || !doc) return null;
 
-  const { data, error: signErr } = await supabase.storage
-    .from("documents")
-    .createSignedUrl(doc.storage_path, 3600, {
-      download: opts.download ? doc.original_filename : false,
-    });
-  if (signErr || !data) return null;
-  return data.signedUrl;
+  if (doc.storage_path) {
+    const { data, error: signErr } = await supabase.storage
+      .from("documents")
+      .createSignedUrl(doc.storage_path, 3600, {
+        download: opts.download ? doc.original_filename : false,
+      });
+    if (signErr || !data) return null;
+    return data.signedUrl;
+  }
+
+  // Legacy fallback: documents uploaded before storage migration live on Drive.
+  // Use the /preview endpoint which is embeddable in iframes.
+  const link = doc.drive_web_view_link;
+  if (!link) return null;
+  return link.replace("/view", "/preview");
 }
 
 export interface UploadOptions {
