@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { Plus, Trash2, Users } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/page-stub";
@@ -37,7 +37,11 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
-import { inviteUserAccess } from "@/lib/users.functions";
+import {
+  inviteUserAccess,
+  listOrgUserAccess,
+  updateUserAccess,
+} from "@/lib/users.functions";
 
 export const Route = createFileRoute("/_authenticated/cadastro/usuario")({
   component: UsuarioPage,
@@ -58,15 +62,20 @@ interface CompanyOpt {
 interface DocTypeOpt {
   id: string;
   name: string;
-  company_id: string | null;
 }
-interface AccessRow {
+interface AccessItem {
   id: string;
   user_id: string;
   company_id: string;
   document_type_id: string;
-  companies: { name: string } | null;
-  document_types: { name: string } | null;
+  company_name: string;
+  document_type_name: string;
+  full_name: string;
+  email: string | null;
+}
+interface EditingCtx {
+  userId: string;
+  companyId: string;
 }
 
 const emptyForm: FormVals = {
@@ -81,8 +90,11 @@ function UsuarioPage() {
   const orgId = profile?.currentOrg?.id ?? null;
   const queryClient = useQueryClient();
   const inviteFn = useServerFn(inviteUserAccess);
+  const updateFn = useServerFn(updateUserAccess);
+  const listFn = useServerFn(listOrgUserAccess);
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<EditingCtx | null>(null);
   const [form, setForm] = useState<FormVals>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof FormVals, string>>>({});
 
@@ -107,7 +119,7 @@ function UsuarioPage() {
     queryFn: async (): Promise<DocTypeOpt[]> => {
       const { data, error } = await supabase
         .from("document_types")
-        .select("id, name, company_id")
+        .select("id, name")
         .eq("company_id", form.companyId)
         .order("name");
       if (error) throw error;
@@ -118,59 +130,43 @@ function UsuarioPage() {
   const access = useQuery({
     queryKey: ["user-access", orgId],
     enabled: !!orgId,
-    queryFn: async (): Promise<AccessRow[]> => {
-      const { data, error } = await supabase
-        .from("user_document_access")
-        .select(
-          "id, user_id, company_id, document_type_id, companies(name), document_types(name)",
-        )
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as AccessRow[];
-    },
-  });
-
-  const userIds = useMemo(
-    () => Array.from(new Set((access.data ?? []).map((r) => r.user_id))),
-    [access.data],
-  );
-
-  const profiles = useQuery({
-    queryKey: ["profiles-by-ids", userIds],
-    enabled: userIds.length > 0,
-    queryFn: async (): Promise<Record<string, string>> => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", userIds);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      (data ?? []).forEach((p) => {
-        map[p.id] = p.full_name ?? "—";
-      });
-      return map;
+    queryFn: async (): Promise<AccessItem[]> => {
+      const res = await listFn();
+      return res as unknown as AccessItem[];
     },
   });
 
   const grouped = useMemo(() => {
     const map = new Map<
       string,
-      { userId: string; name: string; companyName: string; types: { id: string; name: string }[] }
+      {
+        userId: string;
+        companyId: string;
+        name: string;
+        email: string | null;
+        companyName: string;
+        types: { id: string; documentTypeId: string; name: string }[];
+      }
     >();
     (access.data ?? []).forEach((r) => {
       const key = `${r.user_id}:${r.company_id}`;
       const entry = map.get(key) ?? {
         userId: r.user_id,
-        name: profiles.data?.[r.user_id] ?? "—",
-        companyName: r.companies?.name ?? "—",
-        types: [] as { id: string; name: string }[],
+        companyId: r.company_id,
+        name: r.full_name,
+        email: r.email,
+        companyName: r.company_name,
+        types: [],
       };
-      entry.types.push({ id: r.id, name: r.document_types?.name ?? "—" });
+      entry.types.push({
+        id: r.id,
+        documentTypeId: r.document_type_id,
+        name: r.document_type_name,
+      });
       map.set(key, entry);
     });
     return Array.from(map.values());
-  }, [access.data, profiles.data]);
+  }, [access.data]);
 
   const invite = useMutation({
     mutationFn: async (vals: FormVals) =>
@@ -183,11 +179,29 @@ function UsuarioPage() {
         },
       }),
     onSuccess: () => {
-      toast.success("Usuário cadastrado e acessos concedidos");
+      toast.success("Usuário cadastrado");
       queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
-      setOpen(false);
-      setForm(emptyForm);
-      setErrors({});
+      closeDialog();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const update = useMutation({
+    mutationFn: async (vals: FormVals) => {
+      if (!editing) throw new Error("Sem contexto de edição");
+      return updateFn({
+        data: {
+          userId: editing.userId,
+          fullName: vals.fullName.trim(),
+          companyId: vals.companyId,
+          documentTypeIds: vals.documentTypeIds,
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Usuário atualizado");
+      queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
+      closeDialog();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -204,6 +218,44 @@ function UsuarioPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  // When editing and docTypes (re)loads for the selected company,
+  // make sure all already-granted ids are kept selected even if
+  // the docType list arrives after we open the dialog.
+  useEffect(() => {
+    if (!editing || !docTypes.data) return;
+    setForm((f) => {
+      const valid = new Set(docTypes.data!.map((d) => d.id));
+      const filtered = f.documentTypeIds.filter((id) => valid.has(id));
+      return filtered.length === f.documentTypeIds.length ? f : { ...f, documentTypeIds: filtered };
+    });
+  }, [editing, docTypes.data]);
+
+  function openCreate() {
+    setEditing(null);
+    setForm(emptyForm);
+    setErrors({});
+    setOpen(true);
+  }
+
+  function openEdit(g: (typeof grouped)[number]) {
+    setEditing({ userId: g.userId, companyId: g.companyId });
+    setForm({
+      email: g.email ?? "",
+      fullName: g.name,
+      companyId: g.companyId,
+      documentTypeIds: g.types.map((t) => t.documentTypeId),
+    });
+    setErrors({});
+    setOpen(true);
+  }
+
+  function closeDialog() {
+    setOpen(false);
+    setEditing(null);
+    setForm(emptyForm);
+    setErrors({});
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = formSchema.safeParse(form);
@@ -215,7 +267,7 @@ function UsuarioPage() {
       setErrors(fe);
       return;
     }
-    invite.mutate(parsed.data);
+    (editing ? update : invite).mutate(parsed.data);
   }
 
   function toggleType(id: string) {
@@ -227,13 +279,15 @@ function UsuarioPage() {
     }));
   }
 
+  const saving = invite.isPending || update.isPending;
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <PageHeader
         title="Usuário"
         description="Cadastre usuários e vincule a empresa e tipos de documento."
         actions={
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={openCreate}>
             <Plus className="h-4 w-4 mr-2" /> Novo usuário
           </Button>
         }
@@ -244,6 +298,7 @@ function UsuarioPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Usuário</TableHead>
+              <TableHead>E-mail</TableHead>
               <TableHead>Empresa</TableHead>
               <TableHead>Tipos de Documento</TableHead>
               <TableHead className="w-24 text-right">Ações</TableHead>
@@ -253,7 +308,7 @@ function UsuarioPage() {
             {access.isLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 4 }).map((__, j) => (
+                  {Array.from({ length: 5 }).map((__, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-4 w-full" />
                     </TableCell>
@@ -262,7 +317,7 @@ function UsuarioPage() {
               ))
             ) : grouped.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12">
+                <TableCell colSpan={5} className="text-center py-12">
                   <div className="mx-auto h-12 w-12 rounded-lg bg-accent grid place-items-center mb-3">
                     <Users className="h-6 w-6 text-accent-foreground" />
                   </div>
@@ -273,8 +328,9 @@ function UsuarioPage() {
               </TableRow>
             ) : (
               grouped.map((g) => (
-                <TableRow key={`${g.userId}-${g.companyName}`}>
+                <TableRow key={`${g.userId}-${g.companyId}`}>
                   <TableCell className="font-medium">{g.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{g.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{g.companyName}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -296,8 +352,15 @@ function UsuarioPage() {
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground">
-                    {g.types.length} tipo(s)
+                  <TableCell className="text-right">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => openEdit(g)}
+                      aria-label="Editar"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -306,21 +369,14 @@ function UsuarioPage() {
         </Table>
       </div>
 
-      <Dialog
-        open={open}
-        onOpenChange={(o) => {
-          setOpen(o);
-          if (!o) {
-            setForm(emptyForm);
-            setErrors({});
-          }
-        }}
-      >
+      <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : closeDialog())}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Novo usuário</DialogTitle>
+            <DialogTitle>{editing ? "Editar usuário" : "Novo usuário"}</DialogTitle>
             <DialogDescription>
-              O usuário receberá um convite por e-mail e poderá acessar os tipos selecionados.
+              {editing
+                ? "Atualize o nome e os tipos de documento liberados para este usuário."
+                : "O usuário receberá um convite por e-mail e poderá acessar os tipos selecionados."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -343,6 +399,7 @@ function UsuarioPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                disabled={!!editing}
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
@@ -351,8 +408,13 @@ function UsuarioPage() {
               <Select
                 value={form.companyId}
                 onValueChange={(v) =>
-                  setForm((f) => ({ ...f, companyId: v, documentTypeIds: [] }))
+                  setForm((f) => ({
+                    ...f,
+                    companyId: v,
+                    documentTypeIds: editing && v === editing.companyId ? f.documentTypeIds : [],
+                  }))
                 }
+                disabled={!!editing}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione" />
@@ -397,11 +459,11 @@ function UsuarioPage() {
               )}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button type="button" variant="outline" onClick={closeDialog}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={invite.isPending}>
-                {invite.isPending ? "Salvando..." : "Cadastrar"}
+              <Button type="submit" disabled={saving}>
+                {saving ? "Salvando..." : editing ? "Salvar alterações" : "Cadastrar"}
               </Button>
             </DialogFooter>
           </form>
