@@ -62,10 +62,10 @@ export async function ensureOrgFolder(orgId: string, orgName: string): Promise<s
   return createFolder(`Lovable - ${orgName} (${orgId.slice(0, 8)})`, null, { lovableOrgId: orgId });
 }
 
-export async function ensureCompanyFolder(orgFolderId: string, companyId: string, companyName: string): Promise<string> {
+export async function ensureCompanyFolder(orgFolderId: string | null, companyId: string, companyName: string): Promise<string> {
   const existing = await findFolderByAppProperty("lovableCompanyId", companyId);
   if (existing) return existing;
-  return createFolder(companyName, orgFolderId, { lovableCompanyId: companyId });
+  return createFolder(`Lovable - ${companyName}`, orgFolderId, { lovableCompanyId: companyId });
 }
 
 export async function ensureDocTypeFolder(parentFolderId: string, scopeKey: string, docTypeName: string): Promise<string> {
