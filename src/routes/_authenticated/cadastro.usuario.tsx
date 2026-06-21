@@ -519,6 +519,25 @@ function UsuarioPage() {
               </div>
             )}
             <div className="space-y-1.5">
+              <Label>Nível de acesso *</Label>
+              <Select
+                value={form.role}
+                onValueChange={(v) => setForm((f) => ({ ...f, role: v as Role }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLE_OPTIONS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.role && <p className="text-xs text-destructive">{errors.role}</p>}
+            </div>
+            <div className="space-y-1.5">
               <Label>Empresa *</Label>
               <Select
                 value={form.companyId}
