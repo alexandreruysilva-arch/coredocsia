@@ -71,8 +71,23 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         </div>
         <div className="flex items-center gap-2">
           {url && (
-            <Button asChild size="sm" variant="outline">
-              <a href={url}>Abrir</a>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const w = window.open("", "_blank", "noopener,noreferrer");
+                if (!w) return;
+                w.document.title = doc.name;
+                if (isImage) {
+                  w.document.body.style.margin = "0";
+                  w.document.body.innerHTML = `<img src="${url}" style="max-width:100%;height:auto;display:block;margin:auto" />`;
+                } else {
+                  w.document.body.style.margin = "0";
+                  w.document.body.innerHTML = `<embed src="${url}" type="${doc.mime_type}" style="width:100vw;height:100vh" />`;
+                }
+              }}
+            >
+              Abrir
             </Button>
           )}
           {url && (
