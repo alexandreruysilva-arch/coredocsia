@@ -14,8 +14,12 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
