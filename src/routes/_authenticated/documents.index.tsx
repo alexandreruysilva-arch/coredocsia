@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus } from "lucide-react";
 import {
@@ -392,9 +392,13 @@ function DocumentsPage() {
                         </TableCell>
                       ))}
                     <TableCell className="text-sm">{formatBytes(Number(doc.size_bytes))}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(doc.created_at), {
-                        addSuffix: true,
+                    <TableCell
+                      className="text-sm text-muted-foreground"
+                      title={format(new Date(doc.created_at), "PPPp", {
+                        locale: ptBR,
+                      })}
+                    >
+                      {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
                         locale: ptBR,
                       })}
                     </TableCell>
