@@ -183,6 +183,7 @@ function DocumentsPage() {
               onValueChange={(v) => {
                 setTypeId(v);
                 setFieldFilters({});
+                setActiveFieldKeys([]);
               }}
             >
               <SelectTrigger className="w-[220px]">
