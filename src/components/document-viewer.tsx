@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { Loader2, Download, FileText } from "lucide-react";
+import { Download, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
-import { PdfPreview } from "@/components/pdf-preview";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { DocumentPreviewContent } from "@/components/document-preview-content";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
   const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -50,9 +52,6 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
     };
   }, [doc.id, doc.mime_type]);
 
-  const isImage = doc.mime_type.startsWith("image/");
-  const isPdf = doc.mime_type === "application/pdf";
-
   const { data: fields } = useDocumentTypeFields(doc.document_type_id);
   const values = (doc.field_values ?? {}) as Record<string, unknown>;
   const formatValue = (v: unknown) => {
@@ -74,19 +73,9 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => {
-                const w = window.open("", "_blank", "noopener,noreferrer");
-                if (!w) return;
-                w.document.title = doc.name;
-                if (isImage) {
-                  w.document.body.style.margin = "0";
-                  w.document.body.innerHTML = `<img src="${url}" style="max-width:100%;height:auto;display:block;margin:auto" />`;
-                } else {
-                  w.document.body.style.margin = "0";
-                  w.document.body.innerHTML = `<embed src="${url}" type="${doc.mime_type}" style="width:100vw;height:100vh" />`;
-                }
-              }}
+              onClick={() => setExpanded(true)}
             >
+              <Maximize2 className="h-4 w-4 mr-1.5" />
               Abrir
             </Button>
           )}
@@ -99,37 +88,16 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
           )}
         </div>
       </div>
-      <div className="flex-1 overflow-hidden grid place-items-center relative">
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/30 z-10">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-card min-w-0">
+            <DialogTitle className="text-sm truncate pr-8">{doc.name}</DialogTitle>
+            <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
           </div>
-        )}
-        {!loading && !url && (
-          <div className="text-center text-muted-foreground p-6">
-            <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
-            Não foi possível carregar a pré-visualização
-          </div>
-        )}
-        {url && isImage && (
-          <div className="w-full h-full flex items-center justify-center p-4">
-            <img 
-              src={url} 
-              alt={doc.name} 
-              className={`max-w-full max-h-full object-contain shadow-sm transition-opacity duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`} 
-            />
-          </div>
-        )}
-        {url && isPdf && (
-          fileData ? <PdfPreview data={fileData} title={doc.name} /> : null
-        )}
-        {url && !isImage && !isPdf && (
-          <div className="text-center text-muted-foreground p-6">
-            <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
-            Formato sem pré-visualização. Use "Baixar".
-          </div>
-        )}
-      </div>
+          <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+        </DialogContent>
+      </Dialog>
       {fields && fields.length > 0 && (
         <div className="border-t border-border bg-card p-4 max-h-[40%] overflow-y-auto">
           <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
