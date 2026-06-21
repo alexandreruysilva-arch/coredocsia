@@ -75,6 +75,7 @@ interface AccessItem {
   document_type_name: string;
   full_name: string;
   email: string | null;
+  suspended: boolean;
 }
 interface EditingCtx {
   userId: string;
