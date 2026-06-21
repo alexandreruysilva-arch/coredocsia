@@ -171,15 +171,20 @@ function UsuarioPage() {
   }, [access.data]);
 
   const invite = useMutation({
-    mutationFn: async (vals: FormVals) =>
-      inviteFn({
+    mutationFn: async (vals: FormVals) => {
+      if (!vals.password || vals.password.length < 6) {
+        throw new Error("A senha deve ter pelo menos 6 caracteres");
+      }
+      return inviteFn({
         data: {
           email: vals.email.trim(),
           fullName: vals.fullName.trim(),
+          password: vals.password,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Usuário cadastrado");
       queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
