@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Eye, X, Trash2, Loader2, Plus } from "lucide-react";
+import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -389,7 +389,7 @@ function DocumentsPage() {
                             navigate({ to: "/documents/$id", params: { id: doc.id } });
                           }}
                         >
-                          <Eye className="h-4 w-4 mr-1" /> Detalhes
+                          <Pencil className="h-4 w-4 mr-1" /> Editar
                         </Button>
                         {canDelete && (
                           <Button
