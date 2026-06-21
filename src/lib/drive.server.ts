@@ -27,29 +27,52 @@ async function driveFetch(path: string, init: RequestInit = {}, base = GATEWAY):
   return res;
 }
 
-export async function ensureOrgFolder(orgId: string, orgName: string): Promise<string> {
+async function findFolderByAppProperty(key: string, value: string): Promise<string | null> {
   const q = encodeURIComponent(
-    `mimeType='application/vnd.google-apps.folder' and trashed=false and appProperties has { key='lovableOrgId' and value='${orgId}' }`
+    `mimeType='application/vnd.google-apps.folder' and trashed=false and appProperties has { key='${key}' and value='${value}' }`
   );
-  const searchRes = await driveFetch(`/files?q=${q}&fields=files(id,name)&spaces=drive`);
-  if (searchRes.ok) {
-    const json = (await searchRes.json()) as { files?: Array<{ id: string }> };
-    if (json.files && json.files.length > 0) return json.files[0].id;
-  }
-  const createRes = await driveFetch("/files?fields=id", {
+  const res = await driveFetch(`/files?q=${q}&fields=files(id)&spaces=drive`);
+  if (!res.ok) return null;
+  const json = (await res.json()) as { files?: Array<{ id: string }> };
+  return json.files?.[0]?.id ?? null;
+}
+
+async function createFolder(name: string, parentId: string | null, appProperties: Record<string, string>): Promise<string> {
+  const body: Record<string, unknown> = {
+    name,
+    mimeType: "application/vnd.google-apps.folder",
+    appProperties,
+  };
+  if (parentId) body.parents = [parentId];
+  const res = await driveFetch("/files?fields=id", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: `Lovable - ${orgName} (${orgId.slice(0, 8)})`,
-      mimeType: "application/vnd.google-apps.folder",
-      appProperties: { lovableOrgId: orgId },
-    }),
+    body: JSON.stringify(body),
   });
-  if (!createRes.ok) {
-    throw new Error(`Falha ao criar pasta no Drive: ${createRes.status} ${await createRes.text()}`);
+  if (!res.ok) {
+    throw new Error(`Falha ao criar pasta no Drive: ${res.status} ${await res.text()}`);
   }
-  const created = (await createRes.json()) as { id: string };
+  const created = (await res.json()) as { id: string };
   return created.id;
+}
+
+export async function ensureOrgFolder(orgId: string, orgName: string): Promise<string> {
+  const existing = await findFolderByAppProperty("lovableOrgId", orgId);
+  if (existing) return existing;
+  return createFolder(`Lovable - ${orgName} (${orgId.slice(0, 8)})`, null, { lovableOrgId: orgId });
+}
+
+export async function ensureCompanyFolder(orgFolderId: string, companyId: string, companyName: string): Promise<string> {
+  const existing = await findFolderByAppProperty("lovableCompanyId", companyId);
+  if (existing) return existing;
+  return createFolder(companyName, orgFolderId, { lovableCompanyId: companyId });
+}
+
+export async function ensureDocTypeFolder(parentFolderId: string, scopeKey: string, docTypeName: string): Promise<string> {
+  // scopeKey is unique per (company, docType) pair, e.g. `${companyId}:${docTypeId}`.
+  const existing = await findFolderByAppProperty("lovableDocTypeScope", scopeKey);
+  if (existing) return existing;
+  return createFolder(docTypeName, parentFolderId, { lovableDocTypeScope: scopeKey });
 }
 
 export interface DriveUploadResult {
