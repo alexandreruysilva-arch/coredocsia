@@ -2,10 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const roleEnum = z.enum(["org_admin", "operator", "viewer"]);
+
 const inviteSchema = z.object({
   email: z.string().email(),
   fullName: z.string().trim().min(1).max(150),
   password: z.string().min(6).max(72),
+  role: roleEnum,
   companyId: z.string().uuid(),
   documentTypeIds: z.array(z.string().uuid()).min(1),
 });
@@ -13,6 +16,7 @@ const inviteSchema = z.object({
 const updateSchema = z.object({
   userId: z.string().uuid(),
   fullName: z.string().trim().min(1).max(150),
+  role: roleEnum,
   companyId: z.string().uuid(),
   documentTypeIds: z.array(z.string().uuid()).min(1),
 });
@@ -77,6 +81,17 @@ export const inviteUserAccess = createServerFn({ method: "POST" })
       .from("organization_members")
       .upsert({ org_id: orgId, user_id: targetUserId }, { onConflict: "org_id,user_id" });
 
+    // Replace this user's role in the current org with the selected one.
+    await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", targetUserId!)
+      .eq("org_id", orgId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: targetUserId!, org_id: orgId, role: data.role });
+    if (roleErr) throw new Error(roleErr.message);
+
     const rows = data.documentTypeIds.map((dt) => ({
       org_id: orgId,
       user_id: targetUserId!,
@@ -114,6 +129,17 @@ export const updateUserAccess = createServerFn({ method: "POST" })
         { id: data.userId, full_name: data.fullName },
         { onConflict: "id" },
       );
+
+    // Replace role for this org.
+    await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("org_id", orgId);
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: data.userId, org_id: orgId, role: data.role });
+    if (roleErr) throw new Error(roleErr.message);
 
     // Replace access: delete current and insert new set.
     const { error: delErr } = await supabaseAdmin
@@ -185,6 +211,17 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       }
     }
 
+    // Fetch roles per user for this org.
+    const rolesByUser = new Map<string, string>();
+    if (userIds.length > 0) {
+      const { data: rs } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("org_id", orgId)
+        .in("user_id", userIds);
+      (rs ?? []).forEach((r: any) => rolesByUser.set(r.user_id, r.role));
+    }
+
     return (rows ?? []).map((r: any) => ({
       id: r.id,
       user_id: r.user_id,
@@ -195,6 +232,7 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       full_name: profilesById.get(r.user_id)?.fullName ?? "—",
       email: profilesById.get(r.user_id)?.email ?? null,
       suspended: profilesById.get(r.user_id)?.suspended ?? false,
+      role: rolesByUser.get(r.user_id) ?? "viewer",
     }));
   });
 

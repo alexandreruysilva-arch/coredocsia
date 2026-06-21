@@ -49,10 +49,20 @@ export const Route = createFileRoute("/_authenticated/cadastro/usuario")({
   component: UsuarioPage,
 });
 
+const ROLE_OPTIONS = [
+  { value: "org_admin", label: "Administrador" },
+  { value: "operator", label: "Operador" },
+  { value: "viewer", label: "Visualizador" },
+] as const;
+type Role = (typeof ROLE_OPTIONS)[number]["value"];
+
 const formSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().trim().min(1, "Informe o nome").max(150),
   password: z.string().max(72).optional().or(z.literal("")),
+  role: z.enum(["org_admin", "operator", "viewer"], {
+    message: "Selecione o nível de acesso",
+  }),
   companyId: z.string().uuid("Selecione a empresa"),
   documentTypeIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um tipo"),
 });
@@ -76,6 +86,7 @@ interface AccessItem {
   full_name: string;
   email: string | null;
   suspended: boolean;
+  role: Role;
 }
 interface EditingCtx {
   userId: string;
@@ -86,9 +97,11 @@ const emptyForm: FormVals = {
   email: "",
   fullName: "",
   password: "",
+  role: "viewer",
   companyId: "",
   documentTypeIds: [],
 };
+
 
 function UsuarioPage() {
   const { data: profile } = useProfileBundle();
@@ -155,6 +168,7 @@ function UsuarioPage() {
         email: string | null;
         companyName: string;
         suspended: boolean;
+        role: Role;
         types: { id: string; documentTypeId: string; name: string }[];
       }
     >();
@@ -167,6 +181,7 @@ function UsuarioPage() {
         email: r.email,
         companyName: r.company_name,
         suspended: r.suspended,
+        role: r.role,
         types: [],
       };
       entry.types.push({
@@ -190,6 +205,7 @@ function UsuarioPage() {
           email: vals.email.trim(),
           fullName: vals.fullName.trim(),
           password: vals.password,
+          role: vals.role,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
@@ -210,6 +226,7 @@ function UsuarioPage() {
         data: {
           userId: editing.userId,
           fullName: vals.fullName.trim(),
+          role: vals.role,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
@@ -278,6 +295,8 @@ function UsuarioPage() {
     setForm({
       email: g.email ?? "",
       fullName: g.name,
+      password: "",
+      role: g.role,
       companyId: g.companyId,
       documentTypeIds: g.types.map((t) => t.documentTypeId),
     });
@@ -336,6 +355,7 @@ function UsuarioPage() {
               <TableHead>Usuário</TableHead>
               <TableHead>E-mail</TableHead>
               <TableHead>Empresa</TableHead>
+              <TableHead>Nível</TableHead>
               <TableHead>Tipos de Documento</TableHead>
               <TableHead className="w-40 text-right">Ações</TableHead>
             </TableRow>
@@ -353,7 +373,7 @@ function UsuarioPage() {
               ))
             ) : grouped.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={6} className="text-center py-12">
                   <div className="mx-auto h-12 w-12 rounded-lg bg-accent grid place-items-center mb-3">
                     <Users className="h-6 w-6 text-accent-foreground" />
                   </div>
@@ -377,6 +397,9 @@ function UsuarioPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">{g.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{g.companyName}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {ROLE_OPTIONS.find((r) => r.value === g.role)?.label ?? g.role}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {g.types.map((t) => (
@@ -499,6 +522,25 @@ function UsuarioPage() {
                 )}
               </div>
             )}
+            <div className="space-y-1.5">
+              <Label>Nível de acesso *</Label>
+              <Select
+                value={form.role}
+                onValueChange={(v) => setForm((f) => ({ ...f, role: v as Role }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLE_OPTIONS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.role && <p className="text-xs text-destructive">{errors.role}</p>}
+            </div>
             <div className="space-y-1.5">
               <Label>Empresa *</Label>
               <Select
