@@ -211,6 +211,17 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       }
     }
 
+    // Fetch roles per user for this org.
+    const rolesByUser = new Map<string, string>();
+    if (userIds.length > 0) {
+      const { data: rs } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("org_id", orgId)
+        .in("user_id", userIds);
+      (rs ?? []).forEach((r: any) => rolesByUser.set(r.user_id, r.role));
+    }
+
     return (rows ?? []).map((r: any) => ({
       id: r.id,
       user_id: r.user_id,
@@ -221,6 +232,7 @@ export const listOrgUserAccess = createServerFn({ method: "GET" })
       full_name: profilesById.get(r.user_id)?.fullName ?? "—",
       email: profilesById.get(r.user_id)?.email ?? null,
       suspended: profilesById.get(r.user_id)?.suspended ?? false,
+      role: rolesByUser.get(r.user_id) ?? "viewer",
     }));
   });
 
