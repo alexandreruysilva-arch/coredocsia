@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { PdfPreview } from "@/components/pdf-preview";
 import { useDropzone } from "react-dropzone";
 import { createFileRoute } from "@tanstack/react-router";
@@ -11,6 +11,9 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -128,6 +131,65 @@ function PdfFilePreview({ file }: { file: File }) {
   }, [file]);
   if (!data) return <div className="text-xs text-muted-foreground">Carregando PDF…</div>;
   return <PdfPreview data={data} title={file.name} />;
+}
+
+interface ZoomablePreviewProps {
+  children: React.ReactNode;
+  initialScale?: number;
+}
+
+function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
+  const [scale, setScale] = useState(initialScale);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const zoomIn = useCallback(() => setScale((s) => Math.min(s + 0.25, 4)), []);
+  const zoomOut = useCallback(() => setScale((s) => Math.max(s - 0.25, 0.5)), []);
+  const resetZoom = useCallback(() => setScale(initialScale), [initialScale]);
+
+  return (
+    <div className="relative w-full h-full overflow-auto" ref={containerRef}>
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={zoomOut}
+          disabled={scale <= 0.5}
+          className="h-7 w-7"
+          title="Diminuir zoom"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={resetZoom}
+          className="h-7 w-7"
+          title="Redefinir zoom"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={zoomIn}
+          disabled={scale >= 4}
+          className="h-7 w-7"
+          title="Aumentar zoom"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+      </div>
+      <div
+        className="min-w-full min-h-full flex items-center justify-center origin-center transition-transform"
+        style={{ transform: `scale(${scale})` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function UploadPage() {
