@@ -50,6 +50,7 @@ export const Route = createFileRoute("/_authenticated/cadastro/usuario")({
 const formSchema = z.object({
   email: z.string().email("E-mail inválido"),
   fullName: z.string().trim().min(1, "Informe o nome").max(150),
+  password: z.string().max(72).optional().or(z.literal("")),
   companyId: z.string().uuid("Selecione a empresa"),
   documentTypeIds: z.array(z.string().uuid()).min(1, "Selecione ao menos um tipo"),
 });
