@@ -1,7 +1,17 @@
 import { useMemo, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { createFileRoute } from "@tanstack/react-router";
-import { Upload, X, FileText, Image as ImageIcon, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Upload,
+  X,
+  FileText,
+  Image as ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +29,7 @@ import { Card } from "@/components/ui/card";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { useDocumentTypes } from "@/hooks/use-document-types";
 import { useCompanies } from "@/hooks/use-companies";
-import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
+import { useDocumentTypeFields, type DocTypeField } from "@/hooks/use-document-type-fields";
 import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import {
   ALLOWED_MIME,
@@ -40,6 +50,68 @@ interface QueueItem {
   status: "queued" | "uploading" | "done" | "error";
   progress: number;
   error?: string;
+  fieldValues: Record<string, string>;
+  tags: string;
+  expanded: boolean;
+}
+
+interface FieldEditorProps {
+  fields: DocTypeField[];
+  values: Record<string, string>;
+  onChange: (key: string, value: string) => void;
+  idPrefix: string;
+}
+
+function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {fields.map((f) => {
+        const val = values[f.field_key] ?? "";
+        const id = `${idPrefix}-${f.id}`;
+        return (
+          <div key={f.id} className="space-y-1.5">
+            <Label htmlFor={id} className="text-xs">
+              {f.label} {f.required && <span className="text-destructive">*</span>}
+            </Label>
+            {f.field_type === "textarea" ? (
+              <Textarea
+                id={id}
+                value={val}
+                onChange={(e) => onChange(f.field_key, e.target.value)}
+                rows={2}
+              />
+            ) : f.field_type === "select" && Array.isArray(f.options) ? (
+              <Select value={val} onValueChange={(v) => onChange(f.field_key, v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(f.options as string[]).map((o) => (
+                    <SelectItem key={o} value={o}>
+                      {o}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                id={id}
+                value={val}
+                onChange={(e) => onChange(f.field_key, e.target.value)}
+                type={
+                  f.field_type === "number"
+                    ? "number"
+                    : f.field_type === "date"
+                      ? "date"
+                      : "text"
+                }
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function UploadPage() {
@@ -54,11 +126,10 @@ function UploadPage() {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
-  const [tagsInput, setTagsInput] = useState("");
-  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+  const [defaultTags, setDefaultTags] = useState("");
+  const [defaultValues, setDefaultValues] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
 
-  // Restrict types by company + allowed types (for non-admins).
   const types = useMemo(() => {
     let list = allTypes;
     if (companyId !== "none") list = list.filter((t: any) => t.company_id === companyId);
@@ -70,25 +141,31 @@ function UploadPage() {
     docTypeId !== "none" ? docTypeId : null,
   );
 
-  const onDrop = useCallback((accepted: File[], rejected: any[]) => {
-    rejected.forEach((r) => {
-      toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
-    });
-    setItems((prev) => {
-      const room = MAX_FILES_PER_BATCH - prev.length;
-      if (room <= 0) {
-        toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
-        return prev;
-      }
-      const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        status: "queued",
-        progress: 0,
-      }));
-      return [...prev, ...toAdd];
-    });
-  }, []);
+  const onDrop = useCallback(
+    (accepted: File[], rejected: any[]) => {
+      rejected.forEach((r) => {
+        toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
+      });
+      setItems((prev) => {
+        const room = MAX_FILES_PER_BATCH - prev.length;
+        if (room <= 0) {
+          toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
+          return prev;
+        }
+        const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
+          id: crypto.randomUUID(),
+          file,
+          status: "queued",
+          progress: 0,
+          fieldValues: { ...defaultValues },
+          tags: defaultTags,
+          expanded: false,
+        }));
+        return [...prev, ...toAdd];
+      });
+    },
+    [defaultValues, defaultTags],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -105,47 +182,62 @@ function UploadPage() {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  function setFieldValue(key: string, value: string) {
-    setFieldValues((prev) => ({ ...prev, [key]: value }));
+  function updateItem(id: string, patch: Partial<QueueItem>) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+  }
+
+  function setItemFieldValue(id: string, key: string, value: string) {
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id ? { ...i, fieldValues: { ...i.fieldValues, [key]: value } } : i,
+      ),
+    );
+  }
+
+  function applyDefaultsToAll() {
+    setItems((prev) =>
+      prev.map((i) =>
+        i.status === "queued"
+          ? { ...i, fieldValues: { ...defaultValues }, tags: defaultTags }
+          : i,
+      ),
+    );
+    toast.success("Valores aplicados a todos os arquivos pendentes");
   }
 
   async function handleUploadAll() {
-    if (!orgId || !userId) {
-      toast.error("Organização não definida");
-      return;
-    }
-    if (companyId === "none") {
-      toast.error("Selecione a empresa");
-      return;
-    }
-    if (docTypeId === "none") {
-      toast.error("Selecione o tipo de documento");
-      return;
-    }
-    // Validate required fields
-    for (const f of fields) {
-      if (f.required && !String(fieldValues[f.field_key] ?? "").trim()) {
-        toast.error(`Campo obrigatório: ${f.label}`);
-        return;
-      }
-    }
+    if (!orgId || !userId) return toast.error("Organização não definida");
+    if (companyId === "none") return toast.error("Selecione a empresa");
+    if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
+
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return;
 
+    // Per-file required validation
+    for (const item of queued) {
+      for (const f of fields) {
+        if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
+          toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
+          updateItem(item.id, { expanded: true });
+          return;
+        }
+      }
+    }
+
     setIsUploading(true);
-    const tags = tagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
 
     for (const item of queued) {
       const err = validateFile(item.file);
       if (err) {
-        setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "error", error: err } : i)));
+        updateItem(item.id, { status: "error", error: err });
         continue;
       }
-      setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "uploading", progress: 0 } : i)));
+      updateItem(item.id, { status: "uploading", progress: 0 });
       try {
+        const tags = item.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
         await uploadDocument({
           file: item.file,
           orgId,
@@ -153,17 +245,13 @@ function UploadPage() {
           name: item.file.name,
           documentTypeId: docTypeId,
           companyId,
-          fieldValues,
+          fieldValues: item.fieldValues,
           tags,
-          onProgress: (pct) => {
-            setItems((p) => p.map((i) => (i.id === item.id ? { ...i, progress: pct } : i)));
-          },
+          onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
-        setItems((p) => p.map((i) => (i.id === item.id ? { ...i, status: "done", progress: 100 } : i)));
+        updateItem(item.id, { status: "done", progress: 100 });
       } catch (e: any) {
-        setItems((p) =>
-          p.map((i) => (i.id === item.id ? { ...i, status: "error", error: e.message ?? "Erro" } : i)),
-        );
+        updateItem(item.id, { status: "error", error: e.message ?? "Erro" });
       }
     }
 
@@ -181,7 +269,8 @@ function UploadPage() {
       <header>
         <h1 className="text-3xl font-display font-bold tracking-tight">Upload de documentos</h1>
         <p className="text-muted-foreground mt-1">
-          Selecione a empresa, o tipo de documento e preencha os campos antes de enviar. Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 25 MB cada.
+          Selecione empresa e tipo, preencha valores padrão e ajuste a indexação por arquivo. Até{" "}
+          {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 25 MB cada.
         </p>
       </header>
 
@@ -194,7 +283,7 @@ function UploadPage() {
               onValueChange={(v) => {
                 setCompanyId(v);
                 setDocTypeId("none");
-                setFieldValues({});
+                setDefaultValues({});
               }}
             >
               <SelectTrigger>
@@ -216,12 +305,16 @@ function UploadPage() {
               value={docTypeId}
               onValueChange={(v) => {
                 setDocTypeId(v);
-                setFieldValues({});
+                setDefaultValues({});
               }}
               disabled={companyId === "none"}
             >
               <SelectTrigger>
-                <SelectValue placeholder={companyId === "none" ? "Selecione a empresa primeiro" : "Selecionar"} />
+                <SelectValue
+                  placeholder={
+                    companyId === "none" ? "Selecione a empresa primeiro" : "Selecionar"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Selecione...</SelectItem>
@@ -237,60 +330,29 @@ function UploadPage() {
 
         {fields.length > 0 && (
           <div className="space-y-3 border-t pt-4">
-            <h3 className="text-sm font-medium">Campos do documento</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {fields.map((f) => {
-                const val = fieldValues[f.field_key] ?? "";
-                const common = {
-                  id: f.id,
-                  value: val,
-                  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-                    setFieldValue(f.field_key, e.target.value),
-                };
-                return (
-                  <div key={f.id} className="space-y-2">
-                    <Label htmlFor={f.id}>
-                      {f.label} {f.required && <span className="text-destructive">*</span>}
-                    </Label>
-                    {f.field_type === "textarea" ? (
-                      <Textarea {...common} rows={3} />
-                    ) : f.field_type === "select" && Array.isArray(f.options) ? (
-                      <Select value={val} onValueChange={(v) => setFieldValue(f.field_key, v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecionar" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(f.options as string[]).map((o) => (
-                            <SelectItem key={o} value={o}>
-                              {o}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        {...common}
-                        type={
-                          f.field_type === "number"
-                            ? "number"
-                            : f.field_type === "date"
-                            ? "date"
-                            : "text"
-                        }
-                      />
-                    )}
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Valores padrão de indexação</h3>
+              {items.some((i) => i.status === "queued") && (
+                <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" />
+                  Aplicar a todos
+                </Button>
+              )}
             </div>
+            <FieldEditor
+              fields={fields}
+              values={defaultValues}
+              onChange={(k, v) => setDefaultValues((p) => ({ ...p, [k]: v }))}
+              idPrefix="default"
+            />
           </div>
         )}
 
         <div className="space-y-2">
-          <Label>Tags (separadas por vírgula)</Label>
+          <Label>Tags padrão (separadas por vírgula)</Label>
           <Input
-            value={tagsInput}
-            onChange={(e) => setTagsInput(e.target.value)}
+            value={defaultTags}
+            onChange={(e) => setDefaultTags(e.target.value)}
             placeholder="ex: jan/2026, cliente-x"
           />
         </div>
@@ -306,7 +368,9 @@ function UploadPage() {
           <p className="font-medium">
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">PDF, JPG, PNG, TIFF, WEBP • máx 25 MB</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            PDF, JPG, PNG, TIFF, WEBP • máx 25 MB
+          </p>
         </div>
 
         {items.length > 0 && (
@@ -330,41 +394,76 @@ function UploadPage() {
             </div>
             <ul className="divide-y divide-border rounded-md border border-border">
               {items.map((item) => (
-                <li key={item.id} className="flex items-center gap-3 p-3">
-                  {item.file.type.startsWith("image/") ? (
-                    <ImageIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                  ) : (
-                    <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium">{item.file.name}</span>
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {formatBytes(item.file.size)}
-                      </span>
-                    </div>
-                    {item.status === "uploading" && (
-                      <Progress value={item.progress} className="h-1 mt-1.5" />
+                <li key={item.id} className="p-3 space-y-2">
+                  <div className="flex items-center gap-3">
+                    {item.file.type.startsWith("image/") ? (
+                      <ImageIcon className="h-5 w-5 text-muted-foreground shrink-0" />
+                    ) : (
+                      <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                     )}
-                    {item.status === "error" && (
-                      <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                        <AlertCircle className="h-3 w-3" /> {item.error}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-medium">{item.file.name}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatBytes(item.file.size)}
+                        </span>
+                      </div>
+                      {item.status === "uploading" && (
+                        <Progress value={item.progress} className="h-1 mt-1.5" />
+                      )}
+                      {item.status === "error" && (
+                        <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" /> {item.error}
+                        </p>
+                      )}
+                    </div>
+                    {item.status === "done" && (
+                      <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+                    )}
+                    {fields.length > 0 && item.status !== "done" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => updateItem(item.id, { expanded: !item.expanded })}
+                        className="h-7 w-7"
+                        title="Editar indexação"
+                      >
+                        {item.expanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
+                    {(item.status === "queued" || item.status === "error") && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeItem(item.id)}
+                        disabled={isUploading}
+                        className="h-7 w-7"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
-                  {item.status === "done" && (
-                    <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
-                  )}
-                  {(item.status === "queued" || item.status === "error") && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => removeItem(item.id)}
-                      disabled={isUploading}
-                      className="h-7 w-7"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                  {item.expanded && fields.length > 0 && item.status !== "done" && (
+                    <div className="pl-8 pt-2 space-y-3 border-t">
+                      <FieldEditor
+                        fields={fields}
+                        values={item.fieldValues}
+                        onChange={(k, v) => setItemFieldValue(item.id, k, v)}
+                        idPrefix={item.id}
+                      />
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Tags</Label>
+                        <Input
+                          value={item.tags}
+                          onChange={(e) => updateItem(item.id, { tags: e.target.value })}
+                          placeholder="separadas por vírgula"
+                        />
+                      </div>
+                    </div>
                   )}
                 </li>
               ))}
