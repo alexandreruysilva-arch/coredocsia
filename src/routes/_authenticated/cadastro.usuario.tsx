@@ -365,7 +365,16 @@ function UsuarioPage() {
             ) : (
               grouped.map((g) => (
                 <TableRow key={`${g.userId}-${g.companyId}`}>
-                  <TableCell className="font-medium">{g.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {g.name}
+                      {g.suspended && (
+                        <span className="rounded-md bg-destructive/10 text-destructive px-1.5 py-0.5 text-[10px] uppercase tracking-wide">
+                          Suspenso
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{g.email ?? "—"}</TableCell>
                   <TableCell className="text-muted-foreground">{g.companyName}</TableCell>
                   <TableCell>
@@ -389,15 +398,50 @@ function UsuarioPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => openEdit(g)}
-                      aria-label="Editar"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => openEdit(g)}
+                        aria-label="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          toggleSuspend.mutate({ userId: g.userId, suspend: !g.suspended })
+                        }
+                        aria-label={g.suspended ? "Reativar" : "Suspender"}
+                        title={g.suspended ? "Reativar" : "Suspender"}
+                      >
+                        {g.suspended ? (
+                          <CircleCheck className="h-4 w-4 text-emerald-600" />
+                        ) : (
+                          <Ban className="h-4 w-4 text-amber-600" />
+                        )}
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          if (
+                            confirm(
+                              `Excluir o usuário "${g.name}"? Esta ação remove o acesso a todos os tipos de documento.`,
+                            )
+                          ) {
+                            removeUser.mutate(g.userId);
+                          }
+                        }}
+                        aria-label="Excluir"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
+
                 </TableRow>
               ))
             )}
