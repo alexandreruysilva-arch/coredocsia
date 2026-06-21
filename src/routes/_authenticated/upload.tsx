@@ -214,13 +214,22 @@ function UploadPage() {
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return;
 
-    // Per-file required validation
-    for (const item of queued) {
+    // In batch mode, apply defaults to every queued item before validating
+    if (batchMode) {
       for (const f of fields) {
-        if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
-          toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
-          updateItem(item.id, { expanded: true });
+        if (f.required && !String(defaultValues[f.field_key] ?? "").trim()) {
+          toast.error(`Campo obrigatório no lote: "${f.label}"`);
           return;
+        }
+      }
+    } else {
+      for (const item of queued) {
+        for (const f of fields) {
+          if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
+            toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
+            updateItem(item.id, { expanded: true });
+            return;
+          }
         }
       }
     }
