@@ -129,6 +129,7 @@ function UploadPage() {
   const [defaultTags, setDefaultTags] = useState("");
   const [defaultValues, setDefaultValues] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [batchMode, setBatchMode] = useState(true);
 
   const types = useMemo(() => {
     let list = allTypes;
