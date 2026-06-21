@@ -342,14 +342,39 @@ function UploadPage() {
 
         {fields.length > 0 && (
           <div className="space-y-3 border-t pt-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Valores padrão de indexação</h3>
-              {items.some((i) => i.status === "queued") && (
-                <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
-                  <Copy className="h-3.5 w-3.5 mr-1.5" />
-                  Aplicar a todos
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h3 className="text-sm font-medium">
+                  {batchMode ? "Indexação em lote (aplicada a todos)" : "Valores padrão de indexação"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {batchMode
+                    ? "Os valores abaixo serão usados em todos os arquivos do lote."
+                    : "Preencha valores padrão e ajuste por arquivo conforme necessário."}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={batchMode ? "default" : "outline"}
+                  onClick={() => setBatchMode(true)}
+                >
+                  Lote
                 </Button>
-              )}
+                <Button
+                  size="sm"
+                  variant={!batchMode ? "default" : "outline"}
+                  onClick={() => setBatchMode(false)}
+                >
+                  Por arquivo
+                </Button>
+                {!batchMode && items.some((i) => i.status === "queued") && (
+                  <Button size="sm" variant="outline" onClick={applyDefaultsToAll}>
+                    <Copy className="h-3.5 w-3.5 mr-1.5" />
+                    Aplicar a todos
+                  </Button>
+                )}
+              </div>
             </div>
             <FieldEditor
               fields={fields}
