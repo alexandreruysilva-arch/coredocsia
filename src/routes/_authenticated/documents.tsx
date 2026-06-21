@@ -318,13 +318,13 @@ function DocumentsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
                   {typeId !== "all" &&
                     typeFields.map((f) => (
                       <TableHead key={f.id}>{f.label}</TableHead>
                     ))}
                   <TableHead>Tamanho</TableHead>
                   <TableHead>Criado</TableHead>
+                  <TableHead>Nome Arquivo</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
