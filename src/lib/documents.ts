@@ -36,36 +36,19 @@ export const STATUS_LABEL: Record<DocStatus, string> = {
 };
 
 /**
- * Returns a signed URL for the file stored in Supabase Storage (private
- * bucket "documents"). The URL is valid for 1 hour and can be used directly
- * by <img>/<iframe> tags.
+ * Retorna URL para visualizar/baixar o arquivo. Usa a rota TanStack
+ * /api/files/$id que faz proxy autenticado para o Google Drive.
  */
 export async function getFileUrl(
   documentId: string,
   opts: { download?: boolean } = {},
 ): Promise<string | null> {
-  const { data: doc, error } = await supabase
-    .from("documents")
-    .select("storage_path, original_filename, drive_web_view_link")
-    .eq("id", documentId)
-    .maybeSingle();
-  if (error || !doc) return null;
-
-  if (doc.storage_path) {
-    const { data, error: signErr } = await supabase.storage
-      .from("documents")
-      .createSignedUrl(doc.storage_path, 3600, {
-        download: opts.download ? doc.original_filename : false,
-      });
-    if (signErr || !data) return null;
-    return data.signedUrl;
-  }
-
-  // Legacy fallback: documents uploaded before storage migration live on Drive.
-  // Use the /preview endpoint which is embeddable in iframes.
-  const link = doc.drive_web_view_link;
-  if (!link) return null;
-  return link.replace("/view", "/preview");
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) return null;
+  const qs = new URLSearchParams({ token });
+  if (opts.download) qs.set("download", "1");
+  return `/api/files/${documentId}?${qs.toString()}`;
 }
 
 export interface UploadOptions {
@@ -73,60 +56,32 @@ export interface UploadOptions {
   orgId: string;
   userId: string;
   name: string;
-  documentTypeId: string | null;
-  companyId?: string | null;
+  documentTypeId: string;
+  companyId: string;
   fieldValues?: Record<string, unknown>;
   tags: string[];
   onProgress?: (pct: number) => void;
 }
 
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
-  const { file, orgId, userId, name, documentTypeId, companyId, fieldValues, tags } = opts;
+  const { file, name, documentTypeId, companyId, fieldValues, tags } = opts;
 
   opts.onProgress?.(10);
 
-  // 1. Upload binary to Supabase Storage (private bucket).
-  const ext = file.name.includes(".") ? file.name.split(".").pop() : "";
-  const objectName = `${crypto.randomUUID()}${ext ? "." + ext : ""}`;
-  const storagePath = `${orgId}/${objectName}`;
+  const { uploadDocumentToDrive } = await import("./drive.functions");
 
-  const { error: upErr } = await supabase.storage
-    .from("documents")
-    .upload(storagePath, file, {
-      contentType: file.type,
-      upsert: false,
-    });
-  if (upErr) throw upErr;
+  const form = new FormData();
+  form.append("file", file);
+  form.append("name", name);
+  form.append("companyId", companyId);
+  form.append("documentTypeId", documentTypeId);
+  form.append("tags", tags.join(","));
+  form.append("fieldValues", JSON.stringify(fieldValues ?? {}));
 
-  opts.onProgress?.(80);
-
-  // 2. Create the document row pointing at the uploaded object.
-  const { data: row, error: insertErr } = await supabase
-    .from("documents")
-    .insert({
-      org_id: orgId,
-      uploaded_by: userId,
-      name,
-      original_filename: file.name,
-      mime_type: file.type,
-      size_bytes: file.size,
-      document_type_id: documentTypeId,
-      company_id: companyId ?? null,
-      field_values: (fieldValues ?? {}) as any,
-      tags,
-      storage_path: storagePath,
-      status: "processed",
-    })
-    .select("*")
-    .single();
-
-  if (insertErr || !row) {
-    // Roll back the orphan storage object.
-    await supabase.storage.from("documents").remove([storagePath]).catch(() => {});
-    throw insertErr ?? new Error("Falha ao criar documento");
-  }
-
+  opts.onProgress?.(40);
+  const row = await uploadDocumentToDrive({ data: form });
   opts.onProgress?.(100);
-  return row;
+  return row as DocumentRow;
 }
+
 
