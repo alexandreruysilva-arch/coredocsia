@@ -123,17 +123,21 @@ function DocumentsPage() {
     ([, v]) => v.trim() !== "",
   );
 
-  const filteredDocs = docs.filter((d: any) => {
-    if (companyId !== "all" && d.company_id !== companyId) return false;
-    if (activeFieldFilters.length > 0) {
-      const fv = (d.field_values ?? {}) as Record<string, unknown>;
-      for (const [key, val] of activeFieldFilters) {
-        const docVal = String(fv[key] ?? "").toLowerCase();
-        if (!docVal.includes(val.trim().toLowerCase())) return false;
-      }
-    }
-    return true;
-  });
+  const filtersSelected = companyId !== "all" && typeId !== "all";
+
+  const filteredDocs = !filtersSelected
+    ? []
+    : docs.filter((d: any) => {
+        if (companyId !== "all" && d.company_id !== companyId) return false;
+        if (activeFieldFilters.length > 0) {
+          const fv = (d.field_values ?? {}) as Record<string, unknown>;
+          for (const [key, val] of activeFieldFilters) {
+            const docVal = String(fv[key] ?? "").toLowerCase();
+            if (!docVal.includes(val.trim().toLowerCase())) return false;
+          }
+        }
+        return true;
+      });
 
   const typeName = (id: string | null) =>
     id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
