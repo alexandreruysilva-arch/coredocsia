@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef, type ReactNode } from "react";
 import { PdfPreview } from "@/components/pdf-preview";
 import { useDropzone } from "react-dropzone";
 import { createFileRoute } from "@tanstack/react-router";
@@ -11,6 +11,9 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -128,6 +131,65 @@ function PdfFilePreview({ file }: { file: File }) {
   }, [file]);
   if (!data) return <div className="text-xs text-muted-foreground">Carregando PDF…</div>;
   return <PdfPreview data={data} title={file.name} />;
+}
+
+interface ZoomablePreviewProps {
+  children: ReactNode;
+  initialScale?: number;
+}
+
+function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
+  const [scale, setScale] = useState(initialScale);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const zoomIn = useCallback(() => setScale((s) => Math.min(s + 0.25, 4)), []);
+  const zoomOut = useCallback(() => setScale((s) => Math.max(s - 0.25, 0.5)), []);
+  const resetZoom = useCallback(() => setScale(initialScale), [initialScale]);
+
+  return (
+    <div className="relative w-full h-full overflow-auto" ref={containerRef}>
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={zoomOut}
+          disabled={scale <= 0.5}
+          className="h-7 w-7"
+          title="Diminuir zoom"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={resetZoom}
+          className="h-7 w-7"
+          title="Redefinir zoom"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={zoomIn}
+          disabled={scale >= 4}
+          className="h-7 w-7"
+          title="Aumentar zoom"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+      </div>
+      <div
+        className="min-w-full min-h-full flex items-center justify-center origin-center transition-transform"
+        style={{ transform: `scale(${scale})` }}
+      >
+        {children}
+      </div>
+    </div>
+  );
 }
 
 function UploadPage() {
@@ -423,15 +485,15 @@ function UploadPage() {
                   {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
                       <div className="grid lg:grid-cols-2 gap-4 pt-2">
-                        <div className="rounded-md border border-border bg-muted/30 overflow-hidden h-[420px] flex items-center justify-center">
+                        <ZoomablePreview>
                           {item.file.type.startsWith("image/") ? (
                             <img
                               src={item.previewUrl}
                               alt={item.file.name}
-                              className="max-h-full max-w-full object-contain"
+                              className="max-h-[420px] max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <div className="w-full h-full">
+                            <div className="w-[800px] h-[420px]">
                               <PdfFilePreview file={item.file} />
                             </div>
                           ) : (
@@ -439,7 +501,7 @@ function UploadPage() {
                               Pré-visualização indisponível para este tipo de arquivo.
                             </div>
                           )}
-                        </div>
+                        </ZoomablePreview>
                         <div className="space-y-3">
                           {fields.length > 0 ? (
                             <FieldEditor
