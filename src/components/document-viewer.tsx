@@ -28,6 +28,15 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
 
+  const { data: fields } = useDocumentTypeFields(doc.document_type_id);
+  const values = (doc.field_values ?? {}) as Record<string, unknown>;
+  const formatValue = (v: unknown) => {
+    if (v === null || v === undefined || v === "") return "—";
+    if (typeof v === "boolean") return v ? "Sim" : "Não";
+    return String(v);
+  };
+
+
   return (
     <div className="flex flex-col h-full bg-muted/30">
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
