@@ -123,17 +123,21 @@ function DocumentsPage() {
     ([, v]) => v.trim() !== "",
   );
 
-  const filteredDocs = docs.filter((d: any) => {
-    if (companyId !== "all" && d.company_id !== companyId) return false;
-    if (activeFieldFilters.length > 0) {
-      const fv = (d.field_values ?? {}) as Record<string, unknown>;
-      for (const [key, val] of activeFieldFilters) {
-        const docVal = String(fv[key] ?? "").toLowerCase();
-        if (!docVal.includes(val.trim().toLowerCase())) return false;
-      }
-    }
-    return true;
-  });
+  const filtersSelected = companyId !== "all" && typeId !== "all";
+
+  const filteredDocs = !filtersSelected
+    ? []
+    : docs.filter((d: any) => {
+        if (companyId !== "all" && d.company_id !== companyId) return false;
+        if (activeFieldFilters.length > 0) {
+          const fv = (d.field_values ?? {}) as Record<string, unknown>;
+          for (const [key, val] of activeFieldFilters) {
+            const docVal = String(fv[key] ?? "").toLowerCase();
+            if (!docVal.includes(val.trim().toLowerCase())) return false;
+          }
+        }
+        return true;
+      });
 
   const typeName = (id: string | null) =>
     id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
@@ -334,14 +338,21 @@ function DocumentsPage() {
                     4 + (typeId !== "all" ? typeFields.length : 0);
                   return (
                     <>
-                      {isLoading && (
+                      {!filtersSelected && (
+                        <TableRow>
+                          <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
+                            Selecione uma empresa e um tipo de documento para visualizar os resultados.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {filtersSelected && isLoading && (
                         <TableRow>
                           <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
                             Carregando...
                           </TableCell>
                         </TableRow>
                       )}
-                      {!isLoading && filteredDocs.length === 0 && (
+                      {filtersSelected && !isLoading && filteredDocs.length === 0 && (
                         <TableRow>
                           <TableCell colSpan={colSpan} className="text-center text-muted-foreground py-8">
                             Nenhum documento encontrado.
