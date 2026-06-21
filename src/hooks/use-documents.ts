@@ -9,16 +9,26 @@ export interface ListDocumentsParams {
   typeId?: string | "all";
   search?: string;
   includeDeleted?: boolean;
+  allowedTypeIds?: string[] | null;
 }
 
 export function useDocumentsList(params: ListDocumentsParams) {
   const queryClient = useQueryClient();
-  const { orgId, status = "all", typeId = "all", search = "", includeDeleted = false } = params;
+  const {
+    orgId,
+    status = "all",
+    typeId = "all",
+    search = "",
+    includeDeleted = false,
+    allowedTypeIds = null,
+  } = params;
 
   const query = useQuery({
-    queryKey: ["documents", orgId, status, typeId, search, includeDeleted],
+    queryKey: ["documents", orgId, status, typeId, search, includeDeleted, allowedTypeIds],
     enabled: !!orgId,
     queryFn: async (): Promise<DocumentRow[]> => {
+      if (allowedTypeIds && allowedTypeIds.length === 0) return [];
+
       let q = supabase
         .from("documents")
         .select("*")
@@ -29,6 +39,9 @@ export function useDocumentsList(params: ListDocumentsParams) {
       if (!includeDeleted) q = q.is("deleted_at", null);
       if (status !== "all") q = q.eq("status", status);
       if (typeId !== "all") q = q.eq("document_type_id", typeId);
+      if (allowedTypeIds && allowedTypeIds.length > 0) {
+        q = q.in("document_type_id", allowedTypeIds);
+      }
       if (search.trim()) q = q.ilike("name", `%${search.trim()}%`);
 
       const { data, error } = await q;
