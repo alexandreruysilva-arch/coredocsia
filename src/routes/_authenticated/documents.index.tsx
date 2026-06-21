@@ -392,9 +392,13 @@ function DocumentsPage() {
                         </TableCell>
                       ))}
                     <TableCell className="text-sm">{formatBytes(Number(doc.size_bytes))}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(doc.created_at), {
-                        addSuffix: true,
+                    <TableCell
+                      className="text-sm text-muted-foreground"
+                      title={format(new Date(doc.created_at), "PPPp", {
+                        locale: ptBR,
+                      })}
+                    >
+                      {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
                         locale: ptBR,
                       })}
                     </TableCell>
