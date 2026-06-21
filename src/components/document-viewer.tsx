@@ -6,22 +6,42 @@ import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
+    let objectUrl: string | null = null;
+
     setLoading(true);
     setUrl(null);
-    setDownloadUrl(null);
-    Promise.all([getFileUrl(doc.id), getFileUrl(doc.id, { download: true })]).then(([viewUrl, dlUrl]) => {
-      if (!active) return;
-      setUrl(viewUrl);
-      setDownloadUrl(dlUrl);
-      setLoading(false);
-    });
+
+    getFileUrl(doc.id)
+      .then(async (viewUrl) => {
+        if (!viewUrl) throw new Error("Sessão não encontrada");
+
+        const response = await fetch(viewUrl);
+        if (!response.ok) throw new Error(`Falha ao carregar arquivo (${response.status})`);
+
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+
+        if (!active) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+
+        setUrl(objectUrl);
+      })
+      .catch(() => {
+        if (active) setUrl(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
     return () => {
       active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [doc.id]);
 
@@ -50,9 +70,9 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
               <a href={url} target="_blank" rel="noopener noreferrer">Abrir</a>
             </Button>
           )}
-          {downloadUrl && (
+          {url && (
             <Button asChild size="sm" variant="outline">
-              <a href={downloadUrl} download={doc.original_filename}>
+              <a href={url} download={doc.original_filename}>
                 <Download className="h-4 w-4 mr-1.5" /> Baixar
               </a>
             </Button>

@@ -50,8 +50,11 @@ export const Route = createFileRoute("/api/public/files/$id")({
           status: 200,
           headers: {
             "Content-Type": doc.mime_type || "application/octet-stream",
-            "Content-Disposition": `${disposition}; filename="${encodeURIComponent(doc.original_filename)}"`,
+            "Content-Disposition": `${disposition}; filename="${doc.original_filename.replace('\"', '\\\"')}"; filename*=UTF-8''${encodeURIComponent(doc.original_filename)}`,
             "Cache-Control": "private, max-age=60",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "Content-Security-Policy": "default-src 'self'; object-src 'self'; frame-ancestors 'self';",
           },
         });
       },
