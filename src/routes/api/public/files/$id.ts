@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { streamDriveFile } from "@/lib/drive.server";
 
-export const Route = createFileRoute("/api/files/$id")({
+export const Route = createFileRoute("/api/public/files/$id")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
