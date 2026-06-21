@@ -2,7 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Eye, X } from "lucide-react";
+import { FolderOpen, Search, Eye, X, Trash2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/status-badge";
 import { DocumentViewer } from "@/components/document-viewer";
 import { useProfileBundle } from "@/hooks/use-profile";
@@ -31,6 +44,7 @@ import { useAllowedDocumentTypeIds } from "@/hooks/use-allowed-document-types";
 import { useCompanies } from "@/hooks/use-companies";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
+import { deleteDocumentFromDrive } from "@/lib/drive.functions";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
