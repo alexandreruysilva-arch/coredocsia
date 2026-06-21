@@ -226,6 +226,7 @@ function UsuarioPage() {
         data: {
           userId: editing.userId,
           fullName: vals.fullName.trim(),
+          role: vals.role,
           companyId: vals.companyId,
           documentTypeIds: vals.documentTypeIds,
         },
