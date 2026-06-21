@@ -235,6 +235,25 @@ function UsuarioPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const removeUser = useMutation({
+    mutationFn: async (userId: string) => deleteFn({ data: { userId } }),
+    onSuccess: () => {
+      toast.success("Usuário excluído");
+      queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const toggleSuspend = useMutation({
+    mutationFn: async (v: { userId: string; suspend: boolean }) =>
+      suspendFn({ data: v }),
+    onSuccess: (_d, v) => {
+      toast.success(v.suspend ? "Usuário suspenso" : "Usuário reativado");
+      queryClient.invalidateQueries({ queryKey: ["user-access", orgId] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   // When editing and docTypes (re)loads for the selected company,
   // make sure all already-granted ids are kept selected even if
   // the docType list arrives after we open the dialog.
