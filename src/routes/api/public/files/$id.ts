@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { streamDriveFile } from "@/lib/drive.server";
 
 export const Route = createFileRoute("/api/public/files/$id")({
@@ -33,6 +32,7 @@ export const Route = createFileRoute("/api/public/files/$id")({
           return new Response("Não encontrado", { status: 404 });
         }
         // Defense-in-depth: re-verify membership with admin client
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: member } = await supabaseAdmin
           .from("organization_members")
           .select("user_id")
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/public/files/$id")({
           status: 200,
           headers: {
             "Content-Type": doc.mime_type || "application/octet-stream",
-            "Content-Disposition": `${disposition}; filename="${doc.original_filename.replace('\"', '\\\"')}"; filename*=UTF-8''${encodeURIComponent(doc.original_filename)}`,
+            "Content-Disposition": `${disposition}; filename="${doc.original_filename.replace(/"/g, '\\"')}"; filename*=UTF-8''${encodeURIComponent(doc.original_filename)}`,
             "Cache-Control": "private, max-age=60",
             "X-Content-Type-Options": "nosniff",
             "X-Frame-Options": "SAMEORIGIN",
