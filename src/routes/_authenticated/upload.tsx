@@ -88,28 +88,35 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
   return raw.toUpperCase();
 }
 
-function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
+function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
+        const handleBlur = () => onFieldBlur?.(f.field_key, val);
         return (
           <div key={f.id} className="space-y-0.5">
-            <Label htmlFor={id} className="text-xs">
+            <Label htmlFor={id} className="text-xs flex items-center gap-1">
               {f.label} {f.required && <span className="text-destructive">*</span>}
+              {f.is_lookup_key && (
+                <span className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-primary">
+                  chave
+                </span>
+              )}
             </Label>
             {f.field_type === "textarea" ? (
               <Textarea
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onBlur={handleBlur}
                 rows={2}
                 className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
-              <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
+              <Select value={val} onValueChange={(v) => { onChange(f.field_key, sanitizeFieldValue(f, v)); onFieldBlur?.(f.field_key, v); }}>
                 <SelectTrigger className={cn("h-8 px-2 text-sm", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
@@ -126,6 +133,8 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onBlur={handleBlur}
+                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                 placeholder={f.field_type === "date" ? "DD/MM/AAAA" : undefined}
                 inputMode={f.field_type === "date" ? "numeric" : undefined}
                 className={cn(
@@ -141,6 +150,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
     </div>
   );
 }
+
 
 function PdfFilePreview({ file }: { file: File }) {
   const [data, setData] = useState<ArrayBuffer | null>(null);
