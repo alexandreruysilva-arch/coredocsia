@@ -180,6 +180,8 @@ function AuditPage() {
       completion: 0,
       total: 0,
       cost: 0,
+      durationCount: 0,
+      durationTotal: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -188,6 +190,10 @@ function AuditPage() {
       t.completion += l.completion_tokens;
       t.total += l.total_tokens;
       t.cost += l.cost_brl ?? 0;
+      if (l.duration_ms != null) {
+        t.durationCount++;
+        t.durationTotal += l.duration_ms;
+      }
     }
     return t;
   }, [filtered]);
