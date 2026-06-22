@@ -162,6 +162,7 @@ Regras de saída (siga RIGOROSAMENTE):
     const MAX_ATTEMPTS_PER_MODEL = 3;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+    const startedAt = Date.now();
     let resp: Response | null = null;
     let lastErrText = "";
     let lastStatus = 0;
