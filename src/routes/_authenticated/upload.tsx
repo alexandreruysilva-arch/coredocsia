@@ -93,7 +93,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         return (
-          <div key={f.id} className="space-y-1">
+          <div key={f.id} className="space-y-0.5">
             <Label htmlFor={id} className="text-xs">
               {f.label} {f.required && <span className="text-destructive">*</span>}
             </Label>
