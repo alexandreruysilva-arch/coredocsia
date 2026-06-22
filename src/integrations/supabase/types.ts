@@ -14,6 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_logs: {
+        Row: {
+          company_id: string | null
+          company_name: string | null
+          completion_tokens: number
+          created_at: string
+          document_type_id: string | null
+          document_type_name: string | null
+          error_message: string | null
+          file_name: string
+          id: string
+          model: string
+          org_id: string
+          prompt_tokens: number
+          success: boolean
+          total_tokens: number
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          company_name?: string | null
+          completion_tokens?: number
+          created_at?: string
+          document_type_id?: string | null
+          document_type_name?: string | null
+          error_message?: string | null
+          file_name: string
+          id?: string
+          model?: string
+          org_id: string
+          prompt_tokens?: number
+          success?: boolean
+          total_tokens?: number
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          company_name?: string | null
+          completion_tokens?: number
+          created_at?: string
+          document_type_id?: string | null
+          document_type_name?: string | null
+          error_message?: string | null
+          file_name?: string
+          id?: string
+          model?: string
+          org_id?: string
+          prompt_tokens?: number
+          success?: boolean
+          total_tokens?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_logs_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
