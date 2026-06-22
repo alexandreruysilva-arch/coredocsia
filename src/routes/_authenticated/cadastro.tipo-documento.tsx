@@ -693,25 +693,3 @@ function FieldsDialog({
   );
 }
 
-            {editingId && (
-              <Button type="button" variant="ghost" onClick={resetForm}>
-                Cancelar edição
-              </Button>
-            )}
-            <Button type="button" variant="outline" onClick={onClose}>
-              Fechar
-            </Button>
-            <Button type="submit" disabled={save.isPending}>
-              <Plus className="h-4 w-4 mr-1" />
-              {save.isPending
-                ? "Salvando..."
-                : editingId
-                  ? "Salvar alterações"
-                  : "Adicionar campo"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
