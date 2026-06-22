@@ -138,7 +138,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           </Button>
         </div>
       )}
-      <div className="relative max-h-[340px] overflow-auto">
+      <div className="relative">
         {isRendering && (
           <div className="absolute inset-0 grid place-items-center z-10">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -150,7 +150,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
             <p className="mt-1">Use "Baixar" para abrir o arquivo original.</p>
           </div>
         ) : (
-          <canvas ref={canvasRef} aria-label={title} className="max-w-full block mx-auto" />
+          <canvas ref={canvasRef} aria-label={title} className="max-w-full block" />
         )}
       </div>
     </div>
