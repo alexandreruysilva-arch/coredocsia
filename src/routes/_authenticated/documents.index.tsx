@@ -78,9 +78,28 @@ function DocumentsPage() {
   const { data: companies = [] } = useCompanies(orgId);
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
 
-  const [search, setSearch] = useState("");
-  const [typeId, setTypeId] = useState<string>("all");
-  const [companyId, setCompanyId] = useState<string>("all");
+  const FILTERS_KEY = "documents:filters:v1";
+  const initialFilters = (() => {
+    if (typeof window === "undefined") return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
+    try {
+      const raw = sessionStorage.getItem(FILTERS_KEY);
+      if (!raw) return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
+      const p = JSON.parse(raw);
+      return {
+        search: typeof p.search === "string" ? p.search : "",
+        typeId: typeof p.typeId === "string" ? p.typeId : "all",
+        companyId: typeof p.companyId === "string" ? p.companyId : "all",
+        activeFieldKeys: Array.isArray(p.activeFieldKeys) ? p.activeFieldKeys : [],
+        fieldFilters: p.fieldFilters && typeof p.fieldFilters === "object" ? p.fieldFilters : {},
+      };
+    } catch {
+      return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
+    }
+  })();
+
+  const [search, setSearch] = useState(initialFilters.search);
+  const [typeId, setTypeId] = useState<string>(initialFilters.typeId);
+  const [companyId, setCompanyId] = useState<string>(initialFilters.companyId);
 
   // Restrict types to allowed ones AND to the selected company.
   const types = allTypes
@@ -88,8 +107,17 @@ function DocumentsPage() {
     .filter((t: any) =>
       companyId === "all" ? true : t.company_id === companyId,
     );
-  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
-  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
+  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>(initialFilters.fieldFilters);
+  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>(initialFilters.activeFieldKeys);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        FILTERS_KEY,
+        JSON.stringify({ search, typeId, companyId, activeFieldKeys, fieldFilters }),
+      );
+    } catch {}
+  }, [search, typeId, companyId, activeFieldKeys, fieldFilters]);
   const [preview, setPreview] = useState<DocumentRow | null>(null);
   const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
   const [deleting, setDeleting] = useState(false);
