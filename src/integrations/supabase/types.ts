@@ -20,6 +20,7 @@ export type Database = {
           company_name: string | null
           completion_tokens: number
           created_at: string
+          document_id: string | null
           document_type_id: string | null
           document_type_name: string | null
           error_message: string | null
@@ -37,6 +38,7 @@ export type Database = {
           company_name?: string | null
           completion_tokens?: number
           created_at?: string
+          document_id?: string | null
           document_type_id?: string | null
           document_type_name?: string | null
           error_message?: string | null
@@ -54,6 +56,7 @@ export type Database = {
           company_name?: string | null
           completion_tokens?: number
           created_at?: string
+          document_id?: string | null
           document_type_id?: string | null
           document_type_name?: string | null
           error_message?: string | null
@@ -72,6 +75,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
             referencedColumns: ["id"]
           },
           {
@@ -259,6 +269,7 @@ export type Database = {
           error_message: string | null
           field_values: Json
           id: string
+          last_edited_by: string | null
           mime_type: string
           name: string
           org_id: string
@@ -281,6 +292,7 @@ export type Database = {
           error_message?: string | null
           field_values?: Json
           id?: string
+          last_edited_by?: string | null
           mime_type: string
           name: string
           org_id: string
@@ -303,6 +315,7 @@ export type Database = {
           error_message?: string | null
           field_values?: Json
           id?: string
+          last_edited_by?: string | null
           mime_type?: string
           name?: string
           org_id?: string
