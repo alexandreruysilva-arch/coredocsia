@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CheckCircle2, ListChecks, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
