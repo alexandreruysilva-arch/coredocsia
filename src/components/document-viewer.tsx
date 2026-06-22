@@ -128,7 +128,6 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
               fileData={fileData}
               loading={loading}
               scrollable
-              zoomable
             />
           )}
         </DialogContent>
