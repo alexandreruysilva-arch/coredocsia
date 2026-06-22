@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Sparkles, TrendingUp, FileText, Building2, AlertCircle } from "lucide-react";
+import { Sparkles, TrendingUp, FileText, Building2, AlertCircle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
 import {
   Table,
   TableBody,
@@ -45,6 +47,59 @@ function formatDateTime(iso: string) {
   });
 }
 
+function csvEscape(v: unknown): string {
+  const s = v == null ? "" : String(v);
+  if (/[",;\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function exportLogsCsv(rows: AiLogRow[]) {
+  const headers = [
+    "Data",
+    "Empresa",
+    "Tipo",
+    "Arquivo",
+    "Modelo",
+    "Prompt tokens",
+    "Completion tokens",
+    "Total tokens",
+    "Custo (R$)",
+    "Status",
+    "Erro",
+  ];
+  const lines = [headers.join(";")];
+  for (const l of rows) {
+    lines.push(
+      [
+        formatDateTime(l.created_at),
+        l.company_name ?? "",
+        l.document_type_name ?? "",
+        l.file_name,
+        l.model,
+        l.prompt_tokens,
+        l.completion_tokens,
+        l.total_tokens,
+        l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
+        l.success ? "OK" : "Falha",
+        l.error_message ?? "",
+      ]
+        .map(csvEscape)
+        .join(";"),
+    );
+  }
+  const csv = "\uFEFF" + lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `auditoria-ia-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
 function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
@@ -66,6 +121,20 @@ function AuditPage() {
       return (data ?? []) as AiLogRow[];
     },
   });
+
+  const { data: orgPrice } = useQuery({
+    queryKey: ["org-ai-price", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("ai_cost_per_file")
+        .eq("id", orgId!)
+        .maybeSingle();
+      return Number(data?.ai_cost_per_file ?? 0.15);
+    },
+  });
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -139,7 +208,10 @@ function AuditPage() {
           <div className="text-2xl font-bold mt-1">
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">R$ 0,15 por arquivo</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} por arquivo
+          </div>
+
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
@@ -193,13 +265,25 @@ function AuditPage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold">Detalhes por arquivo</h3>
-          <Input
-            placeholder="Buscar por arquivo, empresa ou tipo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Buscar por arquivo, empresa ou tipo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={filtered.length === 0}
+              onClick={() => exportLogsCsv(filtered)}
+            >
+              <Download className="h-4 w-4" /> Exportar CSV
+            </Button>
+          </div>
         </div>
+
 
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
