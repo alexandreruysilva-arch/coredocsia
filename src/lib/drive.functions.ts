@@ -157,7 +157,8 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
       const { computeAiCost } = await import("./ai-pricing");
       const promptTokens = aiUsage.prompt_tokens ?? 0;
-      const cost = computeAiCost(promptTokens, basePrice, {
+      const totalTokens = aiUsage.total_tokens ?? promptTokens;
+      const cost = computeAiCost(totalTokens, basePrice, {
         baseThreshold: org?.ai_price_base_threshold ?? undefined,
         tierStep: org?.ai_price_tier_step ?? undefined,
         tierIncrement: org?.ai_price_tier_increment != null ? Number(org.ai_price_tier_increment) : undefined,

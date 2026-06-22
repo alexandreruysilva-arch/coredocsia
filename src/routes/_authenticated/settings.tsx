@@ -265,7 +265,7 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
                   placeholder="1100"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Até esta quantidade de prompt tokens, cobra apenas o preço base.
+                  Até esta quantidade de tokens totais (prompt + completion), cobra apenas o preço base.
                 </p>
               </div>
 

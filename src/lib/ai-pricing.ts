@@ -1,7 +1,7 @@
 /**
  * Regra de precificação por arquivo processado por IA:
- * - Até `baseThreshold` prompt tokens: preço base
- * - Acima do limite, cada fração de `tierStep` prompt tokens: + `tierIncrement`
+ * - Até `baseThreshold` tokens totais (prompt + completion): preço base
+ * - Acima do limite, cada fração de `tierStep` tokens: + `tierIncrement`
  *   (arredondamento para cima — qualquer excesso conta como bloco completo)
  *
  * Ex. (default 1100/500/0,01): 1.100 → base | 1.101 → base+0,01 | 1.600 → base+0,01 | 1.601 → base+0,02 ...
