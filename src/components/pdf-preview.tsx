@@ -108,9 +108,9 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
   const canNext = pageNumber < numPages;
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-muted/40">
+    <div className="relative w-full flex flex-col">
       {numPages > 1 && (
-        <div className="flex items-center justify-start gap-1.5 px-2 py-1.5 border-b border-border bg-card">
+        <div className="flex items-center justify-start gap-1.5 px-2 py-1.5">
           <Button
             size="icon"
             variant="ghost"
@@ -134,22 +134,20 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           </Button>
         </div>
       )}
-      <div className="flex-1 overflow-auto p-4">
-        <div className="min-h-full grid place-items-start justify-center relative">
-          {isRendering && (
-            <div className="absolute inset-0 grid place-items-center bg-muted/30 z-10">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          )}
-          {failed ? (
-            <div className="max-w-sm text-center text-sm text-muted-foreground p-6">
-              <p>Não foi possível renderizar a página do PDF.</p>
-              <p className="mt-1">Use “Baixar” para abrir o arquivo original.</p>
-            </div>
-          ) : (
-            <canvas ref={canvasRef} aria-label={title} className="max-w-full bg-card shadow-sm" />
-          )}
-        </div>
+      <div className="relative">
+        {isRendering && (
+          <div className="absolute inset-0 grid place-items-center z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {failed ? (
+          <div className="max-w-sm text-center text-sm text-muted-foreground p-6 mx-auto">
+            <p>Não foi possível renderizar a página do PDF.</p>
+            <p className="mt-1">Use "Baixar" para abrir o arquivo original.</p>
+          </div>
+        ) : (
+          <canvas ref={canvasRef} aria-label={title} className="max-w-full block mx-auto" />
+        )}
       </div>
     </div>
   );
