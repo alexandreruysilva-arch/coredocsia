@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CheckCircle2, ListChecks, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -249,8 +249,7 @@ function QueuePage() {
                   <StatusBadge status={doc.status} />
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(doc.created_at), {
-                    addSuffix: true,
+                  {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
                     locale: ptBR,
                   })}
                 </TableCell>
