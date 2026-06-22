@@ -40,12 +40,12 @@ export function DocumentPreviewContent({
         </div>
       )}
       {url && isImage && (
-        <div
-          className={cn(
-            "w-full flex items-center justify-center p-4",
-            scrollable ? "min-h-full py-8" : "h-full",
-          )}
-        >
+          <div
+            className={cn(
+              "w-full flex justify-center p-4",
+              scrollable ? "min-h-full items-start pt-8" : "h-full items-center",
+            )}
+          >
           <img
             src={url}
             alt={doc.name}
