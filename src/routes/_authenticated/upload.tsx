@@ -20,7 +20,9 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { extractFieldsWithGemini } from "@/lib/gemini.functions";
+import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,8 +71,10 @@ interface FieldEditorProps {
   fields: DocTypeField[];
   values: Record<string, string>;
   onChange: (key: string, value: string) => void;
+  onFieldBlur?: (key: string, value: string) => void;
   idPrefix: string;
 }
+
 
 function sanitizeFieldValue(field: DocTypeField, raw: string): string {
   const isMatricula = field.field_key.toLowerCase().includes("matricula");
@@ -84,28 +88,35 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
   return raw.toUpperCase();
 }
 
-function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
+function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
+        const handleBlur = () => onFieldBlur?.(f.field_key, val);
         return (
           <div key={f.id} className="space-y-0.5">
-            <Label htmlFor={id} className="text-xs">
+            <Label htmlFor={id} className="text-xs flex items-center gap-1">
               {f.label} {f.required && <span className="text-destructive">*</span>}
+              {f.is_lookup_key && (
+                <span className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-primary">
+                  chave
+                </span>
+              )}
             </Label>
             {f.field_type === "textarea" ? (
               <Textarea
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onBlur={handleBlur}
                 rows={2}
                 className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
-              <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
+              <Select value={val} onValueChange={(v) => { onChange(f.field_key, sanitizeFieldValue(f, v)); onFieldBlur?.(f.field_key, v); }}>
                 <SelectTrigger className={cn("h-8 px-2 text-sm", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
@@ -122,6 +133,8 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onBlur={handleBlur}
+                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                 placeholder={f.field_type === "date" ? "DD/MM/AAAA" : undefined}
                 inputMode={f.field_type === "date" ? "numeric" : undefined}
                 className={cn(
@@ -137,6 +150,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
     </div>
   );
 }
+
 
 function PdfFilePreview({ file }: { file: File }) {
   const [data, setData] = useState<ArrayBuffer | null>(null);
@@ -298,12 +312,42 @@ function UploadPage() {
     );
   }
 
+  async function handleKeyFieldBlur(itemId: string, fieldKey: string, value: string) {
+    if (docTypeId === "none") return;
+    const f = fields.find((x) => x.field_key === fieldKey);
+    if (!f?.is_lookup_key) return;
+    const v = (value ?? "").trim();
+    if (!v) return;
+    try {
+      const result = await lookupByKey(docTypeId, v);
+      if (!result) {
+        toast.info("Nenhum registro encontrado na base de lookup");
+        return;
+      }
+      setItems((prev) =>
+        prev.map((i) => {
+          if (i.id !== itemId) return i;
+          const merged = { ...i.fieldValues };
+          for (const [k, val] of Object.entries(result)) {
+            // não sobrescreve valores já preenchidos pelo usuário
+            if (!merged[k] || merged[k].trim() === "") merged[k] = val;
+          }
+          return { ...i, fieldValues: merged };
+        }),
+      );
+      toast.success("Campos preenchidos automaticamente");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha no lookup");
+    }
+  }
+
   async function handleAutoFillAll() {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
+
 
     setIsExtracting(true);
     const fieldDefs = fields.map((f) => ({
@@ -603,8 +647,10 @@ function UploadPage() {
                               fields={fields}
                               values={item.fieldValues}
                               onChange={(k, v) => setItemFieldValue(item.id, k, v)}
+                              onFieldBlur={(k, v) => handleKeyFieldBlur(item.id, k, v)}
                               idPrefix={item.id}
                             />
+
                           ) : (
                             <p className="text-xs text-muted-foreground">
                               Selecione um tipo de documento para preencher a indexação.

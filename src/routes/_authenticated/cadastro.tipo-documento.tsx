@@ -2,9 +2,12 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { FileType, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
+import { Database, FileType, KeyRound, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { LookupImportDialog } from "@/components/lookup-import-dialog";
 import { toast } from "sonner";
+
 
 import { PageHeader } from "@/components/page-stub";
 import { Button } from "@/components/ui/button";
@@ -394,6 +397,7 @@ interface FieldRow {
   field_type: "text" | "number" | "date" | "boolean" | "select";
   required: boolean;
   position: number;
+  is_lookup_key: boolean;
 }
 
 function FieldsDialog({
@@ -411,6 +415,8 @@ function FieldsDialog({
   const [fieldKey, setFieldKey] = useState("");
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
+  const [isLookupKey, setIsLookupKey] = useState(false);
+  const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
     setEditingId(null);
@@ -418,6 +424,7 @@ function FieldsDialog({
     setFieldKey("");
     setFieldType("text");
     setRequired(false);
+    setIsLookupKey(false);
   };
 
   const startEdit = (f: FieldRow) => {
@@ -426,7 +433,9 @@ function FieldsDialog({
     setFieldKey(f.field_key);
     setFieldType(f.field_type);
     setRequired(f.required);
+    setIsLookupKey(!!f.is_lookup_key);
   };
+
 
   const fields = useQuery({
     queryKey: ["doc-type-fields", docType?.id],
@@ -457,6 +466,7 @@ function FieldsDialog({
             field_key: key,
             field_type: fieldType,
             required,
+            is_lookup_key: isLookupKey,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -469,6 +479,7 @@ function FieldsDialog({
           field_key: key,
           field_type: fieldType,
           required,
+          is_lookup_key: isLookupKey,
           position,
         });
         if (error) throw error;
@@ -478,8 +489,17 @@ function FieldsDialog({
       toast.success(editingId ? "Campo atualizado" : "Campo adicionado");
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+      queryClient.invalidateQueries({ queryKey: ["document-type-fields", docType?.id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: any) => {
+      const msg = e?.message ?? "";
+      if (e?.code === "23505" || msg.includes("ux_dtf_one_lookup_key")) {
+        toast.error("Só é permitido um Campo-chave por tipo de documento.");
+        return;
+      }
+      toast.error(msg || "Erro ao salvar campo.");
+    },
+
   });
 
   const removeField = useMutation({
@@ -504,6 +524,25 @@ function FieldsDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {docType && orgId && (
+          <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                Base de lookup para preenchimento automático
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setLookupOpen(true)}
+            >
+              <Database className="h-4 w-4 mr-1" /> Importar base (CSV/XLSX)
+            </Button>
+          </div>
+        )}
+
         <div className="rounded-lg border bg-card overflow-hidden">
           <Table>
             <TableHeader>
@@ -512,13 +551,14 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(fields.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-6 text-sm text-muted-foreground">
                     Nenhum campo definido.
                   </TableCell>
                 </TableRow>
@@ -529,6 +569,15 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell>
+                      {f.is_lookup_key ? (
+                        <Badge variant="default" className="gap-1">
+                          <KeyRound className="h-3 w-3" /> Chave
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
@@ -555,6 +604,7 @@ function FieldsDialog({
             </TableBody>
           </Table>
         </div>
+
 
         <form
           onSubmit={(e) => {
@@ -599,6 +649,16 @@ function FieldsDialog({
               Obrig.
             </label>
           </div>
+          <div className="md:col-span-12 flex items-center gap-2 -mt-1">
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={isLookupKey}
+                onCheckedChange={(c) => setIsLookupKey(c === true)}
+              />
+              <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+              Campo-chave (lookup) — usado para preenchimento automático
+            </label>
+          </div>
           <div className="md:col-span-12 flex justify-end gap-2">
             {editingId && (
               <Button type="button" variant="ghost" onClick={resetForm}>
@@ -618,7 +678,18 @@ function FieldsDialog({
             </Button>
           </div>
         </form>
+
+        {docType && orgId && (
+          <LookupImportDialog
+            open={lookupOpen}
+            onOpenChange={setLookupOpen}
+            documentTypeId={docType.id}
+            orgId={orgId}
+            companyId={docType.company_id ?? null}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
+

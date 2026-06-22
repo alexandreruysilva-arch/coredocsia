@@ -10,6 +10,7 @@ export interface DocTypeField {
   required: boolean;
   position: number;
   options: any;
+  is_lookup_key?: boolean;
 }
 
 export function useDocumentTypeFields(documentTypeId: string | null | undefined) {
