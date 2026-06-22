@@ -24,8 +24,10 @@ export function DocumentPreviewContent({
   return (
     <div
       className={cn(
-        "flex-1 w-full grid place-items-center relative min-h-0",
-        scrollable ? "overflow-auto" : "h-full overflow-hidden",
+        "flex-1 w-full relative min-h-0",
+        scrollable
+          ? "overflow-auto flex items-start justify-center"
+          : "h-full overflow-hidden grid place-items-center",
       )}
     >
       {loading && (
@@ -43,7 +45,7 @@ export function DocumentPreviewContent({
           <div
             className={cn(
               "w-full flex justify-center p-4",
-              scrollable ? "min-h-full items-start pt-8" : "h-full items-center",
+              scrollable ? "items-start pt-12 pb-8" : "h-full items-center",
             )}
           >
           <img
