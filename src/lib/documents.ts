@@ -79,6 +79,9 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   form.append("documentTypeId", documentTypeId);
   form.append("tags", tags.join(","));
   form.append("fieldValues", JSON.stringify(fieldValues ?? {}));
+  if (aiUsage) {
+    form.append("aiUsage", JSON.stringify(aiUsage));
+  }
 
   opts.onProgress?.(40);
   const row = await uploadDocumentToDrive({ data: form });
