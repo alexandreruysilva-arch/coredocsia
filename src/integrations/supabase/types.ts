@@ -24,6 +24,7 @@ export type Database = {
           document_id: string | null
           document_type_id: string | null
           document_type_name: string | null
+          duration_ms: number | null
           error_message: string | null
           file_name: string
           id: string
@@ -43,6 +44,7 @@ export type Database = {
           document_id?: string | null
           document_type_id?: string | null
           document_type_name?: string | null
+          duration_ms?: number | null
           error_message?: string | null
           file_name: string
           id?: string
@@ -62,6 +64,7 @@ export type Database = {
           document_id?: string | null
           document_type_id?: string | null
           document_type_name?: string | null
+          duration_ms?: number | null
           error_message?: string | null
           file_name?: string
           id?: string
