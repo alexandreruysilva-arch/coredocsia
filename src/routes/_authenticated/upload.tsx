@@ -87,7 +87,7 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
-    <div className="flex flex-col gap-1.5 w-full max-w-sm">
+    <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
@@ -584,7 +584,7 @@ function UploadPage() {
                   </div>
                   {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
-                      <div className="grid lg:grid-cols-2 gap-4 pt-2">
+                      <div className="grid lg:grid-cols-[1fr_300px] gap-4 pt-2">
                         <ZoomablePreview>
                           {item.file.type.startsWith("image/") ? (
                             <img
