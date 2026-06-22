@@ -514,15 +514,6 @@ function DocumentsPage() {
                                     {editorMap[doc.last_edited_by] ?? "—"}
                                   </span>
 
-                                  <span className="text-muted-foreground text-xs">Empresa</span>
-                                  <span className="col-span-2 text-xs">
-                                    {companyName(doc.company_id)}
-                                  </span>
-
-                                  <span className="text-muted-foreground text-xs">Tipo</span>
-                                  <span className="col-span-2 text-xs">
-                                    {typeName(doc.document_type_id)}
-                                  </span>
 
                                   <span className="text-muted-foreground text-xs">Custo IA</span>
                                   <span className="col-span-2 text-xs">
