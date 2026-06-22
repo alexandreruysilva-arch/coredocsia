@@ -32,7 +32,9 @@ export const Route = createFileRoute("/_authenticated/queue")({
   component: QueuePage,
 });
 
-type QueueDoc = DocumentRow & { ai_usage_logs?: { id: string }[] };
+type QueueDoc = DocumentRow & {
+  ai_usage_logs?: { id: string; duration_ms: number | null }[];
+};
 type QueueStatus = DocStatus | "processed_ai" | "processed_manual" | "all";
 
 function QueuePage() {
