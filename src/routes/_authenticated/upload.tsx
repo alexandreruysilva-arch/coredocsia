@@ -169,7 +169,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
 
   return (
     <div className="relative w-full max-h-[360px] overflow-auto flex items-start justify-start" ref={containerRef}>
-      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
+      <div className="sticky top-2 left-full z-10 ml-auto mb-2 flex w-fit items-center gap-1 rounded-md border border-border bg-card/90 p-1 shadow-sm backdrop-blur">
         <Button
           type="button"
           size="icon"
@@ -204,7 +204,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
         </Button>
       </div>
       <div
-        className="origin-top-left transition-transform inline-block"
+        className="origin-top-left inline-block transition-transform"
         style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
       >
         {children}
