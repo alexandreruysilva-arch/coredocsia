@@ -466,6 +466,7 @@ function FieldsDialog({
             field_key: key,
             field_type: fieldType,
             required,
+            is_lookup_key: isLookupKey,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -478,6 +479,7 @@ function FieldsDialog({
           field_key: key,
           field_type: fieldType,
           required,
+          is_lookup_key: isLookupKey,
           position,
         });
         if (error) throw error;
@@ -487,8 +489,17 @@ function FieldsDialog({
       toast.success(editingId ? "Campo atualizado" : "Campo adicionado");
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+      queryClient.invalidateQueries({ queryKey: ["document-type-fields", docType?.id] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: any) => {
+      const msg = e?.message ?? "";
+      if (e?.code === "23505" || msg.includes("ux_dtf_one_lookup_key")) {
+        toast.error("Só é permitido um Campo-chave por tipo de documento.");
+        return;
+      }
+      toast.error(msg || "Erro ao salvar campo.");
+    },
+
   });
 
   const removeField = useMutation({
