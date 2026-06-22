@@ -122,6 +122,20 @@ function AuditPage() {
     },
   });
 
+  const { data: orgPrice } = useQuery({
+    queryKey: ["org-ai-price", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("ai_cost_per_file")
+        .eq("id", orgId!)
+        .maybeSingle();
+      return Number(data?.ai_cost_per_file ?? 0.15);
+    },
+  });
+
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return logs;
