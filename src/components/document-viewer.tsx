@@ -7,6 +7,7 @@ import { DocumentPreviewContent } from "@/components/document-preview-content";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,12 +18,14 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
 
     setLoading(true);
     setUrl(null);
+    setSignedUrl(null);
     setFileData(null);
     setError(null);
 
     getFileUrl(doc.id)
       .then(async (viewUrl) => {
         if (!viewUrl) throw new Error("Sessão não encontrada");
+        if (active) setSignedUrl(viewUrl);
 
         const response = await fetch(viewUrl);
         if (!response.ok) {
