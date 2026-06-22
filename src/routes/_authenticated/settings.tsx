@@ -157,9 +157,10 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
   const [isSaving, setIsSaving] = useState(false);
 
   // sync default
-  if (!isLoading && price === "" && data?.ai_cost_per_file != null) {
-    setPrice(String(data.ai_cost_per_file));
-  }
+  useEffect(() => {
+    if (data?.ai_cost_per_file != null) setPrice(String(data.ai_cost_per_file));
+  }, [data?.ai_cost_per_file]);
+
 
   async function handleSave() {
     const parsed = Number(String(price).replace(",", "."));
