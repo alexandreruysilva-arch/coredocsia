@@ -107,7 +107,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
-                <SelectTrigger className={cn("h-9 px-2.5 text-sm", isMatricula ? undefined : "uppercase")}>
+                <SelectTrigger className={cn("h-8 px-2 text-sm", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
