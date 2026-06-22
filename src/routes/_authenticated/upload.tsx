@@ -207,7 +207,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
         </Button>
       </div>
       <div
-        className="origin-center transition-transform flex items-center justify-center"
+        className="origin-center transition-transform grid place-items-center"
         style={{
           transform: `scale(${scale})`,
           width: `${100 / scale}%`,
