@@ -454,7 +454,7 @@ function DocumentsPage() {
                     </>
                   );
                 })()}
-                {filteredDocs.map((doc: any) => {
+                {pagedDocs.map((doc: any) => {
                   const fv = (doc.field_values ?? {}) as Record<string, unknown>;
                   const fmt = (v: unknown) => {
                     if (v === null || v === undefined || v === "") return "—";
