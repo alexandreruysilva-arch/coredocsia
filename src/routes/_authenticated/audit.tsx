@@ -359,6 +359,7 @@ function AuditPage() {
                   <TableHead className="text-right">Prompt</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
+                  <TableHead className="text-right">Tempo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
