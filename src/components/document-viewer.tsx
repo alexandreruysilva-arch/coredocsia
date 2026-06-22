@@ -122,7 +122,13 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
               </div>
             </div>
           ) : (
-            <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
+            <DocumentPreviewContent
+              doc={doc}
+              url={url}
+              fileData={fileData}
+              loading={loading}
+              scrollable
+            />
           )}
         </DialogContent>
       </Dialog>
