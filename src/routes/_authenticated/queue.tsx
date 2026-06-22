@@ -102,6 +102,16 @@ function QueuePage() {
     };
   }, [orgId, queryClient]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [status]);
+
+  const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
+  const paginatedDocs = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return docs.slice(start, start + pageSize);
+  }, [docs, page]);
+
   const counts = useMemo(() => {
     const c = {
       pending: 0,
