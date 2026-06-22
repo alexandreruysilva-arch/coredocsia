@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileText, Loader2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,16 +26,36 @@ export function DocumentPreviewContent({
   const minZoom = 0.5;
   const maxZoom = 3;
   const step = 0.25;
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const zoomIn = () => setZoom((z) => Math.min(maxZoom, Number((z + step).toFixed(2))));
-  const zoomOut = () => setZoom((z) => Math.max(minZoom, Number((z - step).toFixed(2))));
+  const clampZoom = (z: number) =>
+    Math.min(maxZoom, Math.max(minZoom, Number(z.toFixed(2))));
+  const zoomIn = () => setZoom((z) => clampZoom(z + step));
+  const zoomOut = () => setZoom((z) => clampZoom(z - step));
   const resetZoom = () => setZoom(1);
 
   const isImage = doc.mime_type.startsWith("image/");
   const isPdf = doc.mime_type === "application/pdf";
 
+  useEffect(() => {
+    if (!zoomable || !isImage) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      // Ctrl+scroll (mouse) e pinch em trackpad emitem ctrlKey=true
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const delta = -e.deltaY;
+      const factor = delta > 0 ? 1.1 : 1 / 1.1;
+      setZoom((z) => clampZoom(z * factor));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [zoomable, isImage]);
+
   return (
     <div
+      ref={containerRef}
       className={cn(
         "flex-1 w-full grid place-items-center relative min-h-0",
         scrollable ? "overflow-auto" : "h-full overflow-hidden",
