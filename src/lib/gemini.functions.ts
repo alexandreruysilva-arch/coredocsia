@@ -134,7 +134,7 @@ ${schemaDesc}
 Regras de saída (siga RIGOROSAMENTE):
 - Retorne EXCLUSIVAMENTE um objeto JSON válido, sem markdown, sem comentários, sem texto extra.
 - Use exatamente as chaves listadas (field_key).
-- Campos do tipo "date": formato ISO "YYYY-MM-DD".
+- Campos do tipo "date": formato brasileiro "DD/MM/AAAA" (dia/mês/ano com 2/2/4 dígitos, separados por barra).
 - Campos do tipo "number": apenas o número, sem símbolos de moeda nem separador de milhar; use ponto como decimal.
 - Campos cujo field_key contenha "matricula": retorne APENAS os dígitos numéricos, removendo letras, pontos, traços, barras e espaços.
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
@@ -246,7 +246,21 @@ Regras de saída (siga RIGOROSAMENTE):
       const isMatricula = f.field_key.toLowerCase().includes("matricula");
       if (isMatricula) {
         result[f.field_key] = s.replace(/\D/g, "");
-      } else if (f.field_type === "number" || f.field_type === "date") {
+      } else if (f.field_type === "date") {
+        // Normaliza para DD/MM/AAAA (formato brasileiro)
+        const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const brMatch = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+        if (isoMatch) {
+          result[f.field_key] = `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+        } else if (brMatch) {
+          const d = brMatch[1].padStart(2, "0");
+          const m = brMatch[2].padStart(2, "0");
+          const y = brMatch[3].length === 2 ? `20${brMatch[3]}` : brMatch[3];
+          result[f.field_key] = `${d}/${m}/${y}`;
+        } else {
+          result[f.field_key] = s;
+        }
+      } else if (f.field_type === "number") {
         result[f.field_key] = s;
       } else {
         result[f.field_key] = s.toUpperCase();
