@@ -473,7 +473,7 @@ function DocumentsPage() {
                       {typeId !== "all" &&
                         typeFields.map((f) => {
                           const raw = fv[f.field_key];
-                          let cell: React.ReactNode = fmt(raw);
+                          let cell: ReactNode = fmt(raw);
                           if (
                             f.field_type === "date" &&
                             typeof raw === "string" &&
