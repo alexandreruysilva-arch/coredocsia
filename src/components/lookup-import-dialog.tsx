@@ -141,9 +141,13 @@ export function LookupImportDialog({
 
       const byKey = new Map<string, any>();
       let skippedDup = 0;
+      let skippedEmpty = 0;
       for (const r of rows) {
         const key = normalizeLookupKey(r[keyCol] ?? "");
-        if (!key) continue;
+        if (!key) {
+          skippedEmpty++;
+          continue;
+        }
         const values: Record<string, string> = {};
         for (const f of fields) {
           if (f.is_lookup_key) continue;
@@ -162,9 +166,6 @@ export function LookupImportDialog({
         });
       }
       const payload = Array.from(byKey.values());
-      if (skippedDup > 0) {
-        toast.info(`${skippedDup} linha(s) duplicada(s) pela chave — mantida a última ocorrência`);
-      }
 
       if (payload.length === 0) throw new Error("Nenhuma linha válida (chave vazia)");
 
@@ -178,13 +179,21 @@ export function LookupImportDialog({
         if (error) throw error;
         inserted += slice.length;
       }
-      return inserted;
+      return { inserted, totalRows: rows.length, skippedDup, skippedEmpty };
     },
-    onSuccess: (n) => {
-      toast.success(`${n} registro(s) importado(s)`);
+    onSuccess: (res) => {
+      const parts = [
+        `${res.inserted} chave(s) única(s) salva(s) de ${res.totalRows} linha(s) do arquivo`,
+      ];
+      if (res.skippedDup > 0)
+        parts.push(`${res.skippedDup} linha(s) com chave repetida no arquivo (mantida a última)`);
+      if (res.skippedEmpty > 0)
+        parts.push(`${res.skippedEmpty} linha(s) sem chave ignorada(s)`);
+      toast.success(parts.join(" · "));
       qc.invalidateQueries({ queryKey: ["doc-type-lookup-count", documentTypeId] });
       close();
     },
+
     onError: (e: any) => toast.error(e.message ?? "Falha na importação"),
     onSettled: () => setBusy(false),
   });
