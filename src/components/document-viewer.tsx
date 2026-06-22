@@ -3,7 +3,6 @@ import { Download, FileText, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getFileUrl, type DocumentRow } from "@/lib/documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { DocumentPreviewContent } from "@/components/document-preview-content";
 
 export function DocumentViewer({ doc }: { doc: DocumentRow }) {
@@ -11,7 +10,6 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
   const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -89,13 +87,11 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         </div>
         <div className="flex items-center gap-2">
           {url && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setExpanded(true)}
-            >
-              <Maximize2 className="h-4 w-4 mr-1.5" />
-              Abrir
+            <Button asChild size="sm" variant="outline">
+              <a href={url} target="_blank" rel="noreferrer">
+                <Maximize2 className="h-4 w-4 mr-1.5" />
+                Abrir
+              </a>
             </Button>
           )}
           {url && (
@@ -118,30 +114,6 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
       ) : (
         <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
       )}
-      <Dialog open={expanded} onOpenChange={setExpanded}>
-        <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-border bg-card min-w-0">
-            <DialogTitle className="text-sm truncate pr-8">{doc.name}</DialogTitle>
-          </div>
-          {error ? (
-            <div className="flex-1 grid place-items-center p-6 text-center text-muted-foreground">
-              <div>
-                <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
-                <p className="text-sm">Não foi possível carregar a pré-visualização.</p>
-                <p className="mt-1 text-xs">{error}</p>
-              </div>
-            </div>
-          ) : (
-            <DocumentPreviewContent
-              doc={doc}
-              url={url}
-              fileData={fileData}
-              loading={loading}
-              scrollable
-            />
-          )}
-        </DialogContent>
-      </Dialog>
       {fields && fields.length > 0 && (
         <div className="border-t border-border bg-card p-4 max-h-[50%] overflow-y-auto">
           <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
