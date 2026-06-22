@@ -213,16 +213,6 @@ Regras de saída (siga RIGOROSAMENTE):
       throw new Error(friendly);
     }
 
-    if (!resp.ok) {
-      const errText = lastErrText;
-      await writeFailureLog({
-        prompt: 0,
-        completion: 0,
-        total: 0,
-        error: `Gemini ${resp.status}: ${errText.slice(0, 200)}`,
-      });
-      throw new Error(`Gemini API erro ${resp.status}: ${errText.slice(0, 400)}`);
-    }
 
     const json = (await resp.json()) as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
