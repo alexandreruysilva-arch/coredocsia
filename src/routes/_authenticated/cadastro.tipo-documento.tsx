@@ -649,7 +649,50 @@ function FieldsDialog({
               Obrig.
             </label>
           </div>
+          <div className="md:col-span-12 flex items-center gap-2 -mt-1">
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox
+                checked={isLookupKey}
+                onCheckedChange={(c) => setIsLookupKey(c === true)}
+              />
+              <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+              Campo-chave (lookup) — usado para preenchimento automático
+            </label>
+          </div>
           <div className="md:col-span-12 flex justify-end gap-2">
+            {editingId && (
+              <Button type="button" variant="ghost" onClick={resetForm}>
+                Cancelar edição
+              </Button>
+            )}
+            <Button type="button" variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+            <Button type="submit" disabled={save.isPending}>
+              <Plus className="h-4 w-4 mr-1" />
+              {save.isPending
+                ? "Salvando..."
+                : editingId
+                  ? "Salvar alterações"
+                  : "Adicionar campo"}
+            </Button>
+          </div>
+        </form>
+
+        {docType && orgId && (
+          <LookupImportDialog
+            open={lookupOpen}
+            onOpenChange={setLookupOpen}
+            documentTypeId={docType.id}
+            orgId={orgId}
+            companyId={docType.company_id ?? null}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
             {editingId && (
               <Button type="button" variant="ghost" onClick={resetForm}>
                 Cancelar edição
