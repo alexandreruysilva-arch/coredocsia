@@ -117,6 +117,7 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       .insert({
         org_id: company.org_id,
         uploaded_by: userId,
+        last_edited_by: userId,
         name,
         original_filename: file.name,
         mime_type: file.type || "application/octet-stream",
@@ -138,6 +139,26 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       await deleteDriveFile(uploaded.id).catch(() => {});
       throw insertErr ?? new Error("Falha ao criar documento");
     }
+
+    // 7. Registra log de uso de tokens da IA vinculado ao documento criado.
+    if (aiUsage && aiUsage.total_tokens != null) {
+      await supabase.from("ai_usage_logs").insert({
+        org_id: company.org_id,
+        user_id: userId,
+        document_id: row.id,
+        company_id: company.id,
+        company_name: company.name,
+        document_type_id: docType.id,
+        document_type_name: docType.name,
+        file_name: file.name,
+        model: aiUsage.model ?? "gemini-2.5-flash-lite",
+        prompt_tokens: aiUsage.prompt_tokens ?? 0,
+        completion_tokens: aiUsage.completion_tokens ?? 0,
+        total_tokens: aiUsage.total_tokens ?? 0,
+        success: true,
+      });
+    }
+
     return row;
   });
 
