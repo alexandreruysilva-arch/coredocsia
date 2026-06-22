@@ -73,9 +73,9 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
       try {
         const page = await pdf.getPage(pageNumber);
         if (cancelled) return;
-        const containerWidth = Math.max(canvas.parentElement?.clientWidth ?? 0, 600);
+        const containerWidth = Math.max(canvas.parentElement?.clientWidth ?? 0, 500);
         const baseViewport = page.getViewport({ scale: 1 });
-        const cssScale = Math.min(containerWidth / baseViewport.width, 2);
+        const cssScale = Math.min(containerWidth / baseViewport.width, 1.2);
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const renderScale = cssScale * dpr;
         const cssViewport = page.getViewport({ scale: cssScale });
@@ -112,7 +112,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
 
   return (
     <div className="relative w-full flex flex-col">
-      {numPages > 1 && (
+      {numPages > 0 && (
         <div className="flex items-center justify-start gap-1.5 px-2 py-1.5">
           <Button
             size="icon"
@@ -124,7 +124,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
             <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
           <span className="text-xs text-muted-foreground tabular-nums px-1">
-            Página {pageNumber} de {numPages}
+            Página {pageNumber} de {numPages || 1}
           </span>
           <Button
             size="icon"
@@ -137,7 +137,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           </Button>
         </div>
       )}
-      <div className="relative">
+      <div className="relative max-h-[500px] overflow-auto">
         {isRendering && (
           <div className="absolute inset-0 grid place-items-center z-10">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
