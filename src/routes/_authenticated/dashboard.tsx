@@ -1,22 +1,182 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { format, subDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  Upload,
+  ListChecks,
+  FolderOpen,
+  Wallet,
+  ArrowRight,
+  FileText,
+  Clock,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
+  Building2,
+  TrendingUp,
+} from "lucide-react";
 import { PageHeader } from "@/components/page-stub";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, ListChecks, FolderOpen, Wallet, ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
+import { supabase } from "@/integrations/supabase/client";
+import type { DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+interface DashboardData {
+  total: number;
+  pending: number;
+  processing: number;
+  processed: number;
+  failed: number;
+  last30: number;
+  last7: number;
+  aiCostMonth: number;
+  aiCallsMonth: number;
+  recent: DocumentRow[];
+  byType: { name: string; count: number }[];
+  byCompany: { name: string; count: number }[];
+  companiesCount: number;
+  typesCount: number;
+}
+
 function Dashboard() {
-  const { data, loading } = useProfileBundle();
+  const { data: profile, loading } = useProfileBundle();
+  const orgId = profile?.currentOrg?.id ?? null;
+
+  const { data, isLoading } = useQuery<DashboardData | null>({
+    queryKey: ["dashboard", orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      if (!orgId) return null;
+      const since30 = subDays(new Date(), 30).toISOString();
+      const since7 = subDays(new Date(), 7).toISOString();
+      const sinceMonth = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        1,
+      ).toISOString();
+
+      const [docsRes, recentRes, aiRes, companiesRes, typesRes] = await Promise.all([
+        supabase
+          .from("documents")
+          .select("id, status, created_at, document_type_id, company_id")
+          .eq("org_id", orgId)
+          .is("deleted_at", null),
+        supabase
+          .from("documents")
+          .select("*")
+          .eq("org_id", orgId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .limit(8),
+        supabase
+          .from("ai_usage_logs")
+          .select("cost_brl, document_type_name, company_name, created_at")
+          .eq("org_id", orgId)
+          .gte("created_at", sinceMonth),
+        supabase.from("companies").select("id, name").eq("org_id", orgId),
+        supabase.from("document_types").select("id, name").eq("org_id", orgId),
+      ]);
+
+      const all = docsRes.data ?? [];
+      const types = typesRes.data ?? [];
+      const companies = companiesRes.data ?? [];
+      const typeMap = new Map(types.map((t: any) => [t.id, t.name]));
+      const companyMap = new Map(companies.map((c: any) => [c.id, c.name]));
+
+      const counts = { pending: 0, processing: 0, processed: 0, failed: 0 };
+      let last30 = 0;
+      let last7 = 0;
+      const typeAgg = new Map<string, number>();
+      const companyAgg = new Map<string, number>();
+
+      for (const d of all as any[]) {
+        counts[d.status as keyof typeof counts] =
+          (counts[d.status as keyof typeof counts] ?? 0) + 1;
+        if (d.created_at >= since30) last30++;
+        if (d.created_at >= since7) last7++;
+        const tName = typeMap.get(d.document_type_id) ?? "Sem tipo";
+        typeAgg.set(tName, (typeAgg.get(tName) ?? 0) + 1);
+        const cName = companyMap.get(d.company_id) ?? "Sem empresa";
+        companyAgg.set(cName, (companyAgg.get(cName) ?? 0) + 1);
+      }
+
+      const aiLogs = aiRes.data ?? [];
+      const aiCostMonth = aiLogs.reduce(
+        (s: number, l: any) => s + Number(l.cost_brl ?? 0),
+        0,
+      );
+
+      return {
+        total: all.length,
+        pending: counts.pending,
+        processing: counts.processing,
+        processed: counts.processed,
+        failed: counts.failed,
+        last30,
+        last7,
+        aiCostMonth,
+        aiCallsMonth: aiLogs.length,
+        recent: (recentRes.data ?? []) as DocumentRow[],
+        byType: Array.from(typeAgg.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 6),
+        byCompany: Array.from(companyAgg.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 6),
+        companiesCount: companies.length,
+        typesCount: types.length,
+      };
+    },
+  });
+
+  const firstName = profile?.profile.full_name?.split(" ")[0] ?? "usuário";
+  const fmt = (n: number) => n.toLocaleString("pt-BR");
+  const fmtBRL = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const stats = [
-    { label: "Documentos processados", value: "—", hint: "Últimos 30 dias" },
-    { label: "Na fila", value: "—", hint: "Aguardando OCR" },
-    { label: "Créditos disponíveis", value: "—", hint: "Saldo atual" },
-    { label: "Workflow pendente", value: "—", hint: "Aguardando revisão" },
+    {
+      label: "Total de documentos",
+      value: data ? fmt(data.total) : "—",
+      hint: data ? `${fmt(data.last30)} nos últimos 30 dias` : "Últimos 30 dias",
+      icon: FileText,
+      color: "text-primary",
+    },
+    {
+      label: "Na fila",
+      value: data ? fmt(data.pending + data.processing) : "—",
+      hint: data
+        ? `${fmt(data.pending)} aguardando · ${fmt(data.processing)} processando`
+        : "Aguardando processamento",
+      icon: Clock,
+      color: "text-amber-500",
+    },
+    {
+      label: "Processados",
+      value: data ? fmt(data.processed) : "—",
+      hint: data
+        ? `${fmt(data.failed)} com falha`
+        : "Concluídos com sucesso",
+      icon: CheckCircle2,
+      color: "text-emerald-500",
+    },
+    {
+      label: "Custo IA (mês)",
+      value: data ? fmtBRL(data.aiCostMonth) : "—",
+      hint: data ? `${fmt(data.aiCallsMonth)} processamentos` : "Saldo do mês",
+      icon: Sparkles,
+      color: "text-violet-500",
+    },
   ];
 
   const shortcuts = [
@@ -26,40 +186,48 @@ function Dashboard() {
     { to: "/credits", label: "Comprar créditos", icon: Wallet },
   ];
 
+  const maxType = Math.max(1, ...(data?.byType.map((t) => t.count) ?? [0]));
+  const maxCompany = Math.max(1, ...(data?.byCompany.map((t) => t.count) ?? [0]));
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <PageHeader
-        title={`Olá, ${loading ? "..." : data?.profile.full_name?.split(" ")[0] ?? "usuário"}`}
+        title={`Olá, ${loading ? "..." : firstName}`}
         description={
-          data?.currentOrg
-            ? `Organização ativa: ${data.currentOrg.name}`
+          profile?.currentOrg
+            ? `Organização ativa: ${profile.currentOrg.name}`
             : "Configure sua organização para começar."
         }
       />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Stats */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s) => (
           <Card key={s.label} className="border-border/60">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {s.label}
               </CardTitle>
+              <s.icon className={`h-4 w-4 ${s.color}`} />
             </CardHeader>
             <CardContent>
-              <div className="font-display text-3xl font-bold">{s.value}</div>
+              <div className="font-display text-3xl font-bold">
+                {isLoading ? "…" : s.value}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">{s.hint}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Atalhos */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {shortcuts.map((s) => (
           <Button
             key={s.to}
             asChild
             variant="outline"
-            className="h-auto py-5 justify-between group"
+            className="h-auto py-4 justify-between group"
           >
             <Link to={s.to}>
               <span className="flex items-center gap-3">
@@ -72,16 +240,163 @@ function Dashboard() {
         ))}
       </div>
 
-      <Card className="mt-8 border-border/60 bg-accent/30">
-        <CardContent className="pt-6">
-          <h3 className="font-display font-semibold">Próximos passos</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            A fundação multi-tenant está ativa. Os módulos de upload, OCR, GED, créditos,
-            workflow e retenção serão implementados nas próximas fases conforme o roadmap
-            do PRD.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Two-column: recentes + breakdowns */}
+      <div className="grid lg:grid-cols-3 gap-4 mb-6">
+        <Card className="lg:col-span-2 border-border/60">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-base">Documentos recentes</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">
+                Últimos enviados na organização
+              </p>
+            </div>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/documents">
+                Ver todos <ArrowRight className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-6 text-sm text-muted-foreground">Carregando…</div>
+            ) : !data?.recent.length ? (
+              <div className="p-10 text-center text-sm text-muted-foreground">
+                Nenhum documento enviado ainda.
+                <div className="mt-3">
+                  <Button asChild size="sm">
+                    <Link to="/upload">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Enviar primeiro documento
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border/60">
+                {data.recent.map((d) => (
+                  <li key={d.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors">
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/documents/$id"
+                        params={{ id: d.id }}
+                        className="text-sm font-medium truncate block hover:text-primary"
+                      >
+                        {d.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(d.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <StatusBadge status={d.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                Atividade
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Row label="Últimos 7 dias" value={fmt(data?.last7 ?? 0)} />
+              <Row label="Últimos 30 dias" value={fmt(data?.last30 ?? 0)} />
+              <Row label="Tipos cadastrados" value={fmt(data?.typesCount ?? 0)} />
+              <Row label="Empresas" value={fmt(data?.companiesCount ?? 0)} />
+              {data && data.failed > 0 && (
+                <div className="flex items-center gap-2 pt-2 border-t border-border/60 text-xs text-destructive">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {fmt(data.failed)} documento(s) com falha
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Breakdowns */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <BreakdownCard
+          title="Documentos por tipo"
+          icon={FolderOpen}
+          items={data?.byType ?? []}
+          max={maxType}
+          loading={isLoading}
+        />
+        <BreakdownCard
+          title="Documentos por empresa"
+          icon={Building2}
+          items={data?.byCompany ?? []}
+          max={maxCompany}
+          loading={isLoading}
+        />
+      </div>
     </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+function BreakdownCard({
+  title,
+  icon: Icon,
+  items,
+  max,
+  loading,
+}: {
+  title: string;
+  icon: typeof FolderOpen;
+  items: { name: string; count: number }[];
+  max: number;
+  loading: boolean;
+}) {
+  return (
+    <Card className="border-border/60">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Icon className="h-4 w-4 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className="text-sm text-muted-foreground">Carregando…</p>
+        ) : !items.length ? (
+          <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
+        ) : (
+          <ul className="space-y-2.5">
+            {items.map((item) => (
+              <li key={item.name}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="truncate pr-2">{item.name}</span>
+                  <Badge variant="secondary" className="tabular-nums">
+                    {item.count.toLocaleString("pt-BR")}
+                  </Badge>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{ width: `${(item.count / max) * 100}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   );
 }
