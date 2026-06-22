@@ -111,7 +111,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         <DocumentPreviewContent doc={doc} url={url} fileData={fileData} loading={loading} />
       )}
       <Dialog open={expanded} onOpenChange={setExpanded}>
-        <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden">
+        <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden flex flex-col">
           <div className="px-4 py-3 border-b border-border bg-card min-w-0">
             <DialogTitle className="text-sm truncate pr-8">{doc.name}</DialogTitle>
           </div>
