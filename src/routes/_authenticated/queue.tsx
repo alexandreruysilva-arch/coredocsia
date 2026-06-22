@@ -181,10 +181,9 @@ function QueuePage() {
             variant="outline"
             className="gap-1.5 font-normal bg-success/10 text-success border-success/20"
           >
-            <CheckCircle2 className="h-3 w-3" /> Processado
+            <CheckCircle2 className="h-3 w-3" /> Indexação Manual
           </Badge>
-          <p className="text-muted-foreground text-xs mt-1">Indexação manual</p>
-          <p className="text-3xl font-display font-semibold mt-1">{counts.processed_manual}</p>
+          <p className="text-3xl font-display font-semibold mt-2">{counts.processed_manual}</p>
         </Card>
         <Card className="p-4">
           <StatusBadge status="failed" />
@@ -203,7 +202,7 @@ function QueuePage() {
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="processing">Processando</SelectItem>
               <SelectItem value="processed_ai">Processado IA</SelectItem>
-              <SelectItem value="processed_manual">Processado (indexação manual)</SelectItem>
+              <SelectItem value="processed_manual">Indexação Manual</SelectItem>
               <SelectItem value="processed">Processado (todos)</SelectItem>
               <SelectItem value="failed">Falhou</SelectItem>
             </SelectContent>
