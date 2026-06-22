@@ -181,10 +181,9 @@ function QueuePage() {
             variant="outline"
             className="gap-1.5 font-normal bg-success/10 text-success border-success/20"
           >
-            <CheckCircle2 className="h-3 w-3" /> Processado
+            <CheckCircle2 className="h-3 w-3" /> Indexação Manual
           </Badge>
-          <p className="text-muted-foreground text-xs mt-1">Indexação manual</p>
-          <p className="text-3xl font-display font-semibold mt-1">{counts.processed_manual}</p>
+          <p className="text-3xl font-display font-semibold mt-2">{counts.processed_manual}</p>
         </Card>
         <Card className="p-4">
           <StatusBadge status="failed" />
