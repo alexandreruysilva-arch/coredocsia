@@ -208,7 +208,10 @@ function AuditPage() {
           <div className="text-2xl font-bold mt-1">
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">R$ 0,15 por arquivo</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} por arquivo
+          </div>
+
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
