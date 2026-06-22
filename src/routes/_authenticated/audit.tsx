@@ -167,6 +167,7 @@ function AuditPage() {
                 <TableRow>
                   <TableHead>Empresa</TableHead>
                   <TableHead className="text-right">Arquivos</TableHead>
+                  <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tokens totais</TableHead>
                 </TableRow>
               </TableHeader>
@@ -175,6 +176,9 @@ function AuditPage() {
                   <TableRow key={name}>
                     <TableCell className="font-medium">{name}</TableCell>
                     <TableCell className="text-right">{v.files}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      R$ {v.cost.toFixed(2).replace(".", ",")}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {v.tokens.toLocaleString("pt-BR")}
                     </TableCell>
