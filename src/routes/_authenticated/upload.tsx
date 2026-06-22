@@ -87,14 +87,14 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
-    <div className="flex flex-col gap-3 w-full max-w-xl">
+    <div className="flex flex-col gap-2 w-full max-w-xl">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         return (
-          <div key={f.id} className="space-y-1.5">
-            <Label htmlFor={id} className="text-sm">
+          <div key={f.id} className="space-y-1">
+            <Label htmlFor={id} className="text-xs">
               {f.label} {f.required && <span className="text-destructive">*</span>}
             </Label>
             {f.field_type === "textarea" ? (
@@ -103,11 +103,11 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 rows={2}
-                className={cn("min-h-[64px]", isMatricula ? undefined : "uppercase")}
+                className={cn("min-h-[56px] py-1.5", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
-                <SelectTrigger className={cn("h-10", isMatricula ? undefined : "uppercase")}>
+                <SelectTrigger className={cn("h-9 px-2.5 text-sm", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,7 +124,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 className={cn(
-                  "h-10",
+                  "h-9 px-2.5 text-sm",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
                 )}
                 type={
