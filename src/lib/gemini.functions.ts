@@ -98,9 +98,9 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
       });
     }
 
-    const buf = await file.arrayBuffer();
+    const buf = await uploadFile.arrayBuffer();
     const base64 = Buffer.from(buf).toString("base64");
-    const mimeType = file.type || "application/octet-stream";
+    const mimeType = uploadFile.type || "application/octet-stream";
 
     const schemaDesc = fields
       .map((f) => {
