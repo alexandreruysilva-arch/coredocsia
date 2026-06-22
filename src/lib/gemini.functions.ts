@@ -88,7 +88,7 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
         company_name: companyName,
         document_type_id: documentTypeId,
         document_type_name: documentTypeName,
-        file_name: file.name,
+        file_name: uploadFile.name,
         model: MODEL,
         prompt_tokens: args.prompt,
         completion_tokens: args.completion,
