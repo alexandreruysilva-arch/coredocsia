@@ -269,9 +269,16 @@ function AuditPage() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <TrendingUp className="h-4 w-4" /> Tokens prompt
+            <Timer className="h-4 w-4" /> Tempo médio IA
           </div>
-          <div className="text-2xl font-bold mt-1">{totals.prompt.toLocaleString("pt-BR")}</div>
+          <div className="text-2xl font-bold mt-1">
+            {totals.durationCount > 0
+              ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
+              : "—"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {totals.durationCount} medições
+          </div>
         </Card>
       </div>
 
