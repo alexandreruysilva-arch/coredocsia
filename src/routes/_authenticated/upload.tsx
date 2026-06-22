@@ -172,7 +172,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
 
   return (
     <div className="relative w-full h-full overflow-auto" ref={containerRef}>
-      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
         <Button
           type="button"
           size="icon"
