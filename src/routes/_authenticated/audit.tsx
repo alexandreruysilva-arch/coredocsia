@@ -195,6 +195,16 @@ function AuditPage() {
     return [...map.entries()].sort((a, b) => b[1].cost - a[1].cost);
   }, [filtered]);
 
+  const deleteLog = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("ai_usage_logs").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai-usage-logs", orgId] });
+    },
+  });
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <header>
@@ -319,6 +329,7 @@ function AuditPage() {
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -353,6 +364,26 @@ function AuditPage() {
                           Falha
                         </Badge>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        aria-label="Excluir registro"
+                        disabled={deleteLog.isPending && deleteLog.variables === l.id}
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Tem certeza que deseja excluir o registro de "${l.file_name}"? Esta ação não pode ser desfeita.`,
+                            )
+                          ) {
+                            deleteLog.mutate(l.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
