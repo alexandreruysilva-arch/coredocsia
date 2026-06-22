@@ -134,7 +134,7 @@ function AuditPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, success, error_message",
+          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, success, error_message",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
