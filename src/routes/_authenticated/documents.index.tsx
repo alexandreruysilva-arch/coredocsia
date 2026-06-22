@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info } from "lucide-react";
@@ -143,14 +143,28 @@ function DocumentsPage() {
         return true;
       });
 
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredDocs.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [companyId, typeId, search, JSON.stringify(fieldFilters)]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pagedDocs = filteredDocs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
 
   // Map de uploader_id -> nome, para mostrar o operador que indexou.
   const uploaderIds = useMemo(
     () =>
       Array.from(
-        new Set(filteredDocs.map((d: any) => d.uploaded_by).filter(Boolean)),
+        new Set(pagedDocs.map((d: any) => d.uploaded_by).filter(Boolean)),
       ) as string[],
-    [filteredDocs],
+    [pagedDocs],
   );
   const { data: uploaderMap = {} } = useQuery({
     queryKey: ["profiles-by-ids", uploaderIds.sort().join(",")],
@@ -171,9 +185,9 @@ function DocumentsPage() {
   const editorIds = useMemo(
     () =>
       Array.from(
-        new Set(filteredDocs.map((d: any) => d.last_edited_by).filter(Boolean)),
+        new Set(pagedDocs.map((d: any) => d.last_edited_by).filter(Boolean)),
       ) as string[],
-    [filteredDocs],
+    [pagedDocs],
   );
   const { data: editorMap = {} } = useQuery({
     queryKey: ["profiles-by-ids", editorIds.sort().join(",")],
@@ -192,8 +206,8 @@ function DocumentsPage() {
 
   // Map de document_id -> total de tokens consumidos na extração por IA.
   const docIds = useMemo(
-    () => Array.from(new Set(filteredDocs.map((d: any) => d.id))) as string[],
-    [filteredDocs],
+    () => Array.from(new Set(pagedDocs.map((d: any) => d.id))) as string[],
+    [pagedDocs],
   );
   const { data: usageMap = {} } = useQuery({
     queryKey: ["ai-usage-by-docs", orgId, docIds.sort().join(",")],
@@ -440,7 +454,7 @@ function DocumentsPage() {
                     </>
                   );
                 })()}
-                {filteredDocs.map((doc: any) => {
+                {pagedDocs.map((doc: any) => {
                   const fv = (doc.field_values ?? {}) as Record<string, unknown>;
                   const fmt = (v: unknown) => {
                     if (v === null || v === undefined || v === "") return "—";
@@ -552,6 +566,37 @@ function DocumentsPage() {
               </TableBody>
             </Table>
           </Card>
+
+
+          {filtersSelected && filteredDocs.length > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-muted-foreground">
+                Mostrando {(page - 1) * PAGE_SIZE + 1}
+                –{Math.min(page * PAGE_SIZE, filteredDocs.length)} de {filteredDocs.length}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  Anterior
+                </Button>
+                <span className="text-muted-foreground">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
