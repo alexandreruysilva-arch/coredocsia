@@ -164,8 +164,7 @@ Regras de saída (siga RIGOROSAMENTE):
         }),
       });
     } catch (e: any) {
-      await writeLog({
-        success: false,
+      await writeFailureLog({
         prompt: 0,
         completion: 0,
         total: 0,
