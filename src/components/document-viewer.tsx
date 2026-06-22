@@ -151,7 +151,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
             {fields.map((f) => (
               <div key={f.id} className="flex flex-col">
                 <dt className="text-xs text-muted-foreground">{f.label}</dt>
-                <dd className="font-medium break-words">{formatValue(values[f.field_key])}</dd>
+                <dd className="font-medium break-words">{formatValue(values[f.field_key], f.field_type)}</dd>
               </div>
             ))}
           </dl>
