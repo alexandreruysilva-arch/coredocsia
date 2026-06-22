@@ -143,7 +143,7 @@ function DocumentsPage() {
         return true;
       });
 
-  const PAGE_SIZE = 15;
+  const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(filteredDocs.length / PAGE_SIZE));
 
