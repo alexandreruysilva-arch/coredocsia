@@ -61,6 +61,15 @@ export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,
 });
 
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)} s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return `${m}m ${r}s`;
+}
+
 function DocumentsPage() {
   const navigate = useNavigate();
   const { data: profile } = useProfileBundle();
@@ -224,6 +233,28 @@ function DocumentsPage() {
       for (const row of data ?? []) {
         if (!row.document_id || row.cost_brl == null) continue;
         map[row.document_id] = (map[row.document_id] ?? 0) + Number(row.cost_brl);
+      }
+      return map;
+    },
+  });
+
+  // Map de document_id -> tempo de processamento IA (ms).
+  const { data: durationMap = {} } = useQuery({
+    queryKey: ["ai-duration-by-docs", orgId, docIds.sort().join(",")],
+    enabled: docIds.length > 0 && !!orgId,
+    queryFn: async (): Promise<Record<string, number | null>> => {
+      const { data, error } = await supabase
+        .from("ai_usage_logs")
+        .select("document_id, duration_ms")
+        .eq("org_id", orgId!)
+        .in("document_id", docIds)
+        .eq("success", true);
+      if (error) throw error;
+      const map: Record<string, number | null> = {};
+      for (const row of data ?? []) {
+        if (!row.document_id) continue;
+        const ms = row.duration_ms != null ? Number(row.duration_ms) : null;
+        if (ms != null) map[row.document_id] = ms;
       }
       return map;
     },
@@ -541,6 +572,13 @@ function DocumentsPage() {
                                   <span className="col-span-2 text-xs">
                                     {usageMap[doc.id] != null
                                       ? `R$ ${usageMap[doc.id].toFixed(2).replace(".", ",")}`
+                                      : "—"}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Tempo IA</span>
+                                  <span className="col-span-2 text-xs">
+                                    {durationMap[doc.id] != null
+                                      ? formatDuration(durationMap[doc.id]!)
                                       : "—"}
                                   </span>
                                 </div>
