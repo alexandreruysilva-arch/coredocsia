@@ -14,6 +14,8 @@ import {
   Loader2,
   Trash2,
   Plus,
+  Sparkles,
+
 } from "lucide-react";
 import {
   Tabs,
