@@ -8,16 +8,18 @@ interface FieldDef {
   options?: unknown;
 }
 
+const MODEL = "gemini-2.5-flash-lite";
+
 /**
  * Extrai valores de indexação da PRIMEIRA PÁGINA de um documento (PDF/imagem)
- * usando a API do Google Gemini (modelo gemini-2.5-flash-lite).
+ * via Google Gemini (gemini-2.5-flash-lite) e grava log de auditoria de uso
+ * de tokens em `ai_usage_logs` (empresa, tipo de documento, arquivo, tokens).
  *
- * Recebe FormData com:
- *  - file: File (PDF/imagem)
- *  - fields: JSON string com array de FieldDef
- *
- * Retorna { values: Record<field_key, string> } com texto em MAIÚSCULAS
- * (exceto campos number/date).
+ * FormData:
+ *  - file: File
+ *  - fields: JSON string com FieldDef[]
+ *  - companyId?: string
+ *  - documentTypeId?: string
  */
 export const extractFieldsWithGemini = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -27,18 +29,17 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
     }
     return data;
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY não configurado no servidor");
-    }
+    if (!apiKey) throw new Error("GEMINI_API_KEY não configurado no servidor");
 
     const file = data.get("file");
     const fieldsJson = String(data.get("fields") ?? "[]");
+    const companyId = (data.get("companyId") as string) || null;
+    const documentTypeId = (data.get("documentTypeId") as string) || null;
 
-    if (!(file instanceof File)) {
-      throw new Error("Arquivo ausente ou inválido");
-    }
+    if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
+    const uploadFile: File = file;
 
     let fields: FieldDef[] = [];
     try {
@@ -47,12 +48,59 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
       throw new Error("fields inválido (JSON malformado)");
     }
     if (!Array.isArray(fields) || fields.length === 0) {
-      return { values: {} as Record<string, string> };
+      return { values: {} as Record<string, string>, usage: null };
     }
 
-    const buf = await file.arrayBuffer();
+    const { supabase, userId } = context;
+
+    // Carrega org do usuário + nomes da empresa e tipo de documento p/ log
+    const [{ data: profile }, companyRes, typeRes] = await Promise.all([
+      supabase.from("profiles").select("current_org_id").eq("id", userId).maybeSingle(),
+      companyId
+        ? supabase.from("companies").select("name").eq("id", companyId).maybeSingle()
+        : Promise.resolve({ data: null }),
+      documentTypeId
+        ? supabase
+            .from("document_types")
+            .select("name")
+            .eq("id", documentTypeId)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const orgId = profile?.current_org_id ?? null;
+    const companyName = (companyRes?.data as { name?: string } | null)?.name ?? null;
+    const documentTypeName =
+      (typeRes?.data as { name?: string } | null)?.name ?? null;
+
+    async function writeLog(args: {
+      success: boolean;
+      prompt: number;
+      completion: number;
+      total: number;
+      error?: string;
+    }) {
+      if (!orgId) return;
+      await supabase.from("ai_usage_logs").insert({
+        org_id: orgId,
+        user_id: userId,
+        company_id: companyId,
+        company_name: companyName,
+        document_type_id: documentTypeId,
+        document_type_name: documentTypeName,
+        file_name: uploadFile.name,
+        model: MODEL,
+        prompt_tokens: args.prompt,
+        completion_tokens: args.completion,
+        total_tokens: args.total,
+        success: args.success,
+        error_message: args.error ?? null,
+      });
+    }
+
+    const buf = await uploadFile.arrayBuffer();
     const base64 = Buffer.from(buf).toString("base64");
-    const mimeType = file.type || "application/octet-stream";
+    const mimeType = uploadFile.type || "application/octet-stream";
 
     const schemaDesc = fields
       .map((f) => {
@@ -84,39 +132,66 @@ Regras de saída (siga RIGOROSAMENTE):
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              { inline_data: { mime_type: mimeType, data: base64 } },
-            ],
+    let resp: Response;
+    try {
+      resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type: mimeType, data: base64 } },
+              ],
+            },
+          ],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0,
           },
-        ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0,
-        },
-      }),
-    });
+        }),
+      });
+    } catch (e: any) {
+      await writeLog({
+        success: false,
+        prompt: 0,
+        completion: 0,
+        total: 0,
+        error: `network: ${e?.message ?? "fetch failed"}`,
+      });
+      throw e;
+    }
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new Error(
-        `Gemini API erro ${resp.status}: ${errText.slice(0, 400)}`,
-      );
+      await writeLog({
+        success: false,
+        prompt: 0,
+        completion: 0,
+        total: 0,
+        error: `Gemini ${resp.status}: ${errText.slice(0, 200)}`,
+      });
+      throw new Error(`Gemini API erro ${resp.status}: ${errText.slice(0, 400)}`);
     }
 
     const json = (await resp.json()) as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+      };
     };
-    const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 
+    const promptTokens = json.usageMetadata?.promptTokenCount ?? 0;
+    const completionTokens = json.usageMetadata?.candidatesTokenCount ?? 0;
+    const totalTokens =
+      json.usageMetadata?.totalTokenCount ?? promptTokens + completionTokens;
+
+    const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
     let extracted: Record<string, unknown> = {};
     try {
       extracted = JSON.parse(text);
@@ -140,5 +215,20 @@ Regras de saída (siga RIGOROSAMENTE):
       }
     }
 
-    return { values: result };
+    await writeLog({
+      success: true,
+      prompt: promptTokens,
+      completion: completionTokens,
+      total: totalTokens,
+    });
+
+    return {
+      values: result,
+      usage: {
+        prompt_tokens: promptTokens,
+        completion_tokens: completionTokens,
+        total_tokens: totalTokens,
+        model: MODEL,
+      },
+    };
   });

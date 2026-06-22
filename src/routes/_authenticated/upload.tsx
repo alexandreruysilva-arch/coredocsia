@@ -321,6 +321,8 @@ function UploadPage() {
         const form = new FormData();
         form.append("file", item.file);
         form.append("fields", fieldsJson);
+        if (companyId !== "none") form.append("companyId", companyId);
+        if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
         const res = (await extractFn({ data: form })) as {
           values: Record<string, string>;
         };
