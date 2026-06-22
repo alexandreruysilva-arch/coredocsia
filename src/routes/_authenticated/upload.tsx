@@ -73,16 +73,15 @@ interface FieldEditorProps {
 }
 
 function sanitizeFieldValue(field: DocTypeField, raw: string): string {
-  const value = raw.trim();
   const isMatricula = field.field_key.toLowerCase().includes("matricula");
 
   if (isMatricula) {
-    return value.replace(/\D/g, "");
+    return raw.replace(/\D/g, "");
   }
   if (field.field_type === "number" || field.field_type === "date") {
-    return value;
+    return raw;
   }
-  return value.toUpperCase();
+  return raw.toUpperCase();
 }
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
