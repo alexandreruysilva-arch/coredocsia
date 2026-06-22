@@ -100,15 +100,16 @@ function AuditPage() {
   }, [filtered]);
 
   const byCompany = useMemo(() => {
-    const map = new Map<string, { files: number; tokens: number }>();
+    const map = new Map<string, { files: number; tokens: number; cost: number }>();
     for (const l of filtered) {
       const k = l.company_name ?? "—";
-      const cur = map.get(k) ?? { files: 0, tokens: 0 };
+      const cur = map.get(k) ?? { files: 0, tokens: 0, cost: 0 };
       cur.files += 1;
       cur.tokens += l.total_tokens;
+      cur.cost += l.cost_brl ?? 0;
       map.set(k, cur);
     }
-    return [...map.entries()].sort((a, b) => b[1].tokens - a[1].tokens);
+    return [...map.entries()].sort((a, b) => b[1].cost - a[1].cost);
   }, [filtered]);
 
   return (
