@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle2, ListChecks, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, ListChecks, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
@@ -40,6 +40,8 @@ function QueuePage() {
   const orgId = profile?.currentOrg?.id ?? null;
   const isAdmin = profile?.roles.includes("org_admin") || profile?.isPlatformAdmin;
   const [status, setStatus] = useState<QueueStatus>("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const queryClient = useQueryClient();
 
   const {
@@ -99,6 +101,16 @@ function QueuePage() {
       supabase.removeChannel(channel);
     };
   }, [orgId, queryClient]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [status]);
+
+  const totalPages = Math.max(1, Math.ceil(docs.length / pageSize));
+  const paginatedDocs = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return docs.slice(start, start + pageSize);
+  }, [docs, page]);
 
   const counts = useMemo(() => {
     const c = {
@@ -234,7 +246,7 @@ function QueuePage() {
                 </TableCell>
               </TableRow>
             )}
-            {docs.map((doc) => (
+            {paginatedDocs.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell className="font-medium max-w-[300px] truncate">
                   {doc.name}
@@ -274,6 +286,31 @@ function QueuePage() {
             ))}
           </TableBody>
         </Table>
+        {docs.length > pageSize && (
+          <div className="flex items-center justify-between p-4 border-t border-border">
+            <span className="text-sm text-muted-foreground">
+              Página {page} de {totalPages} · {docs.length} registros
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Próximo <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
