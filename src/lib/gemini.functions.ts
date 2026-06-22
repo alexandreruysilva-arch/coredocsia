@@ -141,40 +141,80 @@ Regras de saída (siga RIGOROSAMENTE):
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
-
-    let resp: Response;
-    try {
-      resp = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                { inline_data: { mime_type: mimeType, data: base64 } },
-              ],
-            },
+    const requestBody = JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: mimeType, data: base64 } },
           ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            temperature: 0,
-          },
-        }),
-      });
-    } catch (e: any) {
+        },
+      ],
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0,
+      },
+    });
+
+    // Tenta o modelo principal e, em caso de sobrecarga (503/429/5xx),
+    // faz retries com backoff e por fim tenta um modelo de fallback.
+    const MODELS_TO_TRY = [MODEL, "gemini-2.5-flash", "gemini-2.0-flash"];
+    const MAX_ATTEMPTS_PER_MODEL = 3;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    let resp: Response | null = null;
+    let lastErrText = "";
+    let lastStatus = 0;
+
+    outer: for (const modelName of MODELS_TO_TRY) {
+      for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_MODEL; attempt++) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        try {
+          const r = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: requestBody,
+          });
+          if (r.ok) {
+            resp = r;
+            break outer;
+          }
+          lastStatus = r.status;
+          lastErrText = await r.text();
+          const retriable = r.status === 503 || r.status === 429 || r.status >= 500;
+          if (!retriable) {
+            resp = r;
+            // recoloca corpo lido — abaixo usamos lastErrText
+            break outer;
+          }
+          // Backoff exponencial: 1s, 2s, 4s
+          await sleep(1000 * Math.pow(2, attempt));
+        } catch (e: any) {
+          lastErrText = `network: ${e?.message ?? "fetch failed"}`;
+          lastStatus = 0;
+          await sleep(1000 * Math.pow(2, attempt));
+        }
+      }
+    }
+
+    if (!resp || !resp.ok) {
       await writeFailureLog({
         prompt: 0,
         completion: 0,
         total: 0,
-        error: `network: ${e?.message ?? "fetch failed"}`,
+        error: `Gemini ${lastStatus || "network"}: ${lastErrText.slice(0, 200)}`,
       });
-      throw e;
+      const friendly =
+        lastStatus === 503
+          ? "O serviço de IA está temporariamente sobrecarregado. Tente novamente em alguns instantes."
+          : lastStatus === 429
+            ? "Limite de requisições atingido. Aguarde alguns segundos e tente novamente."
+            : `Falha ao processar o documento (${lastStatus || "rede"}). Tente novamente.`;
+      throw new Error(friendly);
     }
 
     if (!resp.ok) {
-      const errText = await resp.text();
+      const errText = lastErrText;
       await writeFailureLog({
         prompt: 0,
         completion: 0,
