@@ -143,10 +143,6 @@ function DocumentsPage() {
         return true;
       });
 
-  const typeName = (id: string | null) =>
-    id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
-  const companyName = (id: string | null | undefined) =>
-    id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
 
   // Map de uploader_id -> nome, para mostrar o operador que indexou.
   const uploaderIds = useMemo(
@@ -514,15 +510,6 @@ function DocumentsPage() {
                                     {editorMap[doc.last_edited_by] ?? "—"}
                                   </span>
 
-                                  <span className="text-muted-foreground text-xs">Empresa</span>
-                                  <span className="col-span-2 text-xs">
-                                    {companyName(doc.company_id)}
-                                  </span>
-
-                                  <span className="text-muted-foreground text-xs">Tipo</span>
-                                  <span className="col-span-2 text-xs">
-                                    {typeName(doc.document_type_id)}
-                                  </span>
 
                                   <span className="text-muted-foreground text-xs">Custo IA</span>
                                   <span className="col-span-2 text-xs">
