@@ -588,9 +588,7 @@ function UploadPage() {
                               className="max-h-[420px] max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <div className="w-[800px] h-[420px]">
-                              <PdfFilePreview file={item.file} />
-                            </div>
+                            <PdfFilePreview file={item.file} />
                           ) : (
                             <div className="text-xs text-muted-foreground p-4 text-center">
                               Pré-visualização indisponível para este tipo de arquivo.
