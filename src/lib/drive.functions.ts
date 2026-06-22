@@ -46,10 +46,10 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       }
     }
     const aiUsageRaw = data.get("aiUsage");
-    let aiUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string } | null = null;
+    let aiUsage: AiUsagePayload | null = null;
     if (typeof aiUsageRaw === "string" && aiUsageRaw.trim()) {
       try {
-        aiUsage = JSON.parse(aiUsageRaw) as typeof aiUsage;
+        aiUsage = JSON.parse(aiUsageRaw) as AiUsagePayload;
       } catch {
         throw new Error("aiUsage inválido");
       }
