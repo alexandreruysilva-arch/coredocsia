@@ -150,7 +150,8 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
             <p className="mt-1">Use "Baixar" para abrir o arquivo original.</p>
           </div>
         ) : (
-          <canvas ref={canvasRef} aria-label={title} className="max-w-full block" />
+          <canvas ref={canvasRef} aria-label={title} className="max-w-full block mx-auto" />
+
         )}
       </div>
     </div>
