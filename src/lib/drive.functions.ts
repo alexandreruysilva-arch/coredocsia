@@ -149,6 +149,13 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
 
     // 7. Registra log de uso de tokens da IA vinculado ao documento criado.
     if (aiUsage && aiUsage.total_tokens != null) {
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("ai_cost_per_file")
+        .eq("id", company.org_id)
+        .maybeSingle();
+      const costPerFile = Number(org?.ai_cost_per_file ?? 0.15);
+
       await supabase.from("ai_usage_logs").insert({
         org_id: company.org_id,
         user_id: userId,
@@ -162,10 +169,11 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         prompt_tokens: aiUsage.prompt_tokens ?? 0,
         completion_tokens: aiUsage.completion_tokens ?? 0,
         total_tokens: aiUsage.total_tokens ?? 0,
-        cost_brl: 0.15,
+        cost_brl: costPerFile,
         success: true,
       });
     }
+
 
     return row;
   });
