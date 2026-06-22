@@ -143,15 +143,15 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         </DialogContent>
       </Dialog>
       {fields && fields.length > 0 && (
-        <div className="border-t border-border bg-card p-4 max-h-[35%] overflow-y-auto">
-          <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-3">
+        <div className="border-t border-border bg-card p-4 max-h-[50%] overflow-y-auto">
+          <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
             Campos de indexação
           </h3>
-          <dl className="grid grid-cols-1 gap-y-2 text-sm">
+          <dl className="grid grid-cols-1 gap-y-2 text-xs">
             {fields.map((f) => (
               <div key={f.id} className="flex flex-col">
-                <dt className="text-sm text-muted-foreground">{f.label}</dt>
-                <dd className="font-semibold break-words">{formatValue(values[f.field_key], f.field_type)}</dd>
+                <dt className="text-xs text-muted-foreground">{f.label}</dt>
+                <dd className="font-medium break-words">{formatValue(values[f.field_key], f.field_type)}</dd>
               </div>
             ))}
           </dl>
