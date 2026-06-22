@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+interface AiUsagePayload {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  model?: string;
+}
+
 // Upload via multipart FormData. Server fn cria a hierarquia de pastas
 // (Org → Empresa → Tipo) no Google Drive, faz o upload binário e
 // insere a linha em `documents`. Retorna a row final.
