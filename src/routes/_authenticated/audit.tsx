@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Download,
   Trash2,
+  Timer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -43,6 +44,7 @@ interface AiLogRow {
   completion_tokens: number;
   total_tokens: number;
   cost_brl: number | null;
+  duration_ms: number | null;
   success: boolean;
   error_message: string | null;
 }
@@ -55,6 +57,15 @@ function formatDateTime(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)} s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return `${m}m ${r}s`;
 }
 
 function csvEscape(v: unknown): string {
@@ -74,6 +85,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Completion tokens",
     "Total tokens",
     "Custo (R$)",
+    "Tempo IA",
     "Status",
     "Erro",
   ];
@@ -90,6 +102,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.completion_tokens,
         l.total_tokens,
         l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
+        l.duration_ms != null ? formatDuration(l.duration_ms) : "",
         l.success ? "OK" : "Falha",
         l.error_message ?? "",
       ]
@@ -123,7 +136,7 @@ function AuditPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, success, error_message",
+          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, success, error_message",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
@@ -167,6 +180,8 @@ function AuditPage() {
       completion: 0,
       total: 0,
       cost: 0,
+      durationCount: 0,
+      durationTotal: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -175,6 +190,10 @@ function AuditPage() {
       t.completion += l.completion_tokens;
       t.total += l.total_tokens;
       t.cost += l.cost_brl ?? 0;
+      if (l.duration_ms != null) {
+        t.durationCount++;
+        t.durationTotal += l.duration_ms;
+      }
     }
     return t;
   }, [filtered]);
@@ -250,9 +269,16 @@ function AuditPage() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <TrendingUp className="h-4 w-4" /> Tokens prompt
+            <Timer className="h-4 w-4" /> Tempo médio IA
           </div>
-          <div className="text-2xl font-bold mt-1">{totals.prompt.toLocaleString("pt-BR")}</div>
+          <div className="text-2xl font-bold mt-1">
+            {totals.durationCount > 0
+              ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
+              : "—"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {totals.durationCount} medições
+          </div>
         </Card>
       </div>
 
@@ -333,6 +359,7 @@ function AuditPage() {
                   <TableHead className="text-right">Prompt</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
+                  <TableHead className="text-right">Tempo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
@@ -359,6 +386,9 @@ function AuditPage() {
                       {l.cost_brl != null
                         ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
                         : "—"}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
