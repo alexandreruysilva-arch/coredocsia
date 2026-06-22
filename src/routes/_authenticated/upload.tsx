@@ -569,13 +569,13 @@ function UploadPage() {
                         )}
                       </Button>
                     )}
-                    {(item.status === "queued" || item.status === "error") && (
+                    {item.status !== "done" && (
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => removeItem(item.id)}
-                        disabled={isUploading}
                         className="h-7 w-7"
+                        title="Remover do lote"
                       >
                         <X className="h-4 w-4" />
                       </Button>
