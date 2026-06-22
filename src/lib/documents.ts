@@ -60,12 +60,13 @@ export interface UploadOptions {
   companyId: string;
   fieldValues?: Record<string, unknown>;
   tags?: string[];
+  aiUsage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string };
   onProgress?: (pct: number) => void;
 }
 
 
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
-  const { file, name, documentTypeId, companyId, fieldValues, tags = [] } = opts;
+  const { file, name, documentTypeId, companyId, fieldValues, tags = [], aiUsage } = opts;
 
   opts.onProgress?.(10);
 
