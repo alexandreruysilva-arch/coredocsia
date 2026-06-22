@@ -63,9 +63,17 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
 
   const { data: fields } = useDocumentTypeFields(doc.document_type_id);
   const values = (doc.field_values ?? {}) as Record<string, unknown>;
-  const formatValue = (v: unknown) => {
+  const formatValue = (v: unknown, fieldType?: string) => {
     if (v === null || v === undefined || v === "") return "—";
     if (typeof v === "boolean") return v ? "Sim" : "Não";
+    if (
+      fieldType === "date" &&
+      typeof v === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(v)
+    ) {
+      const [y, m, d] = v.split("-");
+      return `${d}/${m}/${y}`;
+    }
     return String(v);
   };
 
