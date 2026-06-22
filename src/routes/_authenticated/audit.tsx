@@ -356,8 +356,7 @@ function AuditPage() {
                   <TableHead>Tipo</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead className="text-right">Prompt</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Total Token</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
                   <TableHead>Status</TableHead>
