@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Sparkles, TrendingUp, FileText, Building2, AlertCircle, Download } from "lucide-react";
+import {
+  Sparkles,
+  TrendingUp,
+  FileText,
+  Building2,
+  AlertCircle,
+  Download,
+  Trash2,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
+import { useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/audit")({
   component: AuditPage,
@@ -104,8 +113,13 @@ function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const [search, setSearch] = useState("");
+  const queryClient = useQueryClient();
 
-  const { data: logs = [], isLoading } = useQuery({
+  const {
+    data: logs = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["ai-usage-logs", orgId],
     enabled: !!orgId,
     queryFn: async (): Promise<AiLogRow[]> => {
