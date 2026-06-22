@@ -197,8 +197,16 @@ function AuditPage() {
       const { error } = await supabase.from("ai_usage_logs").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["ai-usage-logs", orgId] });
+      toast.success("Registro excluído", {
+        description: "O registro de auditoria foi removido permanentemente.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir", {
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
+      });
     },
   });
 
