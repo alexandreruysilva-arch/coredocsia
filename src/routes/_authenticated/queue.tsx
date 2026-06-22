@@ -229,6 +229,7 @@ function QueuePage() {
               <TableHead>Nome</TableHead>
               <TableHead>Tamanho</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Tempo IA</TableHead>
               <TableHead>Enviado</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
