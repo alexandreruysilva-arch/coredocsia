@@ -559,7 +559,7 @@ function DocumentsPage() {
 
 
       {preview && (
-        <aside className="w-[480px] border-l border-border shrink-0 self-start sticky top-0 h-screen max-h-screen">
+        <aside className="w-[480px] border-l border-border shrink-0 self-start sticky top-14 h-[calc(100vh-3.5rem)]">
           <div className="flex flex-col h-full bg-background">
             <div className="flex items-center justify-between p-3 border-b border-border bg-card shrink-0">
               <h2 className="font-medium text-sm">Pré-visualização</h2>
