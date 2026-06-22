@@ -222,13 +222,6 @@ Regras de saída (siga RIGOROSAMENTE):
       }
     }
 
-    await writeLog({
-      success: true,
-      prompt: promptTokens,
-      completion: completionTokens,
-      total: totalTokens,
-    });
-
     return {
       values: result,
       usage: {
@@ -237,5 +230,6 @@ Regras de saída (siga RIGOROSAMENTE):
         total_tokens: totalTokens,
         model: MODEL,
       },
+      logContext,
     };
   });
