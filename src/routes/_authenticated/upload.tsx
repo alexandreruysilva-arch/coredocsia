@@ -87,13 +87,13 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 w-full max-w-xl">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         return (
-          <div key={f.id} className="space-y-2">
+          <div key={f.id} className="space-y-1.5">
             <Label htmlFor={id} className="text-sm">
               {f.label} {f.required && <span className="text-destructive">*</span>}
             </Label>
@@ -102,12 +102,12 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
-                rows={3}
-                className={cn("min-h-[80px] text-base", isMatricula ? undefined : "uppercase")}
+                rows={2}
+                className={cn("min-h-[64px]", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
-                <SelectTrigger className={cn("h-11 text-base", isMatricula ? undefined : "uppercase")}>
+                <SelectTrigger className={cn("h-10", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,7 +124,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 className={cn(
-                  "h-11 text-base",
+                  "h-10",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
                 )}
                 type={
