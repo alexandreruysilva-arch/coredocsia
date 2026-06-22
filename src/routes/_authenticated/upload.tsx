@@ -584,7 +584,7 @@ function UploadPage() {
                   </div>
                   {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
-                      <div className="grid lg:grid-cols-2 gap-4 pt-2">
+                      <div className="grid lg:grid-cols-[1fr_300px] gap-4 pt-2">
                         <ZoomablePreview>
                           {item.file.type.startsWith("image/") ? (
                             <img
