@@ -375,9 +375,6 @@ function AuditPage() {
                       {l.file_name}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{l.model}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {l.prompt_tokens.toLocaleString("pt-BR")}
-                    </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       {l.total_tokens.toLocaleString("pt-BR")}
                     </TableCell>
