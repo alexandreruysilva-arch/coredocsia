@@ -10,6 +10,7 @@ import {
   Download,
   Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
+
 
 export const Route = createFileRoute("/_authenticated/audit")({
   component: AuditPage,
@@ -195,8 +197,16 @@ function AuditPage() {
       const { error } = await supabase.from("ai_usage_logs").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["ai-usage-logs", orgId] });
+      toast.success("Registro excluído", {
+        description: "O registro de auditoria foi removido permanentemente.",
+      });
+    },
+    onError: (error) => {
+      toast.error("Erro ao excluir", {
+        description: error instanceof Error ? error.message : "Tente novamente em instantes.",
+      });
     },
   });
 
@@ -368,9 +378,23 @@ function AuditPage() {
                         aria-label="Excluir registro"
                         disabled={deleteLog.isPending && deleteLog.variables === l.id}
                         onClick={() => {
+                          const company = l.company_name ?? "Empresa não informada";
+                          const docType = l.document_type_name ?? "Tipo não informado";
+                          const date = formatDateTime(l.created_at);
+                          const cost =
+                            l.cost_brl != null
+                              ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
+                              : "custo não calculado";
+
                           if (
                             window.confirm(
-                              `Tem certeza que deseja excluir o registro de "${l.file_name}"? Esta ação não pode ser desfeita.`,
+                              `Excluir permanentemente este registro de auditoria?\n\n` +
+                                `Arquivo: ${l.file_name}\n` +
+                                `Empresa: ${company}\n` +
+                                `Tipo: ${docType}\n` +
+                                `Data: ${date}\n` +
+                                `Tokens: ${l.total_tokens.toLocaleString("pt-BR")} (${cost})\n\n` +
+                                `Esta ação não pode ser desfeita.`,
                             )
                           ) {
                             deleteLog.mutate(l.id);
