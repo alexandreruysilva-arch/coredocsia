@@ -246,7 +246,21 @@ Regras de saída (siga RIGOROSAMENTE):
       const isMatricula = f.field_key.toLowerCase().includes("matricula");
       if (isMatricula) {
         result[f.field_key] = s.replace(/\D/g, "");
-      } else if (f.field_type === "number" || f.field_type === "date") {
+      } else if (f.field_type === "date") {
+        // Normaliza para DD/MM/AAAA (formato brasileiro)
+        const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const brMatch = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+        if (isoMatch) {
+          result[f.field_key] = `${isoMatch[3]}/${isoMatch[2]}/${isoMatch[1]}`;
+        } else if (brMatch) {
+          const d = brMatch[1].padStart(2, "0");
+          const m = brMatch[2].padStart(2, "0");
+          const y = brMatch[3].length === 2 ? `20${brMatch[3]}` : brMatch[3];
+          result[f.field_key] = `${d}/${m}/${y}`;
+        } else {
+          result[f.field_key] = s;
+        }
+      } else if (f.field_type === "number") {
         result[f.field_key] = s;
       } else {
         result[f.field_key] = s.toUpperCase();
