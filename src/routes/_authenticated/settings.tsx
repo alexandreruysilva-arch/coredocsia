@@ -99,6 +99,11 @@ function SettingsPage() {
           <TabsTrigger value="notifications" className="gap-2">
             <Bell className="h-4 w-4" /> Notificações
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="billing" className="gap-2">
+              <Sparkles className="h-4 w-4" /> Faturamento IA
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
@@ -121,10 +126,101 @@ function SettingsPage() {
         <TabsContent value="notifications" className="space-y-6">
           <NotificationSettings />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="billing" className="space-y-6">
+            <BillingSettings organizationId={profileBundle?.currentOrg?.id} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
+
+function BillingSettings({ organizationId }: { organizationId: string | undefined }) {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["org-billing", organizationId],
+    enabled: !!organizationId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("ai_cost_per_file")
+        .eq("id", organizationId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [price, setPrice] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // sync default
+  if (!isLoading && price === "" && data?.ai_cost_per_file != null) {
+    setPrice(String(data.ai_cost_per_file));
+  }
+
+  async function handleSave() {
+    const parsed = Number(String(price).replace(",", "."));
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      toast.error("Informe um valor válido (R$).");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({ ai_cost_per_file: parsed })
+        .eq("id", organizationId as string);
+      if (error) throw error;
+      toast.success("Preço por arquivo atualizado!");
+      queryClient.invalidateQueries({ queryKey: ["org-billing", organizationId] });
+    } catch (e: any) {
+      toast.error("Erro ao salvar: " + e.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Custo da indexação por IA</CardTitle>
+        <CardDescription>
+          Valor cobrado por cada arquivo processado pela IA. Aplica-se a novos
+          processamentos — logs antigos preservam o custo registrado na época.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <>
+            <div className="space-y-2 max-w-xs">
+              <Label htmlFor="ai-cost">Preço por arquivo (R$)</Label>
+              <Input
+                id="ai-cost"
+                inputMode="decimal"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.15"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use ponto ou vírgula como separador decimal. Ex.: 0.15 = R$ 0,15.
+              </p>
+            </div>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar preço
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 
 function ProfileSettings({ profile }: { profile: any }) {
   const queryClient = useQueryClient();
