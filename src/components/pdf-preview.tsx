@@ -73,9 +73,10 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
       try {
         const page = await pdf.getPage(pageNumber);
         if (cancelled) return;
-        const containerWidth = Math.max(canvas.parentElement?.clientWidth ?? 0, 500);
+        const availableWidth = canvas.parentElement?.clientWidth ?? 360;
+        const containerWidth = Math.min(Math.max(availableWidth, 280), 360);
         const baseViewport = page.getViewport({ scale: 1 });
-        const cssScale = Math.min(containerWidth / baseViewport.width, 1.2);
+        const cssScale = Math.min(containerWidth / baseViewport.width, 0.8);
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
         const renderScale = cssScale * dpr;
         const cssViewport = page.getViewport({ scale: cssScale });
@@ -137,7 +138,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           </Button>
         </div>
       )}
-      <div className="relative max-h-[500px] overflow-auto">
+      <div className="relative max-h-[340px] overflow-auto">
         {isRendering && (
           <div className="absolute inset-0 grid place-items-center z-10">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
