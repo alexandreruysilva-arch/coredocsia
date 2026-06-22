@@ -574,6 +574,13 @@ function DocumentsPage() {
                                       ? `R$ ${usageMap[doc.id].toFixed(2).replace(".", ",")}`
                                       : "—"}
                                   </span>
+
+                                  <span className="text-muted-foreground text-xs">Tempo IA</span>
+                                  <span className="col-span-2 text-xs">
+                                    {durationMap[doc.id] != null
+                                      ? formatDuration(durationMap[doc.id]!)
+                                      : "—"}
+                                  </span>
                                 </div>
                               </div>
                             </PopoverContent>
