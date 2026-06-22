@@ -56,7 +56,11 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
 
     const schemaDesc = fields
       .map((f) => {
+        const isMatricula = f.field_key.toLowerCase().includes("matricula");
         let desc = `- "${f.field_key}" — rótulo: "${f.label}", tipo: ${f.field_type}`;
+        if (isMatricula) {
+          desc += `, APENAS NÚMEROS (remova letras, pontos, traços, barras e espaços)`;
+        }
         if (f.field_type === "select" && Array.isArray(f.options)) {
           desc += `, opções permitidas: ${(f.options as string[]).join(" | ")}`;
         }
@@ -75,6 +79,7 @@ Regras de saída (siga RIGOROSAMENTE):
 - Use exatamente as chaves listadas (field_key).
 - Campos do tipo "date": formato ISO "YYYY-MM-DD".
 - Campos do tipo "number": apenas o número, sem símbolos de moeda nem separador de milhar; use ponto como decimal.
+- Campos cujo field_key contenha "matricula": retorne APENAS os dígitos numéricos, removendo letras, pontos, traços, barras e espaços.
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
@@ -125,7 +130,10 @@ Regras de saída (siga RIGOROSAMENTE):
       if (v == null) continue;
       const s = String(v).trim();
       if (!s) continue;
-      if (f.field_type === "number" || f.field_type === "date") {
+      const isMatricula = f.field_key.toLowerCase().includes("matricula");
+      if (isMatricula) {
+        result[f.field_key] = s.replace(/\D/g, "");
+      } else if (f.field_type === "number" || f.field_type === "date") {
         result[f.field_key] = s;
       } else {
         result[f.field_key] = s.toUpperCase();

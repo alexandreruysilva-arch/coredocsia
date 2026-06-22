@@ -70,12 +70,26 @@ interface FieldEditorProps {
   idPrefix: string;
 }
 
+function sanitizeFieldValue(field: DocTypeField, raw: string): string {
+  const value = raw.trim();
+  const isMatricula = field.field_key.toLowerCase().includes("matricula");
+
+  if (isMatricula) {
+    return value.replace(/\D/g, "");
+  }
+  if (field.field_type === "number" || field.field_type === "date") {
+    return value;
+  }
+  return value.toUpperCase();
+}
+
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
     <div className="grid sm:grid-cols-2 gap-3">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
+        const isMatricula = f.field_key.toLowerCase().includes("matricula");
         return (
           <div key={f.id} className="space-y-1.5">
             <Label htmlFor={id} className="text-xs">
@@ -85,18 +99,18 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
               <Textarea
                 id={id}
                 value={val}
-                onChange={(e) => onChange(f.field_key, e.target.value.toUpperCase())}
+                onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 rows={2}
-                className="uppercase"
+                className={isMatricula ? undefined : "uppercase"}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
-              <Select value={val} onValueChange={(v) => onChange(f.field_key, v.toUpperCase())}>
-                <SelectTrigger className="uppercase">
+              <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
+                <SelectTrigger className={isMatricula ? undefined : "uppercase"}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
                   {(f.options as string[]).map((o) => (
-                    <SelectItem key={o} value={o} className="uppercase">
+                    <SelectItem key={o} value={o} className={isMatricula ? undefined : "uppercase"}>
                       {o}
                     </SelectItem>
                   ))}
@@ -106,11 +120,8 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
               <Input
                 id={id}
                 value={val}
-                onChange={(e) => {
-                  const isText = f.field_type !== "number" && f.field_type !== "date";
-                  onChange(f.field_key, isText ? e.target.value.toUpperCase() : e.target.value);
-                }}
-                className={f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined}
+                onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                className={isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined}
                 type={
                   f.field_type === "number"
                     ? "number"

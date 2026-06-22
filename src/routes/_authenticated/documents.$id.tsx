@@ -68,8 +68,19 @@ function DocumentDetailPage() {
     navigate({ to: "/documents" });
   }
 
-  const set = (k: string, v: unknown) =>
-    setValues((prev) => ({ ...prev, [k]: v }));
+  const sanitize = (f: (typeof fields)[number], raw: string) => {
+    const value = raw.trim();
+    if (f.field_key.toLowerCase().includes("matricula")) {
+      return value.replace(/\D/g, "");
+    }
+    if (f.field_type === "number" || f.field_type === "date") {
+      return value;
+    }
+    return value.toUpperCase();
+  };
+
+  const set = (f: (typeof fields)[number], raw: string) =>
+    setValues((prev) => ({ ...prev, [f.field_key]: sanitize(f, raw) }));
 
   return (
     <div className="flex h-full">
@@ -99,6 +110,7 @@ function DocumentDetailPage() {
             {fields.map((f) => {
               const v = values[f.field_key];
               const strVal = v === null || v === undefined ? "" : String(v);
+              const isMatricula = f.field_key.toLowerCase().includes("matricula");
               return (
                 <div key={f.id} className="space-y-1.5">
                   <Label htmlFor={`f-${f.id}`}>
@@ -108,7 +120,7 @@ function DocumentDetailPage() {
                   {f.field_type === "select" && Array.isArray(f.options) ? (
                     <Select
                       value={strVal || "none"}
-                      onValueChange={(val) => set(f.field_key, val === "none" ? "" : val)}
+                      onValueChange={(val) => set(f, val === "none" ? "" : val)}
                     >
                       <SelectTrigger id={`f-${f.id}`}>
                         <SelectValue placeholder="Selecione" />
@@ -126,7 +138,8 @@ function DocumentDetailPage() {
                     <Input
                       id={`f-${f.id}`}
                       value={strVal}
-                      onChange={(e) => set(f.field_key, e.target.value)}
+                      onChange={(e) => set(f, e.target.value)}
+                      className={isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined}
                       type={
                         f.field_type === "number"
                           ? "number"
