@@ -139,6 +139,7 @@ export function LookupImportDialog({
         if (error) throw error;
       }
 
+      const seen = new Set<string>();
       const payload = rows
         .map((r) => {
           const key = normalizeLookupKey(r[keyCol] ?? "");
