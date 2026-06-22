@@ -73,8 +73,17 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
     const documentTypeName =
       (typeRes?.data as { name?: string } | null)?.name ?? null;
 
-    async function writeLog(args: {
-      success: boolean;
+    const logContext = {
+      orgId,
+      userId,
+      companyId,
+      companyName,
+      documentTypeId,
+      documentTypeName,
+      fileName: uploadFile.name,
+    };
+
+    async function writeFailureLog(args: {
       prompt: number;
       completion: number;
       total: number;
@@ -93,7 +102,7 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
         prompt_tokens: args.prompt,
         completion_tokens: args.completion,
         total_tokens: args.total,
-        success: args.success,
+        success: false,
         error_message: args.error ?? null,
       });
     }
@@ -155,8 +164,7 @@ Regras de saída (siga RIGOROSAMENTE):
         }),
       });
     } catch (e: any) {
-      await writeLog({
-        success: false,
+      await writeFailureLog({
         prompt: 0,
         completion: 0,
         total: 0,
@@ -167,8 +175,7 @@ Regras de saída (siga RIGOROSAMENTE):
 
     if (!resp.ok) {
       const errText = await resp.text();
-      await writeLog({
-        success: false,
+      await writeFailureLog({
         prompt: 0,
         completion: 0,
         total: 0,
@@ -215,13 +222,6 @@ Regras de saída (siga RIGOROSAMENTE):
       }
     }
 
-    await writeLog({
-      success: true,
-      prompt: promptTokens,
-      completion: completionTokens,
-      total: totalTokens,
-    });
-
     return {
       values: result,
       usage: {
@@ -230,5 +230,6 @@ Regras de saída (siga RIGOROSAMENTE):
         total_tokens: totalTokens,
         model: MODEL,
       },
+      logContext,
     };
   });

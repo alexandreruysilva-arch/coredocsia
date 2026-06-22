@@ -53,9 +53,14 @@ function DocumentDetailPage() {
 
   async function save() {
     setSaving(true);
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData.user?.id;
     const { error } = await supabase
       .from("documents")
-      .update({ field_values: values as never })
+      .update({
+        field_values: values as never,
+        last_edited_by: userId ?? doc!.uploaded_by,
+      })
       .eq("id", doc!.id);
     setSaving(false);
     if (error) {

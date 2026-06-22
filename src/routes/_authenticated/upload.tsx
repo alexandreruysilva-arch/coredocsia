@@ -59,6 +59,7 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
+  aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string } | null;
   expanded: boolean;
 }
 
@@ -325,6 +326,7 @@ function UploadPage() {
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
         const res = (await extractFn({ data: form })) as {
           values: Record<string, string>;
+          usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string };
         };
         setItems((prev) =>
           prev.map((i) =>
@@ -332,6 +334,7 @@ function UploadPage() {
               ? {
                   ...i,
                   fieldValues: { ...i.fieldValues, ...res.values },
+                  aiUsage: res.usage,
                   expanded: true,
                 }
               : i,
@@ -384,6 +387,7 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
+          aiUsage: item.aiUsage ?? undefined,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
 

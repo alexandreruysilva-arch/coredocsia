@@ -171,6 +171,53 @@ function DocumentsPage() {
     },
   });
 
+  // Map de last_edited_by -> nome, para mostrar o último operador que editou.
+  const editorIds = useMemo(
+    () =>
+      Array.from(
+        new Set(filteredDocs.map((d: any) => d.last_edited_by).filter(Boolean)),
+      ) as string[],
+    [filteredDocs],
+  );
+  const { data: editorMap = {} } = useQuery({
+    queryKey: ["profiles-by-ids", editorIds.sort().join(",")],
+    enabled: editorIds.length > 0,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", editorIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const p of data ?? []) map[p.id] = p.full_name ?? "—";
+      return map;
+    },
+  });
+
+  // Map de document_id -> total de tokens consumidos na extração por IA.
+  const docIds = useMemo(
+    () => Array.from(new Set(filteredDocs.map((d: any) => d.id))) as string[],
+    [filteredDocs],
+  );
+  const { data: usageMap = {} } = useQuery({
+    queryKey: ["ai-usage-by-docs", docIds.sort().join(",")],
+    enabled: docIds.length > 0,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("ai_usage_logs")
+        .select("document_id, total_tokens")
+        .in("document_id", docIds)
+        .eq("success", true);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      for (const row of data ?? []) {
+        if (!row.document_id) continue;
+        map[row.document_id] = (map[row.document_id] ?? 0) + (row.total_tokens ?? 0);
+      }
+      return map;
+    },
+  });
+
 
 
 
@@ -447,9 +494,23 @@ function DocumentsPage() {
                                     })}
                                   </span>
 
+                                  <span className="text-muted-foreground text-xs">Editado em</span>
+                                  <span className="col-span-2 text-xs">
+                                    {doc.updated_at && doc.updated_at !== doc.created_at
+                                      ? format(new Date(doc.updated_at), "dd/MM/yyyy HH:mm", {
+                                          locale: ptBR,
+                                        })
+                                      : "—"}
+                                  </span>
+
                                   <span className="text-muted-foreground text-xs">Operador</span>
                                   <span className="col-span-2 text-xs font-medium">
                                     {uploaderName}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Último editor</span>
+                                  <span className="col-span-2 text-xs font-medium">
+                                    {editorMap[doc.last_edited_by] ?? "—"}
                                   </span>
 
                                   <span className="text-muted-foreground text-xs">Empresa</span>
@@ -460,6 +521,13 @@ function DocumentsPage() {
                                   <span className="text-muted-foreground text-xs">Tipo</span>
                                   <span className="col-span-2 text-xs">
                                     {typeName(doc.document_type_id)}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Tokens IA</span>
+                                  <span className="col-span-2 text-xs">
+                                    {usageMap[doc.id] != null
+                                      ? `${usageMap[doc.id].toLocaleString("pt-BR")} tokens`
+                                      : "—"}
                                   </span>
                                 </div>
                               </div>
