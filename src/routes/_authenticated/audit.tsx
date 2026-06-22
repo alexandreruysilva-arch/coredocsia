@@ -30,6 +30,7 @@ interface AiLogRow {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
+  cost_brl: number | null;
   success: boolean;
   error_message: string | null;
 }
@@ -56,7 +57,7 @@ function AuditPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, success, error_message",
+          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, success, error_message",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
@@ -85,6 +86,7 @@ function AuditPage() {
       prompt: 0,
       completion: 0,
       total: 0,
+      cost: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -92,20 +94,22 @@ function AuditPage() {
       t.prompt += l.prompt_tokens;
       t.completion += l.completion_tokens;
       t.total += l.total_tokens;
+      t.cost += l.cost_brl ?? 0;
     }
     return t;
   }, [filtered]);
 
   const byCompany = useMemo(() => {
-    const map = new Map<string, { files: number; tokens: number }>();
+    const map = new Map<string, { files: number; tokens: number; cost: number }>();
     for (const l of filtered) {
       const k = l.company_name ?? "—";
-      const cur = map.get(k) ?? { files: 0, tokens: 0 };
+      const cur = map.get(k) ?? { files: 0, tokens: 0, cost: 0 };
       cur.files += 1;
       cur.tokens += l.total_tokens;
+      cur.cost += l.cost_brl ?? 0;
       map.set(k, cur);
     }
-    return [...map.entries()].sort((a, b) => b[1].tokens - a[1].tokens);
+    return [...map.entries()].sort((a, b) => b[1].cost - a[1].cost);
   }, [filtered]);
 
   return (
@@ -130,7 +134,16 @@ function AuditPage() {
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <Sparkles className="h-4 w-4" /> Tokens totais
+            <Sparkles className="h-4 w-4" /> Custo total
+          </div>
+          <div className="text-2xl font-bold mt-1">
+            R$ {totals.cost.toFixed(2).replace(".", ",")}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">R$ 0,15 por arquivo</div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <TrendingUp className="h-4 w-4" /> Tokens totais
           </div>
           <div className="text-2xl font-bold mt-1">{totals.total.toLocaleString("pt-BR")}</div>
         </Card>
@@ -139,12 +152,6 @@ function AuditPage() {
             <TrendingUp className="h-4 w-4" /> Tokens prompt
           </div>
           <div className="text-2xl font-bold mt-1">{totals.prompt.toLocaleString("pt-BR")}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
-            <TrendingUp className="h-4 w-4" /> Tokens resposta
-          </div>
-          <div className="text-2xl font-bold mt-1">{totals.completion.toLocaleString("pt-BR")}</div>
         </Card>
       </div>
 
@@ -160,6 +167,7 @@ function AuditPage() {
                 <TableRow>
                   <TableHead>Empresa</TableHead>
                   <TableHead className="text-right">Arquivos</TableHead>
+                  <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tokens totais</TableHead>
                 </TableRow>
               </TableHeader>
@@ -168,6 +176,9 @@ function AuditPage() {
                   <TableRow key={name}>
                     <TableCell className="font-medium">{name}</TableCell>
                     <TableCell className="text-right">{v.files}</TableCell>
+                    <TableCell className="text-right tabular-nums font-medium">
+                      R$ {v.cost.toFixed(2).replace(".", ",")}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {v.tokens.toLocaleString("pt-BR")}
                     </TableCell>
@@ -207,8 +218,8 @@ function AuditPage() {
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
                   <TableHead className="text-right">Prompt</TableHead>
-                  <TableHead className="text-right">Resposta</TableHead>
                   <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -227,11 +238,13 @@ function AuditPage() {
                     <TableCell className="text-right tabular-nums">
                       {l.prompt_tokens.toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {l.completion_tokens.toLocaleString("pt-BR")}
-                    </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       {l.total_tokens.toLocaleString("pt-BR")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {l.cost_brl != null
+                        ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
