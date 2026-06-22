@@ -1,4 +1,5 @@
 import { FileText, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { PdfPreview } from "@/components/pdf-preview";
 import type { DocumentRow } from "@/lib/documents";
 
@@ -7,6 +8,7 @@ export interface DocumentPreviewContentProps {
   url: string | null;
   fileData: ArrayBuffer | null;
   loading: boolean;
+  scrollable?: boolean;
 }
 
 export function DocumentPreviewContent({ doc, url, fileData, loading }: DocumentPreviewContentProps) {
