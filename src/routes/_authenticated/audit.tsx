@@ -195,13 +195,25 @@ function AuditPage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold">Detalhes por arquivo</h3>
-          <Input
-            placeholder="Buscar por arquivo, empresa ou tipo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Buscar por arquivo, empresa ou tipo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-xs"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={filtered.length === 0}
+              onClick={() => exportLogsCsv(filtered)}
+            >
+              <Download className="h-4 w-4" /> Exportar CSV
+            </Button>
+          </div>
         </div>
+
 
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
