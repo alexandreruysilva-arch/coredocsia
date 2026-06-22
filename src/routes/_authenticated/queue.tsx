@@ -57,7 +57,7 @@ function QueuePage() {
     queryFn: async (): Promise<QueueDoc[]> => {
       let q = supabase
         .from("documents")
-        .select("*, ai_usage_logs(id)")
+        .select("*, ai_usage_logs(id, duration_ms)")
         .eq("org_id", orgId!)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
