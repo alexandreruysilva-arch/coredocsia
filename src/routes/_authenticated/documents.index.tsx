@@ -229,6 +229,28 @@ function DocumentsPage() {
     },
   });
 
+  // Map de document_id -> tempo de processamento IA (ms).
+  const { data: durationMap = {} } = useQuery({
+    queryKey: ["ai-duration-by-docs", orgId, docIds.sort().join(",")],
+    enabled: docIds.length > 0 && !!orgId,
+    queryFn: async (): Promise<Record<string, number | null>> => {
+      const { data, error } = await supabase
+        .from("ai_usage_logs")
+        .select("document_id, duration_ms")
+        .eq("org_id", orgId!)
+        .in("document_id", docIds)
+        .eq("success", true);
+      if (error) throw error;
+      const map: Record<string, number | null> = {};
+      for (const row of data ?? []) {
+        if (!row.document_id) continue;
+        const ms = row.duration_ms != null ? Number(row.duration_ms) : null;
+        if (ms != null) map[row.document_id] = ms;
+      }
+      return map;
+    },
+  });
+
 
 
 
