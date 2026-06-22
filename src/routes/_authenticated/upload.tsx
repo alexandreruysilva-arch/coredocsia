@@ -87,7 +87,7 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
-    <div className="flex flex-col gap-1.5 w-full max-w-md">
+    <div className="flex flex-col gap-1.5 w-full max-w-sm">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
