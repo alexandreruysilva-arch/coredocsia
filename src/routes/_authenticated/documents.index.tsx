@@ -559,15 +559,17 @@ function DocumentsPage() {
 
 
       {preview && (
-        <aside className="w-[480px] border-l border-border flex flex-col bg-background shrink-0">
-          <div className="flex items-center justify-between p-3 border-b border-border bg-card">
-            <h2 className="font-medium text-sm">Pré-visualização</h2>
-            <Button size="icon" variant="ghost" onClick={() => setPreview(null)} className="h-7 w-7">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex-1 min-h-0 relative">
-            <DocumentViewer doc={preview} />
+        <aside className="w-[480px] border-l border-border shrink-0 self-start sticky top-0 h-screen max-h-screen">
+          <div className="flex flex-col h-full bg-background">
+            <div className="flex items-center justify-between p-3 border-b border-border bg-card shrink-0">
+              <h2 className="font-medium text-sm">Pré-visualização</h2>
+              <Button size="icon" variant="ghost" onClick={() => setPreview(null)} className="h-7 w-7">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex-1 min-h-0 relative">
+              <DocumentViewer doc={preview} />
+            </div>
           </div>
         </aside>
       )}
