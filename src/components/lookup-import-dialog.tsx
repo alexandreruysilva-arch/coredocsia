@@ -139,28 +139,32 @@ export function LookupImportDialog({
         if (error) throw error;
       }
 
-      const seen = new Set<string>();
-      const payload = rows
-        .map((r) => {
-          const key = normalizeLookupKey(r[keyCol] ?? "");
-          if (!key) return null;
-          const values: Record<string, string> = {};
-          for (const f of fields) {
-            if (f.is_lookup_key) continue;
-            const col = mapping[f.field_key];
-            if (!col) continue;
-            const v = (r[col] ?? "").toString();
-            if (v.trim() !== "") values[f.field_key] = v.trim();
-          }
-          return {
-            org_id: orgId,
-            company_id: companyId,
-            document_type_id: documentTypeId,
-            key_value: key,
-            values,
-          };
-        })
-        .filter(Boolean) as any[];
+      const byKey = new Map<string, any>();
+      let skippedDup = 0;
+      for (const r of rows) {
+        const key = normalizeLookupKey(r[keyCol] ?? "");
+        if (!key) continue;
+        const values: Record<string, string> = {};
+        for (const f of fields) {
+          if (f.is_lookup_key) continue;
+          const col = mapping[f.field_key];
+          if (!col) continue;
+          const v = (r[col] ?? "").toString();
+          if (v.trim() !== "") values[f.field_key] = v.trim();
+        }
+        if (byKey.has(key)) skippedDup++;
+        byKey.set(key, {
+          org_id: orgId,
+          company_id: companyId,
+          document_type_id: documentTypeId,
+          key_value: key,
+          values,
+        });
+      }
+      const payload = Array.from(byKey.values());
+      if (skippedDup > 0) {
+        toast.info(`${skippedDup} linha(s) duplicada(s) pela chave — mantida a última ocorrência`);
+      }
 
       if (payload.length === 0) throw new Error("Nenhuma linha válida (chave vazia)");
 
