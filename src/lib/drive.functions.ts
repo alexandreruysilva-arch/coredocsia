@@ -162,6 +162,7 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         prompt_tokens: aiUsage.prompt_tokens ?? 0,
         completion_tokens: aiUsage.completion_tokens ?? 0,
         total_tokens: aiUsage.total_tokens ?? 0,
+        cost_brl: 0.15,
         success: true,
       });
     }
