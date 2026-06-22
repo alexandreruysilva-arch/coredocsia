@@ -107,8 +107,17 @@ function DocumentsPage() {
     .filter((t: any) =>
       companyId === "all" ? true : t.company_id === companyId,
     );
-  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
-  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
+  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>(initialFilters.fieldFilters);
+  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>(initialFilters.activeFieldKeys);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        FILTERS_KEY,
+        JSON.stringify({ search, typeId, companyId, activeFieldKeys, fieldFilters }),
+      );
+    } catch {}
+  }, [search, typeId, companyId, activeFieldKeys, fieldFilters]);
   const [preview, setPreview] = useState<DocumentRow | null>(null);
   const [toDelete, setToDelete] = useState<DocumentRow | null>(null);
   const [deleting, setDeleting] = useState(false);
