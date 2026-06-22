@@ -384,6 +384,9 @@ export type Database = {
       organizations: {
         Row: {
           ai_cost_per_file: number
+          ai_price_base_threshold: number
+          ai_price_tier_increment: number
+          ai_price_tier_step: number
           created_at: string
           drive_folder_id: string | null
           id: string
@@ -393,6 +396,9 @@ export type Database = {
         }
         Insert: {
           ai_cost_per_file?: number
+          ai_price_base_threshold?: number
+          ai_price_tier_increment?: number
+          ai_price_tier_step?: number
           created_at?: string
           drive_folder_id?: string | null
           id?: string
@@ -402,6 +408,9 @@ export type Database = {
         }
         Update: {
           ai_cost_per_file?: number
+          ai_price_base_threshold?: number
+          ai_price_tier_increment?: number
+          ai_price_tier_step?: number
           created_at?: string
           drive_folder_id?: string | null
           id?: string

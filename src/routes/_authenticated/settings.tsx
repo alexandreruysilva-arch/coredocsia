@@ -145,7 +145,7 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("ai_cost_per_file")
+        .select("ai_cost_per_file, ai_price_base_threshold, ai_price_tier_step, ai_price_tier_increment")
         .eq("id", organizationId as string)
         .maybeSingle();
       if (error) throw error;
@@ -154,28 +154,55 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
   });
 
   const [price, setPrice] = useState<string>("");
+  const [baseThreshold, setBaseThreshold] = useState<string>("");
+  const [tierStep, setTierStep] = useState<string>("");
+  const [tierIncrement, setTierIncrement] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // sync default
   useEffect(() => {
-    if (data?.ai_cost_per_file != null) setPrice(String(data.ai_cost_per_file));
-  }, [data?.ai_cost_per_file]);
-
+    if (!data) return;
+    if (data.ai_cost_per_file != null) setPrice(String(data.ai_cost_per_file));
+    if (data.ai_price_base_threshold != null) setBaseThreshold(String(data.ai_price_base_threshold));
+    if (data.ai_price_tier_step != null) setTierStep(String(data.ai_price_tier_step));
+    if (data.ai_price_tier_increment != null) setTierIncrement(String(data.ai_price_tier_increment));
+  }, [data]);
 
   async function handleSave() {
-    const parsed = Number(String(price).replace(",", "."));
-    if (!Number.isFinite(parsed) || parsed < 0) {
-      toast.error("Informe um valor válido (R$).");
+    const parsedPrice = Number(String(price).replace(",", "."));
+    const parsedThreshold = Math.floor(Number(String(baseThreshold).replace(",", ".")));
+    const parsedStep = Math.floor(Number(String(tierStep).replace(",", ".")));
+    const parsedIncrement = Number(String(tierIncrement).replace(",", "."));
+
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      toast.error("Informe um preço base válido (R$).");
       return;
     }
+    if (!Number.isFinite(parsedThreshold) || parsedThreshold < 0) {
+      toast.error("Informe um limite de tokens válido.");
+      return;
+    }
+    if (!Number.isFinite(parsedStep) || parsedStep <= 0) {
+      toast.error("O tamanho do bloco deve ser maior que zero.");
+      return;
+    }
+    if (!Number.isFinite(parsedIncrement) || parsedIncrement < 0) {
+      toast.error("Informe um acréscimo válido (R$).");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { error } = await supabase
         .from("organizations")
-        .update({ ai_cost_per_file: parsed })
+        .update({
+          ai_cost_per_file: parsedPrice,
+          ai_price_base_threshold: parsedThreshold,
+          ai_price_tier_step: parsedStep,
+          ai_price_tier_increment: parsedIncrement,
+        })
         .eq("id", organizationId as string);
       if (error) throw error;
-      toast.success("Preço por arquivo atualizado!");
+      toast.success("Regra de faturamento IA atualizada!");
       queryClient.invalidateQueries({ queryKey: ["org-billing", organizationId] });
     } catch (e: any) {
       toast.error("Erro ao salvar: " + e.message);
@@ -184,36 +211,117 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
     }
   }
 
+  // Pré-visualização da regra com os valores em edição
+  const previewPrice = Number(String(price).replace(",", "."));
+  const previewThreshold = Math.floor(Number(String(baseThreshold).replace(",", ".")));
+  const previewStep = Math.floor(Number(String(tierStep).replace(",", ".")));
+  const previewIncrement = Number(String(tierIncrement).replace(",", "."));
+  const previewValid =
+    Number.isFinite(previewPrice) &&
+    Number.isFinite(previewThreshold) &&
+    Number.isFinite(previewStep) &&
+    previewStep > 0 &&
+    Number.isFinite(previewIncrement);
+
+  const fmt = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2, maximumFractionDigits: 4 });
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Custo da indexação por IA</CardTitle>
         <CardDescription>
-          Valor cobrado por cada arquivo processado pela IA. Aplica-se a novos
-          processamentos — logs antigos preservam o custo registrado na época.
+          Configure o preço base por arquivo e a regra de acréscimo por volume de tokens.
+          Aplica-se a novos processamentos — logs antigos preservam o custo registrado na época.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            <div className="space-y-2 max-w-xs">
-              <Label htmlFor="ai-cost">Preço por arquivo (R$)</Label>
-              <Input
-                id="ai-cost"
-                inputMode="decimal"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.15"
-              />
-              <p className="text-xs text-muted-foreground">
-                Use ponto ou vírgula como separador decimal. Ex.: 0.15 = R$ 0,15.
-              </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ai-cost">Preço base por arquivo (R$)</Label>
+                <Input
+                  id="ai-cost"
+                  inputMode="decimal"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0.15"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Valor cobrado até o limite de tokens abaixo.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ai-threshold">Limite de tokens no preço base</Label>
+                <Input
+                  id="ai-threshold"
+                  inputMode="numeric"
+                  value={baseThreshold}
+                  onChange={(e) => setBaseThreshold(e.target.value)}
+                  placeholder="1100"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Até esta quantidade de prompt tokens, cobra apenas o preço base.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ai-step">Tamanho do bloco adicional (tokens)</Label>
+                <Input
+                  id="ai-step"
+                  inputMode="numeric"
+                  value={tierStep}
+                  onChange={(e) => setTierStep(e.target.value)}
+                  placeholder="500"
+                />
+                <p className="text-xs text-muted-foreground">
+                  A cada bloco extra de tokens acima do limite, soma-se o acréscimo.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ai-increment">Acréscimo por bloco (R$)</Label>
+                <Input
+                  id="ai-increment"
+                  inputMode="decimal"
+                  value={tierIncrement}
+                  onChange={(e) => setTierIncrement(e.target.value)}
+                  placeholder="0.01"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Valor somado a cada bloco adicional. Ex.: 0.01 = R$ 0,01.
+                </p>
+              </div>
             </div>
+
+            {previewValid && (
+              <div className="rounded-lg border bg-muted/40 p-4 space-y-2">
+                <div className="text-sm font-medium">Pré-visualização da regra</div>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>Até {previewThreshold.toLocaleString("pt-BR")} tokens → {fmt(previewPrice)}</li>
+                  <li>
+                    {(previewThreshold + previewStep).toLocaleString("pt-BR")} tokens →{" "}
+                    {fmt(previewPrice + previewIncrement)}
+                  </li>
+                  <li>
+                    {(previewThreshold + previewStep * 2).toLocaleString("pt-BR")} tokens →{" "}
+                    {fmt(previewPrice + previewIncrement * 2)}
+                  </li>
+                  <li>
+                    {(previewThreshold + previewStep * 5).toLocaleString("pt-BR")} tokens →{" "}
+                    {fmt(previewPrice + previewIncrement * 5)}
+                  </li>
+                </ul>
+              </div>
+            )}
+
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Salvar preço
+              Salvar regra
             </Button>
           </>
         )}
@@ -221,6 +329,7 @@ function BillingSettings({ organizationId }: { organizationId: string | undefine
     </Card>
   );
 }
+
 
 
 function ProfileSettings({ profile }: { profile: any }) {
