@@ -143,10 +143,6 @@ function DocumentsPage() {
         return true;
       });
 
-  const typeName = (id: string | null) =>
-    id ? allTypes.find((t) => t.id === id)?.name ?? "—" : "—";
-  const companyName = (id: string | null | undefined) =>
-    id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
 
   // Map de uploader_id -> nome, para mostrar o operador que indexou.
   const uploaderIds = useMemo(
