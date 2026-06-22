@@ -73,21 +73,17 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
       try {
         const page = await pdf.getPage(pageNumber);
         if (cancelled) return;
-        const availableWidth = canvas.parentElement?.clientWidth ?? 480;
-        const containerWidth = Math.min(Math.max(availableWidth, 280), 520);
+        const containerWidth = canvas.parentElement?.clientWidth ?? 900;
         const baseViewport = page.getViewport({ scale: 1 });
-        const cssScale = Math.min(containerWidth / baseViewport.width, 1);
-        const dpr = Math.min((window.devicePixelRatio || 1) * 2.5, 4);
-        const renderScale = cssScale * dpr;
-        const cssViewport = page.getViewport({ scale: cssScale });
-        const viewport = page.getViewport({ scale: renderScale });
+        const scale = Math.min(containerWidth / baseViewport.width, 1.8);
+        const viewport = page.getViewport({ scale });
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Canvas indisponível");
 
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
-        canvas.style.width = `${Math.floor(cssViewport.width)}px`;
-        canvas.style.height = `${Math.floor(cssViewport.height)}px`;
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
 
         renderTask = page.render({ canvas, canvasContext: context, viewport });
         await renderTask.promise;
@@ -112,47 +108,46 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
   const canNext = pageNumber < numPages;
 
   return (
-    <div className="relative w-full flex flex-col">
-      {numPages > 0 && (
-        <div className="flex items-center justify-start gap-1.5 px-2 py-1.5">
+    <div className="relative w-full h-full flex flex-col bg-muted/40">
+      {numPages > 1 && (
+        <div className="flex items-center justify-center gap-2 px-3 py-2 border-b border-border bg-card">
           <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
+            size="sm"
+            variant="outline"
             disabled={!canPrev}
             onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-xs text-muted-foreground tabular-nums px-1">
-            Página {pageNumber} de {numPages || 1}
+          <span className="text-xs text-muted-foreground tabular-nums">
+            Página {pageNumber} de {numPages}
           </span>
           <Button
-            size="icon"
-            variant="ghost"
-            className="h-7 w-7"
+            size="sm"
+            variant="outline"
             disabled={!canNext}
             onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
           >
-            <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       )}
-      <div className="relative">
-        {isRendering && (
-          <div className="absolute inset-0 grid place-items-center z-10">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {failed ? (
-          <div className="max-w-sm text-center text-sm text-muted-foreground p-6 mx-auto">
-            <p>Não foi possível renderizar a página do PDF.</p>
-            <p className="mt-1">Use "Baixar" para abrir o arquivo original.</p>
-          </div>
-        ) : (
-          <canvas ref={canvasRef} aria-label={title} className="max-w-full block mx-auto" />
-
-        )}
+      <div className="flex-1 overflow-auto p-4">
+        <div className="min-h-full grid place-items-start justify-center relative">
+          {isRendering && (
+            <div className="absolute inset-0 grid place-items-center bg-muted/30 z-10">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {failed ? (
+            <div className="max-w-sm text-center text-sm text-muted-foreground p-6">
+              <p>Não foi possível renderizar a página do PDF.</p>
+              <p className="mt-1">Use “Baixar” para abrir o arquivo original.</p>
+            </div>
+          ) : (
+            <canvas ref={canvasRef} aria-label={title} className="max-w-full bg-card shadow-sm" />
+          )}
+        </div>
       </div>
     </div>
   );

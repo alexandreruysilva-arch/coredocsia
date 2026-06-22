@@ -168,8 +168,8 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
   const resetZoom = useCallback(() => setScale(initialScale), [initialScale]);
 
   return (
-    <div className="relative w-full max-h-[480px] overflow-auto flex items-start justify-center" ref={containerRef}>
-      <div className="sticky top-2 left-full z-10 ml-auto mb-2 flex w-fit items-center gap-1 rounded-md border border-border bg-card/90 p-1 shadow-sm backdrop-blur">
+    <div className="relative w-full h-full overflow-auto" ref={containerRef}>
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
         <Button
           type="button"
           size="icon"
@@ -204,8 +204,12 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
         </Button>
       </div>
       <div
-        className="origin-top-left inline-block transition-transform"
-        style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+        className="origin-top-left transition-transform"
+        style={{
+          transform: `scale(${scale})`,
+          width: `${100 / scale}%`,
+          height: `${100 / scale}%`,
+        }}
       >
         {children}
       </div>
@@ -576,7 +580,7 @@ function UploadPage() {
                   </div>
                   {item.expanded && item.status !== "done" && (
                     <div className="pl-8 pt-2 space-y-3 border-t">
-                      <div className="flex flex-col gap-4 pt-2">
+                      <div className="grid lg:grid-cols-2 gap-4 pt-2">
                         <ZoomablePreview>
                           {item.file.type.startsWith("image/") ? (
                             <img
@@ -585,7 +589,9 @@ function UploadPage() {
                               className="max-h-[420px] max-w-full object-contain"
                             />
                           ) : item.file.type === "application/pdf" ? (
-                            <PdfFilePreview file={item.file} />
+                            <div className="w-[800px] h-[420px]">
+                              <PdfFilePreview file={item.file} />
+                            </div>
                           ) : (
                             <div className="text-xs text-muted-foreground p-4 text-center">
                               Pré-visualização indisponível para este tipo de arquivo.
