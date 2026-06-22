@@ -168,7 +168,10 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
   const resetZoom = useCallback(() => setScale(initialScale), [initialScale]);
 
   return (
-    <div className="relative w-full h-full overflow-auto" ref={containerRef}>
+    <div
+      className="relative w-full h-full min-h-[420px] overflow-auto flex items-center justify-center"
+      ref={containerRef}
+    >
       <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-card/90 backdrop-blur rounded-md border border-border shadow-sm p-1">
         <Button
           type="button"
@@ -204,7 +207,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
         </Button>
       </div>
       <div
-        className="origin-top-left transition-transform"
+        className="origin-center transition-transform flex items-center justify-center"
         style={{
           transform: `scale(${scale})`,
           width: `${100 / scale}%`,
