@@ -1,9 +1,10 @@
 /**
  * Regra de precificação por arquivo processado por IA:
  * - Até `baseThreshold` prompt tokens: preço base
- * - A cada bloco adicional de `tierStep` prompt tokens acima do limite: + `tierIncrement`
+ * - Acima do limite, cada fração de `tierStep` prompt tokens: + `tierIncrement`
+ *   (arredondamento para cima — qualquer excesso conta como bloco completo)
  *
- * Ex. (default 1100/500/0,01): 1.100 → base | 1.600 → base+0,01 | 2.100 → base+0,02 ...
+ * Ex. (default 1100/500/0,01): 1.100 → base | 1.101 → base+0,01 | 1.600 → base+0,01 | 1.601 → base+0,02 ...
  */
 export const AI_PRICE_BASE_THRESHOLD = 1100;
 export const AI_PRICE_TIER_STEP = 500;
@@ -32,7 +33,7 @@ export function computeAiCost(
     : AI_PRICE_TIER_INCREMENT;
 
   if (tokens <= baseThreshold) return Number(basePrice);
-  const extraTiers = Math.floor((tokens - baseThreshold) / tierStep);
+  const extraTiers = Math.ceil((tokens - baseThreshold) / tierStep);
   return Number(basePrice) + extraTiers * tierIncrement;
 }
 
