@@ -73,10 +73,10 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
       try {
         const page = await pdf.getPage(pageNumber);
         if (cancelled) return;
-        const availableWidth = canvas.parentElement?.clientWidth ?? 360;
-        const containerWidth = Math.min(Math.max(availableWidth, 280), 360);
+        const availableWidth = canvas.parentElement?.clientWidth ?? 480;
+        const containerWidth = Math.min(Math.max(availableWidth, 280), 520);
         const baseViewport = page.getViewport({ scale: 1 });
-        const cssScale = Math.min(containerWidth / baseViewport.width, 0.8);
+        const cssScale = Math.min(containerWidth / baseViewport.width, 1);
         const dpr = Math.min((window.devicePixelRatio || 1) * 2.5, 4);
         const renderScale = cssScale * dpr;
         const cssViewport = page.getViewport({ scale: cssScale });
