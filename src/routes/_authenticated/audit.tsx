@@ -47,6 +47,59 @@ function formatDateTime(iso: string) {
   });
 }
 
+function csvEscape(v: unknown): string {
+  const s = v == null ? "" : String(v);
+  if (/[",;\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function exportLogsCsv(rows: AiLogRow[]) {
+  const headers = [
+    "Data",
+    "Empresa",
+    "Tipo",
+    "Arquivo",
+    "Modelo",
+    "Prompt tokens",
+    "Completion tokens",
+    "Total tokens",
+    "Custo (R$)",
+    "Status",
+    "Erro",
+  ];
+  const lines = [headers.join(";")];
+  for (const l of rows) {
+    lines.push(
+      [
+        formatDateTime(l.created_at),
+        l.company_name ?? "",
+        l.document_type_name ?? "",
+        l.file_name,
+        l.model,
+        l.prompt_tokens,
+        l.completion_tokens,
+        l.total_tokens,
+        l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
+        l.success ? "OK" : "Falha",
+        l.error_message ?? "",
+      ]
+        .map(csvEscape)
+        .join(";"),
+    );
+  }
+  const csv = "\uFEFF" + lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `auditoria-ia-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
 function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
