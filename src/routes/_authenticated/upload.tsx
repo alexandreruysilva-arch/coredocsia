@@ -20,7 +20,9 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { extractFieldsWithGemini } from "@/lib/gemini.functions";
+import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,8 +71,10 @@ interface FieldEditorProps {
   fields: DocTypeField[];
   values: Record<string, string>;
   onChange: (key: string, value: string) => void;
+  onFieldBlur?: (key: string, value: string) => void;
   idPrefix: string;
 }
+
 
 function sanitizeFieldValue(field: DocTypeField, raw: string): string {
   const isMatricula = field.field_key.toLowerCase().includes("matricula");
