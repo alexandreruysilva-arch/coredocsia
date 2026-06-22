@@ -124,7 +124,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 className={cn(
-                  "h-9 px-2.5 text-sm",
+                  "h-8 px-2 text-sm",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
                 )}
                 type={
