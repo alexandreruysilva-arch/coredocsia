@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export interface PdfPreviewProps {
   data: ArrayBuffer;
@@ -26,20 +26,11 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <object
-          data={pdfUrl}
-          type="application/pdf"
-          aria-label={title}
-          className="h-full w-full bg-card"
-        >
-          <div className="h-full w-full grid place-items-center p-6 text-center text-sm text-muted-foreground">
-            <div>
-              <FileText className="h-10 w-10 mx-auto mb-2 opacity-20" />
-              <p>Não foi possível exibir o PDF no navegador.</p>
-              <p className="mt-1">Use “Baixar” para abrir o arquivo original.</p>
-            </div>
-          </div>
-        </object>
+        <iframe
+          src={pdfUrl}
+          title={title}
+          className="h-full w-full border-0 bg-card"
+        />
       )}
     </div>
   );
