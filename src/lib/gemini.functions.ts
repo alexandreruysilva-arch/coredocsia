@@ -130,7 +130,10 @@ Regras de saída (siga RIGOROSAMENTE):
       if (v == null) continue;
       const s = String(v).trim();
       if (!s) continue;
-      if (f.field_type === "number" || f.field_type === "date") {
+      const isMatricula = f.field_key.toLowerCase().includes("matricula");
+      if (isMatricula) {
+        result[f.field_key] = s.replace(/\D/g, "");
+      } else if (f.field_type === "number" || f.field_type === "date") {
         result[f.field_key] = s;
       } else {
         result[f.field_key] = s.toUpperCase();
