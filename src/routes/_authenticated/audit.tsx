@@ -85,6 +85,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Completion tokens",
     "Total tokens",
     "Custo (R$)",
+    "Tempo IA",
     "Status",
     "Erro",
   ];
@@ -101,6 +102,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.completion_tokens,
         l.total_tokens,
         l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
+        l.duration_ms != null ? formatDuration(l.duration_ms) : "",
         l.success ? "OK" : "Falha",
         l.error_message ?? "",
       ]
