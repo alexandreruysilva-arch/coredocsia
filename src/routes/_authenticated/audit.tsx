@@ -218,8 +218,8 @@ function AuditPage() {
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
                   <TableHead className="text-right">Prompt</TableHead>
-                  <TableHead className="text-right">Resposta</TableHead>
                   <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -238,11 +238,13 @@ function AuditPage() {
                     <TableCell className="text-right tabular-nums">
                       {l.prompt_tokens.toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {l.completion_tokens.toLocaleString("pt-BR")}
-                    </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       {l.total_tokens.toLocaleString("pt-BR")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {l.cost_brl != null
+                        ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
