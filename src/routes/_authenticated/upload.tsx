@@ -647,8 +647,10 @@ function UploadPage() {
                               fields={fields}
                               values={item.fieldValues}
                               onChange={(k, v) => setItemFieldValue(item.id, k, v)}
+                              onFieldBlur={(k, v) => handleKeyFieldBlur(item.id, k, v)}
                               idPrefix={item.id}
                             />
+
                           ) : (
                             <p className="text-xs text-muted-foreground">
                               Selecione um tipo de documento para preencher a indexação.
