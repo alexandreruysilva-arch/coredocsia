@@ -38,7 +38,16 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         throw new Error("fieldValues inválido");
       }
     }
-    return { file, name, companyId, documentTypeId, tags, fieldValues };
+    const aiUsageRaw = data.get("aiUsage");
+    let aiUsage: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string } | null = null;
+    if (typeof aiUsageRaw === "string" && aiUsageRaw.trim()) {
+      try {
+        aiUsage = JSON.parse(aiUsageRaw) as typeof aiUsage;
+      } catch {
+        throw new Error("aiUsage inválido");
+      }
+    }
+    return { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
