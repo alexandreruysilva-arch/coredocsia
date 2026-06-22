@@ -86,6 +86,7 @@ function AuditPage() {
       prompt: 0,
       completion: 0,
       total: 0,
+      cost: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -93,6 +94,7 @@ function AuditPage() {
       t.prompt += l.prompt_tokens;
       t.completion += l.completion_tokens;
       t.total += l.total_tokens;
+      t.cost += l.cost_brl ?? 0;
     }
     return t;
   }, [filtered]);
