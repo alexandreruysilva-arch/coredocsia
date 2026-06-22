@@ -524,6 +524,25 @@ function FieldsDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {docType && orgId && (
+          <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                Base de lookup para preenchimento automático
+              </span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setLookupOpen(true)}
+            >
+              <Database className="h-4 w-4 mr-1" /> Importar base (CSV/XLSX)
+            </Button>
+          </div>
+        )}
+
         <div className="rounded-lg border bg-card overflow-hidden">
           <Table>
             <TableHeader>
@@ -532,13 +551,14 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(fields.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-6 text-sm text-muted-foreground">
                     Nenhum campo definido.
                   </TableCell>
                 </TableRow>
@@ -549,6 +569,15 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell>
+                      {f.is_lookup_key ? (
+                        <Badge variant="default" className="gap-1">
+                          <KeyRound className="h-3 w-3" /> Chave
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button
@@ -575,6 +604,7 @@ function FieldsDialog({
             </TableBody>
           </Table>
         </div>
+
 
         <form
           onSubmit={(e) => {
