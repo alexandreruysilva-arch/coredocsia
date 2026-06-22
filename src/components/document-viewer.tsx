@@ -112,7 +112,6 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         <DialogContent className="max-w-[96vw] h-[92vh] p-0 gap-0 overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-card min-w-0">
             <DialogTitle className="text-sm truncate pr-8">{doc.name}</DialogTitle>
-            <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
           </div>
           {error ? (
             <div className="flex-1 grid place-items-center p-6 text-center text-muted-foreground">
