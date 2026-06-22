@@ -363,16 +363,13 @@ function DocumentsPage() {
                     typeFields.map((f) => (
                       <TableHead key={f.id}>{f.label}</TableHead>
                     ))}
-                  <TableHead>Tamanho</TableHead>
-                  <TableHead>Criado</TableHead>
-                  <TableHead>Nome Arquivo</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {(() => {
                   const colSpan =
-                    4 + (typeId !== "all" ? typeFields.length : 0);
+                    1 + (typeId !== "all" ? typeFields.length : 0);
                   return (
                     <>
                       {!filtersSelected && (
@@ -406,59 +403,94 @@ function DocumentsPage() {
                     if (typeof v === "boolean") return v ? "Sim" : "Não";
                     return String(v);
                   };
+                  const uploaderName =
+                    uploaderMap[doc.uploaded_by] ?? "—";
                   return (
-                  <TableRow
-                    key={doc.id}
-                    className="cursor-pointer transition-colors"
-                    data-state={preview?.id === doc.id ? "selected" : undefined}
-                    onClick={() => setPreview(doc)}
-                  >
-                    {typeId !== "all" &&
-                      typeFields.map((f) => (
-                        <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
-                          {fmt(fv[f.field_key])}
-                        </TableCell>
-                      ))}
-                    <TableCell className="text-sm">{formatBytes(Number(doc.size_bytes))}</TableCell>
-                    <TableCell
-                      className="text-sm text-muted-foreground"
-                      title={format(new Date(doc.created_at), "PPPp", {
-                        locale: ptBR,
-                      })}
+                    <TableRow
+                      key={doc.id}
+                      className="cursor-pointer transition-colors"
+                      data-state={preview?.id === doc.id ? "selected" : undefined}
+                      onClick={() => setPreview(doc)}
                     >
-                      {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
-                        locale: ptBR,
-                      })}
-                    </TableCell>
-                    <TableCell className="font-medium max-w-[260px] truncate">{doc.name}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate({ to: "/documents/$id", params: { id: doc.id } });
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        {canDelete && (
+                      {typeId !== "all" &&
+                        typeFields.map((f) => (
+                          <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
+                            {fmt(fv[f.field_key])}
+                          </TableCell>
+                        ))}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button size="sm" variant="ghost" title="Detalhes do arquivo">
+                                <Info className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="end" className="w-80 text-sm">
+                              <div className="space-y-2.5">
+                                <div className="font-semibold text-sm border-b border-border pb-2">
+                                  Detalhes do arquivo
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                  <span className="text-muted-foreground text-xs">Nome</span>
+                                  <span className="col-span-2 break-all text-xs">{doc.name}</span>
+
+                                  <span className="text-muted-foreground text-xs">Tamanho</span>
+                                  <span className="col-span-2 text-xs">
+                                    {formatBytes(Number(doc.size_bytes))}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Criado</span>
+                                  <span className="col-span-2 text-xs">
+                                    {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
+                                      locale: ptBR,
+                                    })}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Operador</span>
+                                  <span className="col-span-2 text-xs font-medium">
+                                    {uploaderName}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Empresa</span>
+                                  <span className="col-span-2 text-xs">
+                                    {companyName(doc.company_id)}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Tipo</span>
+                                  <span className="col-span-2 text-xs">
+                                    {typeName(doc.document_type_id)}
+                                  </span>
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="text-destructive hover:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setToDelete(doc);
+                            onClick={() => {
+                              navigate({ to: "/documents/$id", params: { id: doc.id } });
                             }}
+                            title="Editar indexação"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                          {canDelete && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setToDelete(doc);
+                              }}
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
               </TableBody>
@@ -467,6 +499,7 @@ function DocumentsPage() {
 
         </div>
       </div>
+
 
 
       {preview && (
