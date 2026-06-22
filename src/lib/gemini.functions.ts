@@ -260,6 +260,7 @@ Regras de saída (siga RIGOROSAMENTE):
         completion_tokens: completionTokens,
         total_tokens: totalTokens,
         model: MODEL,
+        duration_ms: Date.now() - startedAt,
       },
       logContext,
     };
