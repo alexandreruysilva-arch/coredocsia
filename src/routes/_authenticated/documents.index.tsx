@@ -567,6 +567,38 @@ function DocumentsPage() {
             </Table>
           </Card>
 
+          </Card>
+
+          {filtersSelected && filteredDocs.length > 0 && (
+            <div className="flex items-center justify-between text-sm">
+              <p className="text-muted-foreground">
+                Mostrando {(page - 1) * PAGE_SIZE + 1}
+                –{Math.min(page * PAGE_SIZE, filteredDocs.length)} de {filteredDocs.length}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                >
+                  Anterior
+                </Button>
+                <span className="text-muted-foreground">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page >= totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
