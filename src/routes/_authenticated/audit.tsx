@@ -30,6 +30,7 @@ interface AiLogRow {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
+  cost_brl: number | null;
   success: boolean;
   error_message: string | null;
 }
