@@ -205,15 +205,15 @@ function DocumentsPage() {
     queryFn: async (): Promise<Record<string, number>> => {
       const { data, error } = await supabase
         .from("ai_usage_logs")
-        .select("document_id, total_tokens")
+        .select("document_id, cost_brl")
         .eq("org_id", orgId!)
         .in("document_id", docIds)
         .eq("success", true);
       if (error) throw error;
       const map: Record<string, number> = {};
       for (const row of data ?? []) {
-        if (!row.document_id) continue;
-        map[row.document_id] = (map[row.document_id] ?? 0) + (row.total_tokens ?? 0);
+        if (!row.document_id || row.cost_brl == null) continue;
+        map[row.document_id] = (map[row.document_id] ?? 0) + Number(row.cost_brl);
       }
       return map;
     },
