@@ -206,7 +206,7 @@ function DocumentsPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select("document_id, total_tokens")
-        .eq("org_id", orgId)
+        .eq("org_id", orgId!)
         .in("document_id", docIds)
         .eq("success", true);
       if (error) throw error;
