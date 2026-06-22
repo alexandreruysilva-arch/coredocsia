@@ -39,6 +39,7 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
     const documentTypeId = (data.get("documentTypeId") as string) || null;
 
     if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
+    const uploadFile: File = file;
 
     let fields: FieldDef[] = [];
     try {
