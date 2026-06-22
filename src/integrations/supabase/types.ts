@@ -169,6 +169,7 @@ export type Database = {
           field_key: string
           field_type: string
           id: string
+          is_lookup_key: boolean
           label: string
           options: Json | null
           org_id: string
@@ -182,6 +183,7 @@ export type Database = {
           field_key: string
           field_type?: string
           id?: string
+          is_lookup_key?: boolean
           label: string
           options?: Json | null
           org_id: string
@@ -195,6 +197,7 @@ export type Database = {
           field_key?: string
           field_type?: string
           id?: string
+          is_lookup_key?: boolean
           label?: string
           options?: Json | null
           org_id?: string
@@ -212,6 +215,61 @@ export type Database = {
           },
           {
             foreignKeyName: "document_type_fields_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_type_lookups: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          document_type_id: string
+          id: string
+          key_value: string
+          org_id: string
+          updated_at: string
+          values: Json
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          document_type_id: string
+          id?: string
+          key_value: string
+          org_id: string
+          updated_at?: string
+          values?: Json
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          document_type_id?: string
+          id?: string
+          key_value?: string
+          org_id?: string
+          updated_at?: string
+          values?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_type_lookups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_type_lookups_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_type_lookups_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
