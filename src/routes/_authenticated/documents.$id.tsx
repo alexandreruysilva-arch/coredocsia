@@ -70,7 +70,7 @@ function DocumentDetailPage() {
     toast.success("Indexação atualizada");
     queryClient.invalidateQueries({ queryKey: ["document", doc!.id] });
     queryClient.invalidateQueries({ queryKey: ["documents"] });
-    navigate({ to: "/documents" });
+    router.history.back();
   }
 
   const sanitize = (f: (typeof fields)[number], raw: string) => {
