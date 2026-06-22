@@ -107,10 +107,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const showSecondary = !isViewerOnly && !isOperatorOnly;
 
   async function handleSignOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    try {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+    } finally {
+      // Hard reload guarantees all in-memory state (cached documents,
+      // preview blobs, user profile) is wiped — a client-side navigate
+      // leaves the previous route's components mounted in the router cache.
+      if (typeof window !== "undefined") {
+        window.location.replace("/auth");
+      } else {
+        navigate({ to: "/auth", replace: true });
+      }
+    }
   }
 
   const initials = (data?.profile.full_name ?? "?")
