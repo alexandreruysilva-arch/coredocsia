@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ListChecks, RefreshCw, Trash2 } from "lucide-react";
+import { CheckCircle2, ListChecks, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -23,27 +25,98 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/status-badge";
 import { useProfileBundle } from "@/hooks/use-profile";
-import { useDocumentsList } from "@/hooks/use-documents";
-import { formatBytes, type DocStatus } from "@/lib/documents";
+import { formatBytes, type DocStatus, type DocumentRow } from "@/lib/documents";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/queue")({
   component: QueuePage,
 });
 
+type QueueDoc = DocumentRow & { ai_usage_logs?: { id: string }[] };
+type QueueStatus = DocStatus | "processed_ai" | "processed_manual" | "all";
+
 function QueuePage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const isAdmin = profile?.roles.includes("org_admin") || profile?.isPlatformAdmin;
-  const [status, setStatus] = useState<DocStatus | "all">("all");
-  const { data: docs = [], isLoading, refetch, isFetching } = useDocumentsList({ orgId, status });
+  const [status, setStatus] = useState<QueueStatus>("all");
   const queryClient = useQueryClient();
 
+  const {
+    data: docs = [],
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["queue-documents", orgId, status],
+    enabled: !!orgId,
+    queryFn: async (): Promise<QueueDoc[]> => {
+      let q = supabase
+        .from("documents")
+        .select("*, ai_usage_logs(id)")
+        .eq("org_id", orgId!)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      if (status === "pending") q = q.eq("status", "pending");
+      else if (status === "processing") q = q.eq("status", "processing");
+      else if (status === "failed") q = q.eq("status", "failed");
+      else if (
+        status === "processed" ||
+        status === "processed_ai" ||
+        status === "processed_manual"
+      ) {
+        q = q.eq("status", "processed");
+      }
+
+      const { data, error } = await q;
+      if (error) throw error;
+      const rows = (data ?? []) as QueueDoc[];
+      if (status === "processed_ai") {
+        return rows.filter((d) => (d.ai_usage_logs?.length ?? 0) > 0);
+      }
+      if (status === "processed_manual") {
+        return rows.filter((d) => (d.ai_usage_logs?.length ?? 0) === 0);
+      }
+      return rows;
+    },
+  });
+
+  useEffect(() => {
+    if (!orgId) return;
+    const channel = supabase
+      .channel(`queue-documents:${orgId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "documents", filter: `org_id=eq.${orgId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["queue-documents"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId, queryClient]);
+
   const counts = useMemo(() => {
-    const c = { pending: 0, processing: 0, processed: 0, failed: 0 };
+    const c = {
+      pending: 0,
+      processing: 0,
+      processed: 0,
+      processed_ai: 0,
+      processed_manual: 0,
+      failed: 0,
+    };
     docs.forEach((d) => {
-      c[d.status]++;
+      if (d.status === "processed") {
+        const hasAi = (d.ai_usage_logs?.length ?? 0) > 0;
+        if (hasAi) c.processed_ai++;
+        else c.processed_manual++;
+      } else {
+        c[d.status]++;
+      }
     });
     return c;
   }, [docs]);
@@ -55,7 +128,7 @@ function QueuePage() {
       .eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Reprocessamento agendado");
-    queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["queue-documents"] });
   }
 
   async function remove(id: string) {
@@ -66,7 +139,7 @@ function QueuePage() {
       .eq("id", id);
     if (error) toast.error(error.message);
     else toast.success("Documento removido");
-    queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["queue-documents"] });
   }
 
   return (
@@ -85,26 +158,53 @@ function QueuePage() {
         </Button>
       </header>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {(["pending", "processing", "processed", "failed"] as DocStatus[]).map((s) => (
-          <Card key={s} className="p-4">
-            <StatusBadge status={s} />
-            <p className="text-3xl font-display font-semibold mt-2">{counts[s]}</p>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <Card className="p-4">
+          <StatusBadge status="pending" />
+          <p className="text-3xl font-display font-semibold mt-2">{counts.pending}</p>
+        </Card>
+        <Card className="p-4">
+          <StatusBadge status="processing" />
+          <p className="text-3xl font-display font-semibold mt-2">{counts.processing}</p>
+        </Card>
+        <Card className="p-4">
+          <Badge
+            variant="outline"
+            className="gap-1.5 font-normal bg-primary/10 text-primary border-primary/20"
+          >
+            <Sparkles className="h-3 w-3" /> Processado IA
+          </Badge>
+          <p className="text-3xl font-display font-semibold mt-2">{counts.processed_ai}</p>
+        </Card>
+        <Card className="p-4">
+          <Badge
+            variant="outline"
+            className="gap-1.5 font-normal bg-success/10 text-success border-success/20"
+          >
+            <CheckCircle2 className="h-3 w-3" /> Processado
+          </Badge>
+          <p className="text-muted-foreground text-xs mt-1">Indexação manual</p>
+          <p className="text-3xl font-display font-semibold mt-1">{counts.processed_manual}</p>
+        </Card>
+        <Card className="p-4">
+          <StatusBadge status="failed" />
+          <p className="text-3xl font-display font-semibold mt-2">{counts.failed}</p>
+        </Card>
       </div>
 
       <Card>
         <div className="p-4 border-b border-border flex items-center gap-3">
-          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
-            <SelectTrigger className="w-[200px]">
+          <Select value={status} onValueChange={(v) => setStatus(v as QueueStatus)}>
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os status</SelectItem>
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="processing">Processando</SelectItem>
-              <SelectItem value="processed">Processado</SelectItem>
+              <SelectItem value="processed_ai">Processado IA</SelectItem>
+              <SelectItem value="processed_manual">Processado (indexação manual)</SelectItem>
+              <SelectItem value="processed">Processado (todos)</SelectItem>
               <SelectItem value="failed">Falhou</SelectItem>
             </SelectContent>
           </Select>
