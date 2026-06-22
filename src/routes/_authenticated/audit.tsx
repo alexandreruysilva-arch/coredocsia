@@ -387,6 +387,9 @@ function AuditPage() {
                         ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
                         : "—"}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
+                    </TableCell>
                     <TableCell>
                       {l.success ? (
                         <Badge variant="secondary">OK</Badge>
