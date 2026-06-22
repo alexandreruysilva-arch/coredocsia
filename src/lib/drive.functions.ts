@@ -151,13 +151,18 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     if (aiUsage && aiUsage.total_tokens != null) {
       const { data: org } = await supabase
         .from("organizations")
-        .select("ai_cost_per_file")
+        .select("ai_cost_per_file, ai_price_base_threshold, ai_price_tier_step, ai_price_tier_increment")
         .eq("id", company.org_id)
         .maybeSingle();
       const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
       const { computeAiCost } = await import("./ai-pricing");
       const promptTokens = aiUsage.prompt_tokens ?? 0;
-      const cost = computeAiCost(promptTokens, basePrice);
+      const cost = computeAiCost(promptTokens, basePrice, {
+        baseThreshold: org?.ai_price_base_threshold ?? undefined,
+        tierStep: org?.ai_price_tier_step ?? undefined,
+        tierIncrement: org?.ai_price_tier_increment != null ? Number(org.ai_price_tier_increment) : undefined,
+      });
+
 
       await supabase.from("ai_usage_logs").insert({
         org_id: company.org_id,
