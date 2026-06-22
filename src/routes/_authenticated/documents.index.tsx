@@ -200,12 +200,13 @@ function DocumentsPage() {
     [filteredDocs],
   );
   const { data: usageMap = {} } = useQuery({
-    queryKey: ["ai-usage-by-docs", docIds.sort().join(",")],
-    enabled: docIds.length > 0,
+    queryKey: ["ai-usage-by-docs", orgId, docIds.sort().join(",")],
+    enabled: docIds.length > 0 && !!orgId,
     queryFn: async (): Promise<Record<string, number>> => {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select("document_id, total_tokens")
+        .eq("org_id", orgId)
         .in("document_id", docIds)
         .eq("success", true);
       if (error) throw error;
