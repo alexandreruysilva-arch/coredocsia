@@ -103,7 +103,7 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 rows={2}
-                className={cn("min-h-[56px] py-1.5", isMatricula ? undefined : "uppercase")}
+                className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
