@@ -154,7 +154,10 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         .select("ai_cost_per_file")
         .eq("id", company.org_id)
         .maybeSingle();
-      const costPerFile = Number(org?.ai_cost_per_file ?? 0.15);
+      const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
+      const { computeAiCost } = await import("./ai-pricing");
+      const promptTokens = aiUsage.prompt_tokens ?? 0;
+      const cost = computeAiCost(promptTokens, basePrice);
 
       await supabase.from("ai_usage_logs").insert({
         org_id: company.org_id,
@@ -166,10 +169,10 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         document_type_name: docType.name,
         file_name: file.name,
         model: aiUsage.model ?? "gemini-2.5-flash-lite",
-        prompt_tokens: aiUsage.prompt_tokens ?? 0,
+        prompt_tokens: promptTokens,
         completion_tokens: aiUsage.completion_tokens ?? 0,
         total_tokens: aiUsage.total_tokens ?? 0,
-        cost_brl: costPerFile,
+        cost_brl: cost,
         success: true,
       });
     }
