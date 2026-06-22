@@ -185,9 +185,9 @@ function DocumentsPage() {
   const editorIds = useMemo(
     () =>
       Array.from(
-        new Set(filteredDocs.map((d: any) => d.last_edited_by).filter(Boolean)),
+        new Set(pagedDocs.map((d: any) => d.last_edited_by).filter(Boolean)),
       ) as string[],
-    [filteredDocs],
+    [pagedDocs],
   );
   const { data: editorMap = {} } = useQuery({
     queryKey: ["profiles-by-ids", editorIds.sort().join(",")],
