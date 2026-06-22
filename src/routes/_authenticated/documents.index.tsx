@@ -494,9 +494,23 @@ function DocumentsPage() {
                                     })}
                                   </span>
 
+                                  <span className="text-muted-foreground text-xs">Editado em</span>
+                                  <span className="col-span-2 text-xs">
+                                    {doc.updated_at && doc.updated_at !== doc.created_at
+                                      ? format(new Date(doc.updated_at), "dd/MM/yyyy HH:mm", {
+                                          locale: ptBR,
+                                        })
+                                      : "—"}
+                                  </span>
+
                                   <span className="text-muted-foreground text-xs">Operador</span>
                                   <span className="col-span-2 text-xs font-medium">
                                     {uploaderName}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Último editor</span>
+                                  <span className="col-span-2 text-xs font-medium">
+                                    {editorMap[doc.last_edited_by] ?? "—"}
                                   </span>
 
                                   <span className="text-muted-foreground text-xs">Empresa</span>
@@ -507,6 +521,13 @@ function DocumentsPage() {
                                   <span className="text-muted-foreground text-xs">Tipo</span>
                                   <span className="col-span-2 text-xs">
                                     {typeName(doc.document_type_id)}
+                                  </span>
+
+                                  <span className="text-muted-foreground text-xs">Tokens IA</span>
+                                  <span className="col-span-2 text-xs">
+                                    {usageMap[doc.id] != null
+                                      ? `${usageMap[doc.id].toLocaleString("pt-BR")} tokens`
+                                      : "—"}
                                   </span>
                                 </div>
                               </div>
