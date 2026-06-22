@@ -277,7 +277,7 @@ function UploadPage() {
       acc[m] = [];
       return acc;
     }, {}),
-    maxSize: 25 * 1024 * 1024,
+    maxSize: 50 * 1024 * 1024,
     multiple: true,
     disabled: isUploading,
   });
@@ -415,7 +415,7 @@ function UploadPage() {
         <h1 className="text-3xl font-display font-bold tracking-tight">Upload de documentos</h1>
         <p className="text-muted-foreground mt-1">
           Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
-          Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 25 MB cada.
+          Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
         </p>
       </header>
 
@@ -483,7 +483,7 @@ function UploadPage() {
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            PDF, JPG, PNG, TIFF, WEBP • máx 25 MB
+            PDF, JPG, PNG, TIFF, WEBP • máx 50 MB
           </p>
         </div>
 

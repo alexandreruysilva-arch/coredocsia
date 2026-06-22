@@ -13,11 +13,11 @@ export const ALLOWED_MIME = [
   "image/tiff",
   "image/webp",
 ];
-export const MAX_FILE_BYTES = 25 * 1024 * 1024;
-export const MAX_FILES_PER_BATCH = 20;
+export const MAX_FILE_BYTES = 50 * 1024 * 1024;
+export const MAX_FILES_PER_BATCH = 100;
 
 export function validateFile(file: File): string | null {
-  if (file.size > MAX_FILE_BYTES) return "Arquivo excede 25 MB";
+  if (file.size > MAX_FILE_BYTES) return "Arquivo excede 50 MB";
   if (!ALLOWED_MIME.includes(file.type)) return "Tipo de arquivo não suportado";
   return null;
 }
