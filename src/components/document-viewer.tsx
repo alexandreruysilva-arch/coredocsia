@@ -135,7 +135,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
         </DialogContent>
       </Dialog>
       {fields && fields.length > 0 && (
-        <div className="border-t border-border bg-card p-4 max-h-[40%] overflow-y-auto">
+        <div className="border-t border-border bg-card p-4 max-h-[28%] overflow-y-auto">
           <h3 className="text-xs font-semibold uppercase text-muted-foreground mb-3">
             Campos de indexação
           </h3>
