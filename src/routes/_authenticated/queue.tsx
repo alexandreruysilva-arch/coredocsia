@@ -293,7 +293,7 @@ function QueuePage() {
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+            );})}
           </TableBody>
         </Table>
         {docs.length > pageSize && (
