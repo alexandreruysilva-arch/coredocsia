@@ -35,6 +35,15 @@ export const Route = createFileRoute("/_authenticated/queue")({
 type QueueDoc = DocumentRow & {
   ai_usage_logs?: { id: string; duration_ms: number | null }[];
 };
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)} s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return `${m}m ${r}s`;
+}
 type QueueStatus = DocStatus | "processed_ai" | "processed_manual" | "all";
 
 function QueuePage() {
