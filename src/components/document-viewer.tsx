@@ -63,9 +63,17 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
 
   const { data: fields } = useDocumentTypeFields(doc.document_type_id);
   const values = (doc.field_values ?? {}) as Record<string, unknown>;
-  const formatValue = (v: unknown) => {
+  const formatValue = (v: unknown, fieldType?: string) => {
     if (v === null || v === undefined || v === "") return "—";
     if (typeof v === "boolean") return v ? "Sim" : "Não";
+    if (
+      fieldType === "date" &&
+      typeof v === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(v)
+    ) {
+      const [y, m, d] = v.split("-");
+      return `${d}/${m}/${y}`;
+    }
     return String(v);
   };
 
@@ -143,7 +151,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
             {fields.map((f) => (
               <div key={f.id} className="flex flex-col">
                 <dt className="text-xs text-muted-foreground">{f.label}</dt>
-                <dd className="font-medium break-words">{formatValue(values[f.field_key])}</dd>
+                <dd className="font-medium break-words">{formatValue(values[f.field_key], f.field_type)}</dd>
               </div>
             ))}
           </dl>

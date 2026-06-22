@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info } from "lucide-react";
@@ -471,11 +471,23 @@ function DocumentsPage() {
                       onClick={() => setPreview(doc)}
                     >
                       {typeId !== "all" &&
-                        typeFields.map((f) => (
-                          <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
-                            {fmt(fv[f.field_key])}
-                          </TableCell>
-                        ))}
+                        typeFields.map((f) => {
+                          const raw = fv[f.field_key];
+                          let cell: ReactNode = fmt(raw);
+                          if (
+                            f.field_type === "date" &&
+                            typeof raw === "string" &&
+                            /^\d{4}-\d{2}-\d{2}$/.test(raw)
+                          ) {
+                            const [y, m, d] = raw.split("-");
+                            cell = `${d}/${m}/${y}`;
+                          }
+                          return (
+                            <TableCell key={f.id} className="text-sm max-w-[200px] truncate">
+                              {cell}
+                            </TableCell>
+                          );
+                        })}
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                           <Popover>
