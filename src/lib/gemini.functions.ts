@@ -73,8 +73,17 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
     const documentTypeName =
       (typeRes?.data as { name?: string } | null)?.name ?? null;
 
-    async function writeLog(args: {
-      success: boolean;
+    const logContext = {
+      orgId,
+      userId,
+      companyId,
+      companyName,
+      documentTypeId,
+      documentTypeName,
+      fileName: uploadFile.name,
+    };
+
+    async function writeFailureLog(args: {
       prompt: number;
       completion: number;
       total: number;
@@ -93,7 +102,7 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
         prompt_tokens: args.prompt,
         completion_tokens: args.completion,
         total_tokens: args.total,
-        success: args.success,
+        success: false,
         error_message: args.error ?? null,
       });
     }
