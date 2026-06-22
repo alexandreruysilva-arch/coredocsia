@@ -40,6 +40,8 @@ function QueuePage() {
   const orgId = profile?.currentOrg?.id ?? null;
   const isAdmin = profile?.roles.includes("org_admin") || profile?.isPlatformAdmin;
   const [status, setStatus] = useState<QueueStatus>("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const queryClient = useQueryClient();
 
   const {
