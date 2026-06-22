@@ -209,7 +209,7 @@ function AuditPage() {
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
           <div className="text-xs text-muted-foreground mt-0.5">
-            R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} por arquivo
+            Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 prompt tokens · +R$ 0,01 a cada 500 acima
           </div>
 
         </Card>
