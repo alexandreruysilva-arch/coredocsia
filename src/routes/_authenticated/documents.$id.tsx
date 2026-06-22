@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/documents/$id")({
 
 function DocumentDetailPage() {
   const { id } = Route.useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: doc, isLoading } = useDocument(id);
   const { data: fields = [] } = useDocumentTypeFields(doc?.document_type_id ?? null);
@@ -70,7 +70,7 @@ function DocumentDetailPage() {
     toast.success("Indexação atualizada");
     queryClient.invalidateQueries({ queryKey: ["document", doc!.id] });
     queryClient.invalidateQueries({ queryKey: ["documents"] });
-    navigate({ to: "/documents" });
+    router.history.back();
   }
 
   const sanitize = (f: (typeof fields)[number], raw: string) => {
