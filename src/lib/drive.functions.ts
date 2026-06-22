@@ -52,7 +52,7 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (!userId) throw new Error("Usuário não autenticado");
-    const { file, name, companyId, documentTypeId, tags, fieldValues } = data;
+    const { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage } = data;
 
     const { ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
       await import("./drive.server");
