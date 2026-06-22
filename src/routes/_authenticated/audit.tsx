@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Sparkles, TrendingUp, FileText, Building2, AlertCircle } from "lucide-react";
+import { Sparkles, TrendingUp, FileText, Building2, AlertCircle, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
 import {
   Table,
   TableBody,
