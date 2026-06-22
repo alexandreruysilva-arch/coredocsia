@@ -206,8 +206,8 @@ function DocumentsPage() {
 
   // Map de document_id -> total de tokens consumidos na extração por IA.
   const docIds = useMemo(
-    () => Array.from(new Set(filteredDocs.map((d: any) => d.id))) as string[],
-    [filteredDocs],
+    () => Array.from(new Set(pagedDocs.map((d: any) => d.id))) as string[],
+    [pagedDocs],
   );
   const { data: usageMap = {} } = useQuery({
     queryKey: ["ai-usage-by-docs", orgId, docIds.sort().join(",")],
