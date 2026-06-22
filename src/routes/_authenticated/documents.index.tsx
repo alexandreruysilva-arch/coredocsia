@@ -148,6 +148,31 @@ function DocumentsPage() {
   const companyName = (id: string | null | undefined) =>
     id ? companies.find((c) => c.id === id)?.name ?? "—" : "—";
 
+  // Map de uploader_id -> nome, para mostrar o operador que indexou.
+  const uploaderIds = useMemo(
+    () =>
+      Array.from(
+        new Set(filteredDocs.map((d: any) => d.uploaded_by).filter(Boolean)),
+      ) as string[],
+    [filteredDocs],
+  );
+  const { data: uploaderMap = {} } = useQuery({
+    queryKey: ["profiles-by-ids", uploaderIds.sort().join(",")],
+    enabled: uploaderIds.length > 0,
+    queryFn: async (): Promise<Record<string, string>> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", uploaderIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const p of data ?? []) map[p.id] = p.full_name ?? "—";
+      return map;
+    },
+  });
+
+
+
 
 
   return (
