@@ -473,16 +473,16 @@ function UploadPage() {
 
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
             isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium">
+          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+          <p className="font-medium text-sm">
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             PDF, JPG, PNG, TIFF, WEBP • máx 25 MB
           </p>
         </div>
