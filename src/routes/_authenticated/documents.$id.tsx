@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/documents/$id")({
 
 function DocumentDetailPage() {
   const { id } = Route.useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: doc, isLoading } = useDocument(id);
   const { data: fields = [] } = useDocumentTypeFields(doc?.document_type_id ?? null);
