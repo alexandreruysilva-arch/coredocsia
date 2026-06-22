@@ -86,14 +86,14 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
 
 function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
+    <div className="flex flex-col gap-4">
       {fields.map((f) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         return (
-          <div key={f.id} className="space-y-1.5">
-            <Label htmlFor={id} className="text-xs">
+          <div key={f.id} className="space-y-2">
+            <Label htmlFor={id} className="text-sm">
               {f.label} {f.required && <span className="text-destructive">*</span>}
             </Label>
             {f.field_type === "textarea" ? (
@@ -101,12 +101,12 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
-                rows={2}
-                className={isMatricula ? undefined : "uppercase"}
+                rows={3}
+                className={cn("min-h-[80px] text-base", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => onChange(f.field_key, sanitizeFieldValue(f, v))}>
-                <SelectTrigger className={isMatricula ? undefined : "uppercase"}>
+                <SelectTrigger className={cn("h-11 text-base", isMatricula ? undefined : "uppercase")}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -122,7 +122,10 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
-                className={isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined}
+                className={cn(
+                  "h-11 text-base",
+                  isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
+                )}
                 type={
                   f.field_type === "number"
                     ? "number"
