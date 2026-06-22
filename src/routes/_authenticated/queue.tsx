@@ -202,7 +202,7 @@ function QueuePage() {
               <SelectItem value="pending">Pendente</SelectItem>
               <SelectItem value="processing">Processando</SelectItem>
               <SelectItem value="processed_ai">Processado IA</SelectItem>
-              <SelectItem value="processed_manual">Processado (indexação manual)</SelectItem>
+              <SelectItem value="processed_manual">Indexação Manual</SelectItem>
               <SelectItem value="processed">Processado (todos)</SelectItem>
               <SelectItem value="failed">Falhou</SelectItem>
             </SelectContent>
