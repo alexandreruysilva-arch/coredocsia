@@ -122,17 +122,13 @@ function FieldEditor({ fields, values, onChange, idPrefix }: FieldEditorProps) {
                 id={id}
                 value={val}
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                placeholder={f.field_type === "date" ? "DD/MM/AAAA" : undefined}
+                inputMode={f.field_type === "date" ? "numeric" : undefined}
                 className={cn(
                   "h-8 px-2 text-sm",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
                 )}
-                type={
-                  f.field_type === "number"
-                    ? "number"
-                    : f.field_type === "date"
-                      ? "date"
-                      : "text"
-                }
+                type={f.field_type === "number" ? "number" : "text"}
               />
             )}
           </div>
