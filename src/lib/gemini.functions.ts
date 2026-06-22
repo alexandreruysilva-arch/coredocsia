@@ -175,8 +175,7 @@ Regras de saída (siga RIGOROSAMENTE):
 
     if (!resp.ok) {
       const errText = await resp.text();
-      await writeLog({
-        success: false,
+      await writeFailureLog({
         prompt: 0,
         completion: 0,
         total: 0,
