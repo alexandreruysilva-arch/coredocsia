@@ -110,25 +110,27 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
   return (
     <div className="relative w-full h-full flex flex-col bg-muted/40">
       {numPages > 1 && (
-        <div className="flex items-center justify-center gap-2 px-3 py-2 border-b border-border bg-card">
+        <div className="flex items-center justify-start gap-1.5 px-2 py-1.5 border-b border-border bg-card">
           <Button
-            size="sm"
-            variant="outline"
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
             disabled={!canPrev}
             onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
-          <span className="text-xs text-muted-foreground tabular-nums">
+          <span className="text-xs text-muted-foreground tabular-nums px-1">
             Página {pageNumber} de {numPages}
           </span>
           <Button
-            size="sm"
-            variant="outline"
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
             disabled={!canNext}
             onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>
       )}
