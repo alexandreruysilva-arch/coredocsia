@@ -32,7 +32,18 @@ export const Route = createFileRoute("/_authenticated/queue")({
   component: QueuePage,
 });
 
-type QueueDoc = DocumentRow & { ai_usage_logs?: { id: string }[] };
+type QueueDoc = DocumentRow & {
+  ai_usage_logs?: { id: string; duration_ms: number | null }[];
+};
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms} ms`;
+  const s = ms / 1000;
+  if (s < 60) return `${s.toFixed(1)} s`;
+  const m = Math.floor(s / 60);
+  const r = Math.round(s % 60);
+  return `${m}m ${r}s`;
+}
 type QueueStatus = DocStatus | "processed_ai" | "processed_manual" | "all";
 
 function QueuePage() {
@@ -55,7 +66,7 @@ function QueuePage() {
     queryFn: async (): Promise<QueueDoc[]> => {
       let q = supabase
         .from("documents")
-        .select("*, ai_usage_logs(id)")
+        .select("*, ai_usage_logs(id, duration_ms)")
         .eq("org_id", orgId!)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
@@ -227,6 +238,7 @@ function QueuePage() {
               <TableHead>Nome</TableHead>
               <TableHead>Tamanho</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Tempo IA</TableHead>
               <TableHead>Enviado</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -234,19 +246,21 @@ function QueuePage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && docs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum documento na fila.
                 </TableCell>
               </TableRow>
             )}
-            {paginatedDocs.map((doc) => (
+            {paginatedDocs.map((doc) => {
+              const durationMs = doc.ai_usage_logs?.[0]?.duration_ms ?? null;
+              return (
               <TableRow key={doc.id}>
                 <TableCell className="font-medium max-w-[300px] truncate">
                   {doc.name}
@@ -259,6 +273,11 @@ function QueuePage() {
                 <TableCell>{formatBytes(Number(doc.size_bytes))}</TableCell>
                 <TableCell>
                   <StatusBadge status={doc.status} />
+                </TableCell>
+                <TableCell className="text-sm tabular-nums">
+                  {durationMs != null ? formatDuration(durationMs) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
@@ -283,7 +302,7 @@ function QueuePage() {
                   )}
                 </TableCell>
               </TableRow>
-            ))}
+            );})}
           </TableBody>
         </Table>
         {docs.length > pageSize && (
