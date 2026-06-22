@@ -397,6 +397,7 @@ interface FieldRow {
   field_type: "text" | "number" | "date" | "boolean" | "select";
   required: boolean;
   position: number;
+  is_lookup_key: boolean;
 }
 
 function FieldsDialog({
@@ -414,6 +415,8 @@ function FieldsDialog({
   const [fieldKey, setFieldKey] = useState("");
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
+  const [isLookupKey, setIsLookupKey] = useState(false);
+  const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
     setEditingId(null);
@@ -421,6 +424,7 @@ function FieldsDialog({
     setFieldKey("");
     setFieldType("text");
     setRequired(false);
+    setIsLookupKey(false);
   };
 
   const startEdit = (f: FieldRow) => {
@@ -429,7 +433,9 @@ function FieldsDialog({
     setFieldKey(f.field_key);
     setFieldType(f.field_type);
     setRequired(f.required);
+    setIsLookupKey(!!f.is_lookup_key);
   };
+
 
   const fields = useQuery({
     queryKey: ["doc-type-fields", docType?.id],
