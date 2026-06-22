@@ -383,6 +383,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          ai_cost_per_file: number
           created_at: string
           drive_folder_id: string | null
           id: string
@@ -391,6 +392,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_cost_per_file?: number
           created_at?: string
           drive_folder_id?: string | null
           id?: string
@@ -399,6 +401,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_cost_per_file?: number
           created_at?: string
           drive_folder_id?: string | null
           id?: string
