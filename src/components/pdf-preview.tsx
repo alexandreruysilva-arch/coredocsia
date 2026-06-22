@@ -73,17 +73,20 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
       try {
         const page = await pdf.getPage(pageNumber);
         if (cancelled) return;
-        const containerWidth = canvas.parentElement?.clientWidth ?? 900;
+        const containerWidth = Math.max(canvas.parentElement?.clientWidth ?? 0, 600);
         const baseViewport = page.getViewport({ scale: 1 });
-        const scale = Math.min(containerWidth / baseViewport.width, 1.8);
-        const viewport = page.getViewport({ scale });
+        const cssScale = Math.min(containerWidth / baseViewport.width, 2);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const renderScale = cssScale * dpr;
+        const cssViewport = page.getViewport({ scale: cssScale });
+        const viewport = page.getViewport({ scale: renderScale });
         const context = canvas.getContext("2d");
         if (!context) throw new Error("Canvas indisponível");
 
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
-        canvas.style.width = `${Math.floor(viewport.width)}px`;
-        canvas.style.height = `${Math.floor(viewport.height)}px`;
+        canvas.style.width = `${Math.floor(cssViewport.width)}px`;
+        canvas.style.height = `${Math.floor(cssViewport.height)}px`;
 
         renderTask = page.render({ canvas, canvasContext: context, viewport });
         await renderTask.promise;
