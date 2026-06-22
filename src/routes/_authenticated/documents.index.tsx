@@ -143,14 +143,28 @@ function DocumentsPage() {
         return true;
       });
 
+  const PAGE_SIZE = 15;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredDocs.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [companyId, typeId, search, JSON.stringify(fieldFilters)]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pagedDocs = filteredDocs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
 
   // Map de uploader_id -> nome, para mostrar o operador que indexou.
   const uploaderIds = useMemo(
     () =>
       Array.from(
-        new Set(filteredDocs.map((d: any) => d.uploaded_by).filter(Boolean)),
+        new Set(pagedDocs.map((d: any) => d.uploaded_by).filter(Boolean)),
       ) as string[],
-    [filteredDocs],
+    [pagedDocs],
   );
   const { data: uploaderMap = {} } = useQuery({
     queryKey: ["profiles-by-ids", uploaderIds.sort().join(",")],
