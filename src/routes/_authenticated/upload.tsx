@@ -387,6 +387,7 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
+          aiUsage: item.aiUsage ?? undefined,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
 
