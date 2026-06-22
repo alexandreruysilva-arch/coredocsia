@@ -237,19 +237,21 @@ function QueuePage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Carregando...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && docs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Nenhum documento na fila.
                 </TableCell>
               </TableRow>
             )}
-            {paginatedDocs.map((doc) => (
+            {paginatedDocs.map((doc) => {
+              const durationMs = doc.ai_usage_logs?.[0]?.duration_ms ?? null;
+              return (
               <TableRow key={doc.id}>
                 <TableCell className="font-medium max-w-[300px] truncate">
                   {doc.name}
@@ -262,6 +264,11 @@ function QueuePage() {
                 <TableCell>{formatBytes(Number(doc.size_bytes))}</TableCell>
                 <TableCell>
                   <StatusBadge status={doc.status} />
+                </TableCell>
+                <TableCell className="text-sm tabular-nums">
+                  {durationMs != null ? formatDuration(durationMs) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
