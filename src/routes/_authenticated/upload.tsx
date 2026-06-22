@@ -312,12 +312,42 @@ function UploadPage() {
     );
   }
 
+  async function handleKeyFieldBlur(itemId: string, fieldKey: string, value: string) {
+    if (docTypeId === "none") return;
+    const f = fields.find((x) => x.field_key === fieldKey);
+    if (!f?.is_lookup_key) return;
+    const v = (value ?? "").trim();
+    if (!v) return;
+    try {
+      const result = await lookupByKey(docTypeId, v);
+      if (!result) {
+        toast.info("Nenhum registro encontrado na base de lookup");
+        return;
+      }
+      setItems((prev) =>
+        prev.map((i) => {
+          if (i.id !== itemId) return i;
+          const merged = { ...i.fieldValues };
+          for (const [k, val] of Object.entries(result)) {
+            // não sobrescreve valores já preenchidos pelo usuário
+            if (!merged[k] || merged[k].trim() === "") merged[k] = val;
+          }
+          return { ...i, fieldValues: merged };
+        }),
+      );
+      toast.success("Campos preenchidos automaticamente");
+    } catch (e: any) {
+      toast.error(e.message ?? "Falha no lookup");
+    }
+  }
+
   async function handleAutoFillAll() {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
+
 
     setIsExtracting(true);
     const fieldDefs = fields.map((f) => ({
