@@ -33,8 +33,6 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
 
         loadingTask = pdfjs.getDocument({
           data: data.slice(0),
-          isOffscreenCanvasSupported: false,
-          isImageDecoderSupported: false,
           useWorkerFetch: false,
         });
         const pdf = await loadingTask.promise;
