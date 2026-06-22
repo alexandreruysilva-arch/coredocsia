@@ -168,7 +168,7 @@ function ZoomablePreview({ children, initialScale = 1 }: ZoomablePreviewProps) {
   const resetZoom = useCallback(() => setScale(initialScale), [initialScale]);
 
   return (
-    <div className="relative w-full max-h-[360px] overflow-auto flex items-start justify-start" ref={containerRef}>
+    <div className="relative w-full max-h-[480px] overflow-auto flex items-start justify-center" ref={containerRef}>
       <div className="sticky top-2 left-full z-10 ml-auto mb-2 flex w-fit items-center gap-1 rounded-md border border-border bg-card/90 p-1 shadow-sm backdrop-blur">
         <Button
           type="button"
