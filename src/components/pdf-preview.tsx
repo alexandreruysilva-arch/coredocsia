@@ -77,7 +77,7 @@ export function PdfPreview({ data, title }: PdfPreviewProps) {
         const containerWidth = Math.min(Math.max(availableWidth, 280), 360);
         const baseViewport = page.getViewport({ scale: 1 });
         const cssScale = Math.min(containerWidth / baseViewport.width, 0.8);
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = Math.min((window.devicePixelRatio || 1) * 2.5, 4);
         const renderScale = cssScale * dpr;
         const cssViewport = page.getViewport({ scale: cssScale });
         const viewport = page.getViewport({ scale: renderScale });
