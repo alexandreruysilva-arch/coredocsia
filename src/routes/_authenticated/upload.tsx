@@ -59,6 +59,7 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
+  aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string } | null;
   expanded: boolean;
 }
 
