@@ -524,10 +524,10 @@ function DocumentsPage() {
                                     {typeName(doc.document_type_id)}
                                   </span>
 
-                                  <span className="text-muted-foreground text-xs">Tokens IA</span>
+                                  <span className="text-muted-foreground text-xs">Custo IA</span>
                                   <span className="col-span-2 text-xs">
                                     {usageMap[doc.id] != null
-                                      ? `${usageMap[doc.id].toLocaleString("pt-BR")} tokens`
+                                      ? `R$ ${usageMap[doc.id].toFixed(2).replace(".", ",")}`
                                       : "—"}
                                   </span>
                                 </div>
