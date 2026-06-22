@@ -249,8 +249,7 @@ function QueuePage() {
                   <StatusBadge status={doc.status} />
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {formatDistanceToNow(new Date(doc.created_at), {
-                    addSuffix: true,
+                  {format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", {
                     locale: ptBR,
                   })}
                 </TableCell>
