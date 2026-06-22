@@ -141,7 +141,15 @@ function TipoDocumentoPage() {
       queryClient.invalidateQueries({ queryKey: ["doc-types"] });
       closeDialog();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: any) => {
+      const msg = e?.message ?? "";
+      const code = e?.code ?? "";
+      if (code === "23505" || msg.includes("unique constraint") || msg.includes("duplicate key")) {
+        toast.error("Já existe um tipo de documento com este nome para a empresa selecionada.");
+        return;
+      }
+      toast.error(msg || "Erro ao salvar tipo de documento.");
+    },
   });
 
   const remove = useMutation({
