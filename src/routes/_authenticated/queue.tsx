@@ -246,7 +246,7 @@ function QueuePage() {
                 </TableCell>
               </TableRow>
             )}
-            {docs.map((doc) => (
+            {paginatedDocs.map((doc) => (
               <TableRow key={doc.id}>
                 <TableCell className="font-medium max-w-[300px] truncate">
                   {doc.name}
@@ -286,6 +286,31 @@ function QueuePage() {
             ))}
           </TableBody>
         </Table>
+        {docs.length > pageSize && (
+          <div className="flex items-center justify-between p-4 border-t border-border">
+            <span className="text-sm text-muted-foreground">
+              Página {page} de {totalPages} · {docs.length} registros
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Próximo <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );
