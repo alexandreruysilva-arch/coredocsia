@@ -75,7 +75,9 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium truncate">{doc.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
+          {doc.original_filename && doc.original_filename !== doc.name && (
+            <p className="text-xs text-muted-foreground truncate">{doc.original_filename}</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {url && (
