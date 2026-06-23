@@ -343,7 +343,7 @@ function UploadPage() {
     }
   }
 
-  async function handleAutoFillAll() {
+  async function handleAutoFillAll(provider: "gemini" | "claude") {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
@@ -351,7 +351,7 @@ function UploadPage() {
     if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
 
 
-    setIsExtracting(true);
+    setIsExtracting(provider);
     const fieldDefs = fields.map((f) => ({
       label: f.label,
       field_key: f.field_key,
@@ -359,6 +359,8 @@ function UploadPage() {
       options: f.options,
     }));
     const fieldsJson = JSON.stringify(fieldDefs);
+    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
 
     let ok = 0;
     let fail = 0;
@@ -391,8 +393,8 @@ function UploadPage() {
         toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
       }
     }
-    setIsExtracting(false);
-    if (ok > 0) toast.success(`Preenchimento IA concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+    setIsExtracting(null);
+    if (ok > 0) toast.success(`Preenchimento ${providerLabel} concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
   }
 
 
