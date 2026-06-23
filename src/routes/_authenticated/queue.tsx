@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Table,
   TableBody,
@@ -165,54 +165,106 @@ function QueuePage() {
     queryClient.invalidateQueries({ queryKey: ["queue-documents"] });
   }
 
+  const statCards = [
+    {
+      label: "Pendente",
+      value: counts.pending,
+      icon: ListChecks,
+      gradient: "from-amber-500 to-orange-600",
+      shadow: "shadow-amber-500/20 hover:shadow-amber-500/40",
+      status: "pending" as QueueStatus,
+      spin: false,
+    },
+    {
+      label: "Processando",
+      value: counts.processing,
+      icon: RefreshCw,
+      gradient: "from-sky-500 to-blue-600",
+      shadow: "shadow-sky-500/20 hover:shadow-sky-500/40",
+      status: "processing" as QueueStatus,
+      spin: counts.processing > 0,
+    },
+    {
+      label: "Processado IA",
+      value: counts.processed_ai,
+      icon: Sparkles,
+      gradient: "from-fuchsia-500 to-purple-600",
+      shadow: "shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40",
+      status: "processed_ai" as QueueStatus,
+      spin: false,
+    },
+    {
+      label: "Indexação Manual",
+      value: counts.processed_manual,
+      icon: CheckCircle2,
+      gradient: "from-emerald-500 to-teal-600",
+      shadow: "shadow-emerald-500/20 hover:shadow-emerald-500/40",
+      status: "processed_manual" as QueueStatus,
+      spin: false,
+    },
+    {
+      label: "Falhou",
+      value: counts.failed,
+      icon: Trash2,
+      gradient: "from-rose-500 to-red-600",
+      shadow: "shadow-rose-500/20 hover:shadow-rose-500/40",
+      status: "failed" as QueueStatus,
+      spin: false,
+    },
+  ];
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-2">
-            <ListChecks className="h-7 w-7 text-primary" /> Fila de processamento
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Acompanhe o status dos documentos em tempo real.
-          </p>
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+              <ListChecks className="h-3.5 w-3.5 text-indigo-500" />
+              Tempo real
+            </div>
+            <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+              Fila de processamento
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Acompanhe o status dos documentos em tempo real.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="bg-background/60 backdrop-blur"
+          >
+            <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
-        </Button>
       </header>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <Card className="p-4">
-          <StatusBadge status="pending" />
-          <p className="text-3xl font-display font-semibold mt-2">{counts.pending}</p>
-        </Card>
-        <Card className="p-4">
-          <StatusBadge status="processing" />
-          <p className="text-3xl font-display font-semibold mt-2">{counts.processing}</p>
-        </Card>
-        <Card className="p-4">
-          <Badge
-            variant="outline"
-            className="gap-1.5 font-normal bg-primary/10 text-primary border-primary/20"
-          >
-            <Sparkles className="h-3 w-3" /> Processado IA
-          </Badge>
-          <p className="text-3xl font-display font-semibold mt-2">{counts.processed_ai}</p>
-        </Card>
-        <Card className="p-4">
-          <Badge
-            variant="outline"
-            className="gap-1.5 font-normal bg-success/10 text-success border-success/20"
-          >
-            <CheckCircle2 className="h-3 w-3" /> Indexação Manual
-          </Badge>
-          <p className="text-3xl font-display font-semibold mt-2">{counts.processed_manual}</p>
-        </Card>
-        <Card className="p-4">
-          <StatusBadge status="failed" />
-          <p className="text-3xl font-display font-semibold mt-2">{counts.failed}</p>
-        </Card>
+        {statCards.map((s) => {
+          const isActive = status === s.status;
+          return (
+            <button
+              key={s.label}
+              type="button"
+              onClick={() => setStatus(isActive ? "all" : s.status)}
+              className={`text-left rounded-xl p-4 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all ${isActive ? "ring-2 ring-white/70 ring-offset-2 ring-offset-background" : ""}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-white/85 uppercase tracking-wider">
+                  {s.label}
+                </span>
+                <s.icon className={`h-4 w-4 text-white/90 ${s.spin ? "animate-spin" : ""}`} />
+              </div>
+              <p className="text-3xl font-display font-bold mt-2 tabular-nums">{s.value}</p>
+            </button>
+          );
+        })}
       </div>
+
 
       <Card>
         <div className="p-4 border-b border-border flex items-center gap-3">
