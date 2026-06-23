@@ -231,92 +231,61 @@ function AuditPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary via-primary/90 to-[oklch(0.55_0.15_195)] text-primary-foreground shadow-lg">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_white,_transparent_60%)]" />
-        <div className="relative">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-xs uppercase tracking-widest font-semibold opacity-90">Inteligência Artificial</span>
-          </div>
-          <h1 className="text-3xl font-display font-bold tracking-tight">Auditoria de IA</h1>
-          <p className="mt-1 opacity-90 max-w-3xl">
-            Log de uso da indexação por IA: empresa, tipo de documento, arquivo e tokens consumidos
-            em cada processamento. Use o somatório para cobrança futura.
-          </p>
-        </div>
+      <header>
+        <h1 className="text-3xl font-display font-bold tracking-tight">Auditoria de IA</h1>
+        <p className="text-muted-foreground mt-1">
+          Log de uso da indexação por IA: empresa, tipo de documento, arquivo e tokens consumidos
+          em cada processamento. Use o somatório para cobrança futura.
+        </p>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 relative overflow-hidden border-0 text-white shadow-md hover-lift bg-gradient-to-br from-[oklch(0.55_0.18_250)] to-[oklch(0.42_0.15_265)]">
-          <div className="absolute -right-4 -top-4 opacity-20">
-            <FileText className="h-24 w-24" />
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <FileText className="h-4 w-4" /> Arquivos processados
           </div>
-          <div className="relative">
-            <div className="flex items-center gap-2 text-xs font-medium opacity-90">
-              <FileText className="h-4 w-4" /> Arquivos processados
-            </div>
-            <div className="text-3xl font-bold mt-2">{totals.files.toLocaleString("pt-BR")}</div>
-            <div className="text-xs opacity-80 mt-1">
-              {totals.success} sucesso · {totals.failed} falha
-            </div>
+          <div className="text-2xl font-bold mt-1">{totals.files.toLocaleString("pt-BR")}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {totals.success} sucesso · {totals.failed} falha
           </div>
         </Card>
-        <Card className="p-5 relative overflow-hidden border-0 text-white shadow-md hover-lift bg-gradient-to-br from-[oklch(0.6_0.15_160)] to-[oklch(0.45_0.13_165)]">
-          <div className="absolute -right-4 -top-4 opacity-20">
-            <Sparkles className="h-24 w-24" />
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <Sparkles className="h-4 w-4" /> Custo total
           </div>
-          <div className="relative">
-            <div className="flex items-center gap-2 text-xs font-medium opacity-90">
-              <Sparkles className="h-4 w-4" /> Custo total
-            </div>
-            <div className="text-3xl font-bold mt-2">
-              R$ {totals.cost.toFixed(2).replace(".", ",")}
-            </div>
-            <div className="text-xs opacity-80 mt-1">
-              Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens · +R$ 0,01 a cada 500
-            </div>
+          <div className="text-2xl font-bold mt-1">
+            R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens totais · +R$ 0,01 a cada 500 acima
+          </div>
+
         </Card>
-        <Card className="p-5 relative overflow-hidden border-0 text-white shadow-md hover-lift bg-gradient-to-br from-[oklch(0.65_0.17_50)] to-[oklch(0.5_0.18_30)]">
-          <div className="absolute -right-4 -top-4 opacity-20">
-            <TrendingUp className="h-24 w-24" />
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <TrendingUp className="h-4 w-4" /> Tokens totais
           </div>
-          <div className="relative">
-            <div className="flex items-center gap-2 text-xs font-medium opacity-90">
-              <TrendingUp className="h-4 w-4" /> Tokens totais
-            </div>
-            <div className="text-3xl font-bold mt-2">{totals.total.toLocaleString("pt-BR")}</div>
-            <div className="text-xs opacity-80 mt-1">
-              {totals.prompt.toLocaleString("pt-BR")} prompt · {totals.completion.toLocaleString("pt-BR")} resp.
-            </div>
-          </div>
+          <div className="text-2xl font-bold mt-1">{totals.total.toLocaleString("pt-BR")}</div>
         </Card>
-        <Card className="p-5 relative overflow-hidden border-0 text-white shadow-md hover-lift bg-gradient-to-br from-[oklch(0.6_0.17_320)] to-[oklch(0.45_0.18_300)]">
-          <div className="absolute -right-4 -top-4 opacity-20">
-            <Timer className="h-24 w-24" />
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+            <Timer className="h-4 w-4" /> Tempo médio IA
           </div>
-          <div className="relative">
-            <div className="flex items-center gap-2 text-xs font-medium opacity-90">
-              <Timer className="h-4 w-4" /> Tempo médio IA
-            </div>
-            <div className="text-3xl font-bold mt-2">
-              {totals.durationCount > 0
-                ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
-                : "—"}
-            </div>
-            <div className="text-xs opacity-80 mt-1">
-              {totals.durationCount} medições
-            </div>
+          <div className="text-2xl font-bold mt-1">
+            {totals.durationCount > 0
+              ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
+              : "—"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {totals.durationCount} medições
           </div>
         </Card>
       </div>
 
       {byCompany.length > 0 && (
-        <Card className="p-5 border-l-4 border-l-[oklch(0.55_0.18_250)] shadow-sm">
+        <Card className="p-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 rounded-md bg-[oklch(0.55_0.18_250)]/10">
-              <Building2 className="h-4 w-4 text-[oklch(0.55_0.18_250)]" />
-            </div>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
             <h3 className="font-semibold text-sm">Somatório por empresa</h3>
           </div>
           <div className="overflow-x-auto">
