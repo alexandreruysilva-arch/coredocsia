@@ -80,27 +80,18 @@ function DocumentsPage() {
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
 
   const FILTERS_KEY = "documents:filters:v1";
-  const initialFilters = (() => {
-    if (typeof window === "undefined") return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
-    try {
-      const raw = sessionStorage.getItem(FILTERS_KEY);
-      if (!raw) return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
-      const p = JSON.parse(raw);
-      return {
-        search: typeof p.search === "string" ? p.search : "",
-        typeId: typeof p.typeId === "string" ? p.typeId : "all",
-        companyId: typeof p.companyId === "string" ? p.companyId : "all",
-        activeFieldKeys: Array.isArray(p.activeFieldKeys) ? p.activeFieldKeys : [],
-        fieldFilters: p.fieldFilters && typeof p.fieldFilters === "object" ? p.fieldFilters : {},
-      };
-    } catch {
-      return { search: "", typeId: "all", companyId: "all", activeFieldKeys: [] as string[], fieldFilters: {} as Record<string, string> };
-    }
-  })();
 
-  const [search, setSearch] = useState(initialFilters.search);
-  const [typeId, setTypeId] = useState<string>(initialFilters.typeId);
-  const [companyId, setCompanyId] = useState<string>(initialFilters.companyId);
+  // Sempre inicia com filtros limpos ao entrar na página (evita seleções
+  // residuais de empresa/tipo de documento ao trocar de página).
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(FILTERS_KEY);
+    } catch {}
+  }, []);
+
+  const [search, setSearch] = useState("");
+  const [typeId, setTypeId] = useState<string>("all");
+  const [companyId, setCompanyId] = useState<string>("all");
 
   // Restrict types to allowed ones AND to the selected company.
   const types = allTypes
@@ -108,8 +99,8 @@ function DocumentsPage() {
     .filter((t: any) =>
       companyId === "all" ? true : t.company_id === companyId,
     );
-  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>(initialFilters.fieldFilters);
-  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>(initialFilters.activeFieldKeys);
+  const [fieldFilters, setFieldFilters] = useState<Record<string, string>>({});
+  const [activeFieldKeys, setActiveFieldKeys] = useState<string[]>([]);
 
   useEffect(() => {
     try {
