@@ -99,7 +99,11 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.company_name ?? "",
         l.document_type_name ?? "",
         l.file_name,
-        l.model === "gemini-2.5-flash-lite" ? "2.5 Flash Lite" : l.model,
+        l.model === "gemini-2.5-flash-lite"
+          ? "2.5 Flash Lite"
+          : l.model === "claude-haiku-4-5-20251001"
+            ? "Claude Haiku 4.5"
+            : l.model,
         l.prompt_tokens,
         l.completion_tokens,
         l.total_tokens,
@@ -405,7 +409,11 @@ function AuditPage() {
                       {l.file_name}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {l.model === "gemini-2.5-flash-lite" ? "2.5 Flash Lite" : l.model}
+                      {l.model === "gemini-2.5-flash-lite"
+                        ? "2.5 Flash Lite"
+                        : l.model === "claude-haiku-4-5-20251001"
+                          ? "Claude Haiku 4.5"
+                          : l.model}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       {l.total_tokens.toLocaleString("pt-BR")}

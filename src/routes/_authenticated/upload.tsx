@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { extractFieldsWithGemini } from "@/lib/gemini.functions";
+import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
 
@@ -243,8 +244,9 @@ function UploadPage() {
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const extractFn = useServerFn(extractFieldsWithGemini);
+  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude">(null);
+  const extractGeminiFn = useServerFn(extractFieldsWithGemini);
+  const extractClaudeFn = useServerFn(extractFieldsWithClaude);
 
   const types = useMemo(() => {
     let list = allTypes;
@@ -341,7 +343,7 @@ function UploadPage() {
     }
   }
 
-  async function handleAutoFillAll() {
+  async function handleAutoFillAll(provider: "gemini" | "claude") {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
@@ -349,7 +351,7 @@ function UploadPage() {
     if (queued.length === 0) return toast.error("Nenhum arquivo na fila");
 
 
-    setIsExtracting(true);
+    setIsExtracting(provider);
     const fieldDefs = fields.map((f) => ({
       label: f.label,
       field_key: f.field_key,
@@ -357,6 +359,8 @@ function UploadPage() {
       options: f.options,
     }));
     const fieldsJson = JSON.stringify(fieldDefs);
+    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
 
     let ok = 0;
     let fail = 0;
@@ -389,8 +393,8 @@ function UploadPage() {
         toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
       }
     }
-    setIsExtracting(false);
-    if (ok > 0) toast.success(`Preenchimento IA concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+    setIsExtracting(null);
+    if (ok > 0) toast.success(`Preenchimento ${providerLabel} concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
   }
 
 
@@ -593,9 +597,9 @@ function UploadPage() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={handleAutoFillAll}
+                  onClick={() => handleAutoFillAll("gemini")}
                   disabled={
-                    isExtracting ||
+                    isExtracting !== null ||
                     isUploading ||
                     docTypeId === "none" ||
                     fields.length === 0 ||
@@ -605,12 +609,34 @@ function UploadPage() {
                   className="group relative overflow-hidden bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-indigo-700 hover:via-blue-600 hover:to-cyan-500 text-white border-0 shadow-md shadow-blue-800/30 hover:shadow-lg hover:shadow-sky-500/50 hover:-translate-y-0.5 transition-all duration-300"
                 >
                   <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
-                  {isExtracting ? (
+                  {isExtracting === "gemini" ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                   ) : (
                     <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
                   )}
-                  <span className="relative">Preencher com IA</span>
+                  <span className="relative">Preencher com Gemini</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAutoFillAll("claude")}
+                  disabled={
+                    isExtracting !== null ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê a 1ª página de cada arquivo e preenche os campos via Claude Haiku 4.5"
+                  className="group relative overflow-hidden bg-gradient-to-r from-orange-700 via-amber-700 to-rose-700 hover:from-orange-600 hover:via-amber-600 hover:to-rose-600 text-white border-0 shadow-md shadow-amber-700/30 hover:shadow-lg hover:shadow-amber-500/50 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  {isExtracting === "claude" ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
+                  )}
+                  <span className="relative">Preencher com Claude</span>
                 </Button>
                 <Button
                   size="sm"
