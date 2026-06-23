@@ -561,19 +561,24 @@ function UploadPage() {
 
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-            isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+          className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+            isDragActive
+              ? "border-fuchsia-500 bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 scale-[1.01]"
+              : "border-border hover:border-fuchsia-400/60 hover:bg-gradient-to-br hover:from-indigo-500/5 hover:via-fuchsia-500/5 hover:to-amber-500/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium text-sm">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-amber-500 grid place-items-center shadow-lg shadow-fuchsia-500/30 mb-3">
+            <Upload className="h-7 w-7 text-white" />
+          </div>
+          <p className="font-semibold text-sm">
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             PDF, JPG, PNG, TIFF, WEBP • máx 50 MB
           </p>
         </div>
+
 
         {items.length > 0 && (
           <div className="space-y-2">
