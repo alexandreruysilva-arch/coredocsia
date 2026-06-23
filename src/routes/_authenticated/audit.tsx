@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Sparkles,
   TrendingUp,
@@ -10,6 +10,8 @@ import {
   Download,
   Trash2,
   Timer,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
@@ -127,6 +129,8 @@ function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
   const queryClient = useQueryClient();
 
   const { data: logs = [], isLoading } = useQuery({
@@ -170,6 +174,20 @@ function AuditPage() {
         (l.document_type_name ?? "").toLowerCase().includes(q),
     );
   }, [logs, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page],
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const totals = useMemo(() => {
     const t = {
@@ -376,7 +394,7 @@ function AuditPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((l) => (
+                {paged.map((l) => (
                   <TableRow key={l.id}>
                     <TableCell className="text-xs whitespace-nowrap">
                       {formatDateTime(l.created_at)}
@@ -446,6 +464,34 @@ function AuditPage() {
                 ))}
               </TableBody>
             </Table>
+            {filtered.length > PAGE_SIZE && (
+              <div className="flex items-center justify-between pt-3 mt-3 border-t border-border">
+                <span className="text-xs text-muted-foreground">
+                  Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                  </Button>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {page} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Próximo <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Card>
