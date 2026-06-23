@@ -240,12 +240,6 @@ function Dashboard() {
               )}
             </p>
           </div>
-          <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700 text-white shadow-lg shadow-fuchsia-500/30">
-            <Link to="/upload">
-              <Upload className="h-4 w-4 mr-2" />
-              Enviar documentos
-            </Link>
-          </Button>
         </div>
       </div>
 
