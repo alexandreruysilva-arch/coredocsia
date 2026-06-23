@@ -465,7 +465,34 @@ function DocumentsPage() {
               </Select>
             </div>
 
-            <div className="ml-auto flex items-center self-stretch">
+            <div className="ml-auto flex items-center self-stretch gap-2">
+              {typeId !== "all" && typeFields.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-1" /> Adicionar filtro
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
+                    {typeFields.filter((f) => !activeFieldKeys.includes(f.field_key)).length === 0 ? (
+                      <DropdownMenuItem disabled>Nenhum campo disponível</DropdownMenuItem>
+                    ) : (
+                      typeFields
+                        .filter((f) => !activeFieldKeys.includes(f.field_key))
+                        .map((f) => (
+                          <DropdownMenuItem
+                            key={f.id}
+                            onSelect={() =>
+                              setActiveFieldKeys((prev) => [...prev, f.field_key])
+                            }
+                          >
+                            {f.label}
+                          </DropdownMenuItem>
+                        ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -477,6 +504,7 @@ function DocumentsPage() {
                 <Download className="h-4 w-4" /> Exportar XLSX
               </Button>
             </div>
+
 
           </Card>
 
