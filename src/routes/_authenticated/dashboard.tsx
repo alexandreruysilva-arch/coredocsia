@@ -178,8 +178,8 @@ function Dashboard() {
       value: data ? fmtBRL(data.aiCostMonth) : "—",
       hint: data ? `${fmt(data.aiCallsMonth)} processamentos` : "Saldo do mês",
       icon: Sparkles,
-      gradient: "from-fuchsia-500 to-purple-600",
-      shadow: "shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40",
+      gradient: "from-slate-700 to-blue-900",
+      shadow: "shadow-slate-700/20 hover:shadow-slate-700/40",
     },
   ];
 
