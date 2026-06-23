@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Database, FileType, KeyRound, ListChecks, Pencil, Plus, Trash2 } from "lucide-react";
+import { Database, FileType, KeyRound, ListChecks, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { LookupImportDialog } from "@/components/lookup-import-dialog";
@@ -207,16 +207,29 @@ function TipoDocumentoPage() {
   const hasCompanies = (companies.data?.length ?? 0) > 0;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <PageHeader
-        title="Tipo Documento"
-        description="Cadastre tipos de documento por empresa."
-        actions={
-          <Button onClick={openCreate} disabled={!selectedCompany}>
+    <div className="p-6 md:p-8 max-w-6xl mx-auto">
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 p-6 md:p-8 mb-6">
+        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
+              Cadastro
+            </div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent flex items-center gap-3">
+              <FileType className="h-8 w-8 text-cyan-600" />
+              Tipo Documento
+            </h1>
+            <p className="text-muted-foreground mt-2">Cadastre tipos de documento por empresa.</p>
+          </div>
+          <Button onClick={openCreate} disabled={!selectedCompany} size="lg" className="bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-600 hover:via-cyan-600 hover:to-sky-600 text-white border-0 shadow-lg shadow-cyan-500/30">
             <Plus className="h-4 w-4 mr-2" /> Novo tipo
           </Button>
-        }
-      />
+        </div>
+      </div>
+
 
       <div className="mb-4 max-w-md space-y-1.5">
         <Label>Empresa</Label>
