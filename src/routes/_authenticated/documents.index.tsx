@@ -417,47 +417,54 @@ function DocumentsPage() {
           )}
 
           <Card className="p-4 flex flex-wrap gap-3 border-l-4 border-l-indigo-500">
-            <Select
-              value={companyId}
-              onValueChange={(v) => {
-                setCompanyId(v);
-                setTypeId("all");
-                setFieldFilters({});
-                setActiveFieldKeys([]);
-              }}
-            >
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Empresa" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as empresas</SelectItem>
-                {companies.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={typeId}
-              onValueChange={(v) => {
-                setTypeId(v);
-                setFieldFilters({});
-                setActiveFieldKeys([]);
-              }}
-            >
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                {types.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Empresa</Label>
+              <Select
+                value={companyId}
+                onValueChange={(v) => {
+                  setCompanyId(v);
+                  setTypeId("all");
+                  setFieldFilters({});
+                  setActiveFieldKeys([]);
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as empresas</SelectItem>
+                  {companies.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Tipo Documento</Label>
+              <Select
+                value={typeId}
+                onValueChange={(v) => {
+                  setTypeId(v);
+                  setFieldFilters({});
+                  setActiveFieldKeys([]);
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  {types.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="ml-auto">
               <Button
                 variant="outline"
