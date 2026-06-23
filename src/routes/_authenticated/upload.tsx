@@ -602,14 +602,15 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
-                  className="bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-slate-900 hover:via-blue-900 hover:to-sky-800 text-white border-0 shadow-md shadow-blue-800/30"
+                  className="group relative overflow-hidden bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-indigo-700 hover:via-blue-600 hover:to-cyan-500 text-white border-0 shadow-md shadow-blue-800/30 hover:shadow-lg hover:shadow-sky-500/50 hover:-translate-y-0.5 transition-all duration-300"
                 >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                   ) : (
-                    <Sparkles className="h-4 w-4 mr-1" />
+                    <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
                   )}
-                  Preencher com IA
+                  <span className="relative">Preencher com IA</span>
                 </Button>
                 <Button
                   size="sm"
