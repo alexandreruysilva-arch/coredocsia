@@ -465,7 +465,7 @@ function DocumentsPage() {
               </Select>
             </div>
 
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center self-stretch">
               <Button
                 variant="outline"
                 size="sm"
@@ -477,6 +477,7 @@ function DocumentsPage() {
                 <Download className="h-4 w-4" /> Exportar XLSX
               </Button>
             </div>
+
           </Card>
 
 
