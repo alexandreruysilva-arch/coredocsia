@@ -16,7 +16,7 @@ import {
   Building2,
   TrendingUp,
 } from "lucide-react";
-import { PageHeader } from "@/components/page-stub";
+
 import { useProfileBundle } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -150,7 +150,8 @@ function Dashboard() {
       value: data ? fmt(data.total) : "—",
       hint: data ? `${fmt(data.last30)} nos últimos 30 dias` : "Últimos 30 dias",
       icon: FileText,
-      color: "text-primary",
+      gradient: "from-indigo-500 to-blue-600",
+      shadow: "shadow-indigo-500/20 hover:shadow-indigo-500/40",
     },
     {
       label: "Na fila",
@@ -159,7 +160,8 @@ function Dashboard() {
         ? `${fmt(data.pending)} aguardando · ${fmt(data.processing)} processando`
         : "Aguardando processamento",
       icon: Clock,
-      color: "text-amber-500",
+      gradient: "from-amber-500 to-orange-600",
+      shadow: "shadow-amber-500/20 hover:shadow-amber-500/40",
     },
     {
       label: "Processados",
@@ -168,75 +170,130 @@ function Dashboard() {
         ? `${fmt(data.failed)} com falha`
         : "Concluídos com sucesso",
       icon: CheckCircle2,
-      color: "text-emerald-500",
+      gradient: "from-emerald-500 to-teal-600",
+      shadow: "shadow-emerald-500/20 hover:shadow-emerald-500/40",
     },
     {
       label: "Custo IA (mês)",
       value: data ? fmtBRL(data.aiCostMonth) : "—",
       hint: data ? `${fmt(data.aiCallsMonth)} processamentos` : "Saldo do mês",
       icon: Sparkles,
-      color: "text-violet-500",
+      gradient: "from-fuchsia-500 to-purple-600",
+      shadow: "shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40",
     },
   ];
 
   const shortcuts = [
-    { to: "/upload", label: "Enviar documentos", icon: Upload },
-    { to: "/queue", label: "Ver fila", icon: ListChecks },
-    { to: "/documents", label: "Pesquisar GED", icon: FolderOpen },
-    { to: "/credits", label: "Comprar créditos", icon: Wallet },
+    {
+      to: "/upload",
+      label: "Enviar documentos",
+      desc: "Faça upload de novos arquivos",
+      icon: Upload,
+      gradient: "from-sky-500 to-blue-600",
+    },
+    {
+      to: "/queue",
+      label: "Ver fila",
+      desc: "Acompanhe processamento",
+      icon: ListChecks,
+      gradient: "from-amber-500 to-orange-600",
+    },
+    {
+      to: "/documents",
+      label: "Pesquisar GED",
+      desc: "Busque documentos indexados",
+      icon: FolderOpen,
+      gradient: "from-emerald-500 to-teal-600",
+    },
+    {
+      to: "/credits",
+      label: "Comprar créditos",
+      desc: "Recarregue seu saldo IA",
+      icon: Wallet,
+      gradient: "from-fuchsia-500 to-purple-600",
+    },
   ];
 
   const maxType = Math.max(1, ...(data?.byType.map((t) => t.count) ?? [0]));
   const maxCompany = Math.max(1, ...(data?.byCompany.map((t) => t.count) ?? [0]));
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <PageHeader
-        title={`Olá, ${loading ? "..." : firstName}`}
-        description={
-          profile?.currentOrg
-            ? `Organização ativa: ${profile.currentOrg.name}`
-            : "Configure sua organização para começar."
-        }
-      />
+    <div className="p-6 md:p-8 max-w-7xl mx-auto">
+      {/* Hero header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6 md:p-8 mb-6">
+        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-fuchsia-500" />
+              Painel geral
+            </div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+              Olá, {loading ? "..." : firstName}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              {profile?.currentOrg ? (
+                <>Organização ativa: <span className="font-semibold text-foreground">{profile.currentOrg.name}</span></>
+              ) : (
+                "Configure sua organização para começar."
+              )}
+            </p>
+          </div>
+          <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-700 hover:to-fuchsia-700 text-white shadow-lg shadow-fuchsia-500/30">
+            <Link to="/upload">
+              <Upload className="h-4 w-4 mr-2" />
+              Enviar documentos
+            </Link>
+          </Button>
+        </div>
+      </div>
 
-      {/* Stats */}
+      {/* Stats coloridos */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s) => (
-          <Card key={s.label} className="border-border/60">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <Card
+            key={s.label}
+            className={`p-5 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">
                 {s.label}
-              </CardTitle>
-              <s.icon className={`h-4 w-4 ${s.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="font-display text-3xl font-bold">
-                {isLoading ? "…" : s.value}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{s.hint}</p>
-            </CardContent>
+              </span>
+              <s.icon className="h-5 w-5 text-white/90" />
+            </div>
+            <div className="font-display text-3xl font-bold mt-2 tabular-nums">
+              {isLoading ? "…" : s.value}
+            </div>
+            <p className="text-xs text-white/85 mt-1">{s.hint}</p>
           </Card>
         ))}
       </div>
 
-      {/* Atalhos */}
+      {/* Atalhos coloridos */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {shortcuts.map((s) => (
-          <Button
+          <Link
             key={s.to}
-            asChild
-            variant="outline"
-            className="h-auto py-4 justify-between group"
+            to={s.to}
+            className="group relative overflow-hidden rounded-xl border border-border/60 bg-card p-4 hover:border-transparent hover:shadow-lg transition-all"
           >
-            <Link to={s.to}>
-              <span className="flex items-center gap-3">
-                <s.icon className="h-4 w-4 text-primary" />
-                {s.label}
-              </span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </Link>
-          </Button>
+            <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
+            <div className="relative flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${s.gradient} grid place-items-center shadow-md shrink-0`}>
+                <s.icon className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-sm group-hover:text-white transition-colors truncate">
+                  {s.label}
+                </div>
+                <div className="text-xs text-muted-foreground group-hover:text-white/85 transition-colors truncate">
+                  {s.desc}
+                </div>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+            </div>
+          </Link>
         ))}
       </div>
 
@@ -386,9 +443,9 @@ function BreakdownCard({
                     {item.count.toLocaleString("pt-BR")}
                   </Badge>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-500 rounded-full transition-all"
                     style={{ width: `${(item.count / max) * 100}%` }}
                   />
                 </div>
