@@ -563,12 +563,12 @@ function UploadPage() {
           {...getRootProps()}
           className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
             isDragActive
-              ? "border-fuchsia-500 bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 scale-[1.01]"
-              : "border-border hover:border-fuchsia-400/60 hover:bg-gradient-to-br hover:from-indigo-500/5 hover:via-fuchsia-500/5 hover:to-amber-500/5"
+              ? "border-cyan-500 bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 scale-[1.01]"
+              : "border-cyan-400/40 hover:border-cyan-500/60 hover:bg-gradient-to-br hover:from-teal-500/5 hover:via-cyan-500/5 hover:to-sky-500/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-amber-500 grid place-items-center shadow-lg shadow-fuchsia-500/30 mb-3">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-500 grid place-items-center shadow-lg shadow-cyan-500/30 mb-3">
             <Upload className="h-7 w-7 text-white" />
           </div>
           <p className="font-semibold text-sm">
@@ -602,7 +602,7 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
-                  className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white border-0 shadow-md shadow-fuchsia-500/30"
+                  className="bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-600 hover:via-cyan-600 hover:to-sky-600 text-white border-0 shadow-md shadow-cyan-500/30"
                 >
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
