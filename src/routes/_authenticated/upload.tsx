@@ -455,15 +455,15 @@ function UploadPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 p-6">
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-            <Upload className="h-3.5 w-3.5 text-cyan-500" />
+            <Upload className="h-3.5 w-3.5 text-blue-800" />
             Novo lote
           </div>
-          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 bg-clip-text text-transparent">
             Upload de documentos
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl">
@@ -563,12 +563,12 @@ function UploadPage() {
           {...getRootProps()}
           className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
             isDragActive
-              ? "border-cyan-500 bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 scale-[1.01]"
-              : "border-cyan-400/40 hover:border-cyan-500/60 hover:bg-gradient-to-br hover:from-teal-500/5 hover:via-cyan-500/5 hover:to-sky-500/5"
+              ? "border-blue-800 bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 scale-[1.01]"
+              : "border-blue-700/40 hover:border-blue-800/60 hover:bg-gradient-to-br hover:from-slate-900/5 hover:via-blue-900/5 hover:to-sky-700/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-500 grid place-items-center shadow-lg shadow-cyan-500/30 mb-3">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-500 grid place-items-center shadow-lg shadow-blue-800/30 mb-3">
             <Upload className="h-7 w-7 text-white" />
           </div>
           <p className="font-semibold text-sm">
@@ -602,7 +602,7 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
-                  className="bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-600 hover:via-cyan-600 hover:to-sky-600 text-white border-0 shadow-md shadow-cyan-500/30"
+                  className="bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-slate-900 hover:via-blue-900 hover:to-sky-800 text-white border-0 shadow-md shadow-blue-800/30"
                 >
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
