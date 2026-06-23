@@ -602,6 +602,7 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
+                  className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white border-0 shadow-md shadow-fuchsia-500/30"
                 >
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -614,7 +615,9 @@ function UploadPage() {
                   size="sm"
                   onClick={handleUploadAll}
                   disabled={isUploading || !items.some((i) => i.status === "queued")}
+                  className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md shadow-indigo-500/30"
                 >
+                  <Upload className="h-4 w-4 mr-1" />
                   Enviar {items.filter((i) => i.status === "queued").length} arquivo(s)
                 </Button>
               </div>
