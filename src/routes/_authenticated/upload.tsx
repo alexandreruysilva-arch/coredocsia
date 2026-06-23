@@ -449,15 +449,63 @@ function UploadPage() {
     setItems((p) => p.filter((i) => i.status !== "done"));
   }
 
+  const queuedCount = items.filter((i) => i.status === "queued").length;
+  const doneCount = items.filter((i) => i.status === "done").length;
+  const errorCount = items.filter((i) => i.status === "error").length;
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Upload de documentos</h1>
-        <p className="text-muted-foreground mt-1">
-          Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
-          Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
-        </p>
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+            <Upload className="h-3.5 w-3.5 text-indigo-500" />
+            Novo lote
+          </div>
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+            Upload de documentos
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-3xl">
+            Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
+            Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
+          </p>
+        </div>
       </header>
+
+      {items.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card className="p-4 border-0 bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Total</span>
+              <FileText className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{items.length}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Na fila</span>
+              <Upload className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{queuedCount}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Enviados</span>
+              <CheckCircle2 className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{doneCount}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Falhas</span>
+              <AlertCircle className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{errorCount}</p>
+          </Card>
+        </div>
+      )}
+
 
       <Card className="p-6 space-y-5">
         <div className="grid sm:grid-cols-2 gap-4">
@@ -513,19 +561,24 @@ function UploadPage() {
 
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-            isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+          className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+            isDragActive
+              ? "border-fuchsia-500 bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 scale-[1.01]"
+              : "border-border hover:border-fuchsia-400/60 hover:bg-gradient-to-br hover:from-indigo-500/5 hover:via-fuchsia-500/5 hover:to-amber-500/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
-          <p className="font-medium text-sm">
+          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-amber-500 grid place-items-center shadow-lg shadow-fuchsia-500/30 mb-3">
+            <Upload className="h-7 w-7 text-white" />
+          </div>
+          <p className="font-semibold text-sm">
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             PDF, JPG, PNG, TIFF, WEBP • máx 50 MB
           </p>
         </div>
+
 
         {items.length > 0 && (
           <div className="space-y-2">
@@ -549,6 +602,7 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
+                  className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white border-0 shadow-md shadow-fuchsia-500/30"
                 >
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -561,7 +615,9 @@ function UploadPage() {
                   size="sm"
                   onClick={handleUploadAll}
                   disabled={isUploading || !items.some((i) => i.status === "queued")}
+                  className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md shadow-indigo-500/30"
                 >
+                  <Upload className="h-4 w-4 mr-1" />
                   Enviar {items.filter((i) => i.status === "queued").length} arquivo(s)
                 </Button>
               </div>
