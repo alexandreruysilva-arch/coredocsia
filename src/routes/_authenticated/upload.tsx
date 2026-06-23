@@ -454,7 +454,7 @@ function UploadPage() {
   const errorCount = items.filter((i) => i.status === "error").length;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
       <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 p-6">
         <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
