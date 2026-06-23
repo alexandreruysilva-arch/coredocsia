@@ -458,7 +458,20 @@ function DocumentsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportXlsx}
+                disabled={!filtersSelected || filteredDocs.length === 0}
+                className="gap-2"
+                title="Exportar resultados em XLSX"
+              >
+                <Download className="h-4 w-4" /> Exportar XLSX
+              </Button>
+            </div>
           </Card>
+
 
 
           {typeId !== "all" && typeFields.length > 0 && (
