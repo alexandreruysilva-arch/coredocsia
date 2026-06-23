@@ -296,16 +296,63 @@ function DocumentsPage() {
     <div className="flex h-full">
       <div className="flex-1 overflow-auto">
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-          <header>
-            <h1 className="text-3xl font-display font-bold tracking-tight flex items-center gap-2">
-              <FolderOpen className="h-7 w-7 text-primary" /> Documentos
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Gestão eletrônica de documentos processados.
-            </p>
+          <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
+            <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+                <FolderOpen className="h-3.5 w-3.5 text-emerald-500" />
+                Gestão eletrônica
+              </div>
+              <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-emerald-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+                Documentos GED
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Pesquise, filtre e gerencie todos os documentos processados.
+              </p>
+            </div>
           </header>
 
-          <Card className="p-4 flex flex-wrap gap-3">
+          {filtersSelected && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Card className="p-4 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Resultados</span>
+                  <FolderOpen className="h-4 w-4 text-white/90" />
+                </div>
+                <p className="text-2xl font-display font-bold mt-2 tabular-nums">{filteredDocs.length}</p>
+              </Card>
+              <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Processados</span>
+                  <Search className="h-4 w-4 text-white/90" />
+                </div>
+                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                  {filteredDocs.filter((d) => d.status === "processed").length}
+                </p>
+              </Card>
+              <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Pendentes</span>
+                  <Loader2 className="h-4 w-4 text-white/90" />
+                </div>
+                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                  {filteredDocs.filter((d) => d.status === "pending" || d.status === "processing").length}
+                </p>
+              </Card>
+              <Card className="p-4 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Falhas</span>
+                  <X className="h-4 w-4 text-white/90" />
+                </div>
+                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                  {filteredDocs.filter((d) => d.status === "failed").length}
+                </p>
+              </Card>
+            </div>
+          )}
+
+          <Card className="p-4 flex flex-wrap gap-3 border-l-4 border-l-indigo-500">
             <Select
               value={companyId}
               onValueChange={(v) => {
@@ -348,6 +395,7 @@ function DocumentsPage() {
               </SelectContent>
             </Select>
           </Card>
+
 
           {typeId !== "all" && typeFields.length > 0 && (
             <Card className="p-4 space-y-3">
