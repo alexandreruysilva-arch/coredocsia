@@ -404,7 +404,9 @@ function AuditPage() {
                     <TableCell className="text-sm max-w-[240px] truncate" title={l.file_name}>
                       {l.file_name}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{l.model}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {l.model === "gemini-2.5-flash-lite" ? "2.5 Flash Lite" : l.model}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
                       {l.total_tokens.toLocaleString("pt-BR")}
                     </TableCell>
