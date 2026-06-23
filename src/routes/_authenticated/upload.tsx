@@ -449,15 +449,63 @@ function UploadPage() {
     setItems((p) => p.filter((i) => i.status !== "done"));
   }
 
+  const queuedCount = items.filter((i) => i.status === "queued").length;
+  const doneCount = items.filter((i) => i.status === "done").length;
+  const errorCount = items.filter((i) => i.status === "error").length;
+
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Upload de documentos</h1>
-        <p className="text-muted-foreground mt-1">
-          Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
-          Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
-        </p>
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+            <Upload className="h-3.5 w-3.5 text-indigo-500" />
+            Novo lote
+          </div>
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+            Upload de documentos
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-3xl">
+            Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
+            Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
+          </p>
+        </div>
       </header>
+
+      {items.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Card className="p-4 border-0 bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Total</span>
+              <FileText className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{items.length}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Na fila</span>
+              <Upload className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{queuedCount}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Enviados</span>
+              <CheckCircle2 className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{doneCount}</p>
+          </Card>
+          <Card className="p-4 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Falhas</span>
+              <AlertCircle className="h-4 w-4 text-white/90" />
+            </div>
+            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{errorCount}</p>
+          </Card>
+        </div>
+      )}
+
 
       <Card className="p-6 space-y-5">
         <div className="grid sm:grid-cols-2 gap-4">
