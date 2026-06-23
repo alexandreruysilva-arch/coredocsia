@@ -514,47 +514,20 @@ function DocumentsPage() {
             <Card className="p-4 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-sm font-medium">Filtrar pelos campos do tipo</h3>
-                <div className="ml-auto flex items-center self-stretch gap-2">
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline">
-                        <Plus className="h-4 w-4 mr-1" /> Adicionar filtro
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="max-h-72 overflow-auto">
-                      {typeFields.filter((f) => !activeFieldKeys.includes(f.field_key)).length === 0 ? (
-                        <DropdownMenuItem disabled>Nenhum campo disponível</DropdownMenuItem>
-                      ) : (
-                        typeFields
-                          .filter((f) => !activeFieldKeys.includes(f.field_key))
-                          .map((f) => (
-                            <DropdownMenuItem
-                              key={f.id}
-                              onSelect={() =>
-                                setActiveFieldKeys((prev) => [...prev, f.field_key])
-                              }
-                            >
-                              {f.label}
-                            </DropdownMenuItem>
-                          ))
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {activeFieldKeys.length > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setActiveFieldKeys([]);
-                        setFieldFilters({});
-                      }}
-                    >
-                      Limpar
-                    </Button>
-                  )}
-                </div>
+                {activeFieldKeys.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setActiveFieldKeys([]);
+                      setFieldFilters({});
+                    }}
+                  >
+                    Limpar
+                  </Button>
+                )}
               </div>
+
               {activeFieldKeys.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
                   Clique em "Adicionar filtro" para escolher os campos da indexação que deseja usar na pesquisa.
