@@ -99,7 +99,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.company_name ?? "",
         l.document_type_name ?? "",
         l.file_name,
-        l.model,
+        l.model === "gemini-2.5-flash-lite" ? "2.5 Flash Lite" : l.model,
         l.prompt_tokens,
         l.completion_tokens,
         l.total_tokens,
