@@ -231,52 +231,64 @@ function AuditPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header>
-        <h1 className="text-3xl font-display font-bold tracking-tight">Auditoria de IA</h1>
-        <p className="text-muted-foreground mt-1">
-          Log de uso da indexação por IA: empresa, tipo de documento, arquivo e tokens consumidos
-          em cada processamento. Use o somatório para cobrança futura.
-        </p>
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+            <Sparkles className="h-3.5 w-3.5 text-fuchsia-500" />
+            Painel de uso de IA
+          </div>
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+            Auditoria de IA
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-3xl">
+            Log de uso da indexação por IA: empresa, tipo de documento, arquivo e tokens consumidos
+            em cada processamento. Use o somatório para cobrança futura.
+          </p>
+        </div>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
             <FileText className="h-4 w-4" /> Arquivos processados
           </div>
-          <div className="text-2xl font-bold mt-1">{totals.files.toLocaleString("pt-BR")}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">
+          <div className="text-3xl font-bold mt-1 tabular-nums">{totals.files.toLocaleString("pt-BR")}</div>
+          <div className="text-xs text-white/85 mt-1">
             {totals.success} sucesso · {totals.failed} falha
           </div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
             <Sparkles className="h-4 w-4" /> Custo total
           </div>
-          <div className="text-2xl font-bold mt-1">
+          <div className="text-3xl font-bold mt-1 tabular-nums">
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">
-            Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens totais · +R$ 0,01 a cada 500 acima
+          <div className="text-xs text-white/85 mt-1">
+            Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens · +R$ 0,01/500
           </div>
-
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <Card className="p-4 border-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
             <TrendingUp className="h-4 w-4" /> Tokens totais
           </div>
-          <div className="text-2xl font-bold mt-1">{totals.total.toLocaleString("pt-BR")}</div>
+          <div className="text-3xl font-bold mt-1 tabular-nums">{totals.total.toLocaleString("pt-BR")}</div>
+          <div className="text-xs text-white/85 mt-1">
+            {totals.prompt.toLocaleString("pt-BR")} prompt · {totals.completion.toLocaleString("pt-BR")} compl.
+          </div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-muted-foreground text-xs">
+        <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
             <Timer className="h-4 w-4" /> Tempo médio IA
           </div>
-          <div className="text-2xl font-bold mt-1">
+          <div className="text-3xl font-bold mt-1 tabular-nums">
             {totals.durationCount > 0
               ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
               : "—"}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">
+          <div className="text-xs text-white/85 mt-1">
             {totals.durationCount} medições
           </div>
         </Card>
