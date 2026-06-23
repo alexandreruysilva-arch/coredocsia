@@ -102,7 +102,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.model === "gemini-2.5-flash-lite"
           ? "2.5 Flash Lite"
           : l.model === "claude-haiku-4-5-20251001"
-            ? "Claude Haiku 4.5"
+            ? "Haiku 4.5"
             : l.model,
         l.prompt_tokens,
         l.completion_tokens,
@@ -412,7 +412,7 @@ function AuditPage() {
                       {l.model === "gemini-2.5-flash-lite"
                         ? "2.5 Flash Lite"
                         : l.model === "claude-haiku-4-5-20251001"
-                          ? "Claude Haiku 4.5"
+                          ? "Haiku 4.5"
                           : l.model}
                     </TableCell>
                     <TableCell className="text-right tabular-nums font-medium">
