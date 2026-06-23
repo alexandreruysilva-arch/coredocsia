@@ -563,8 +563,8 @@ function UploadPage() {
           {...getRootProps()}
           className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
             isDragActive
-              ? "border-cyan-500 bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 scale-[1.01]"
-              : "border-cyan-400/40 hover:border-cyan-500/60 hover:bg-gradient-to-br hover:from-teal-500/5 hover:via-cyan-500/5 hover:to-sky-500/5"
+              ? "border-blue-800 bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 scale-[1.01]"
+              : "border-blue-700/40 hover:border-blue-800/60 hover:bg-gradient-to-br hover:from-slate-900/5 hover:via-blue-900/5 hover:to-sky-700/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
@@ -602,7 +602,7 @@ function UploadPage() {
                     !items.some((i) => i.status === "queued")
                   }
                   title="Lê a 1ª página de cada arquivo e preenche os campos via Gemini IA"
-                  className="bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-600 hover:via-cyan-600 hover:to-sky-600 text-white border-0 shadow-md shadow-blue-800/30"
+                  className="bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-slate-900 hover:via-blue-900 hover:to-sky-800 text-white border-0 shadow-md shadow-blue-800/30"
                 >
                   {isExtracting ? (
                     <Loader2 className="h-4 w-4 mr-1 animate-spin" />

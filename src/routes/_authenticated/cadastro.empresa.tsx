@@ -225,12 +225,12 @@ function EmpresaPage() {
               Cadastro
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 bg-clip-text text-transparent flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-cyan-600" />
+              <Building2 className="h-8 w-8 text-blue-800" />
               Empresa
             </h1>
             <p className="text-muted-foreground mt-2">Cadastro de empresas da organização.</p>
           </div>
-          <Button onClick={openCreate} size="lg" className="bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 hover:from-teal-600 hover:via-cyan-600 hover:to-sky-600 text-white border-0 shadow-lg shadow-blue-800/30">
+          <Button onClick={openCreate} size="lg" className="bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 hover:from-slate-900 hover:via-blue-900 hover:to-sky-800 text-white border-0 shadow-lg shadow-blue-800/30">
             <Plus className="h-4 w-4 mr-2" /> Nova empresa
           </Button>
         </div>
