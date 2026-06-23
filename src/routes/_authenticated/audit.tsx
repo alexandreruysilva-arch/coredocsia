@@ -129,6 +129,8 @@ function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
   const queryClient = useQueryClient();
 
   const { data: logs = [], isLoading } = useQuery({
