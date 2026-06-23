@@ -486,7 +486,8 @@ function DocumentsPage() {
             <Card className="p-4 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-sm font-medium">Filtrar pelos campos do tipo</h3>
-                <div className="flex items-center gap-2">
+                <div className="ml-auto flex items-center self-stretch gap-2">
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button size="sm" variant="outline">
