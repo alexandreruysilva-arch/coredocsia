@@ -443,9 +443,9 @@ function BreakdownCard({
                     {item.count.toLocaleString("pt-BR")}
                   </Badge>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all"
+                    className="h-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-500 rounded-full transition-all"
                     style={{ width: `${(item.count / max) * 100}%` }}
                   />
                 </div>
