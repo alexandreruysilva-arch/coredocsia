@@ -288,7 +288,7 @@ function AuditPage() {
             Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens · +R$ 0,01/500
           </div>
         </Card>
-        <Card className="p-4 border-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all">
+        <Card className="p-4 border-0 bg-gradient-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-700/20 hover:shadow-slate-700/40 hover:-translate-y-0.5 transition-all">
           <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
             <TrendingUp className="h-4 w-4" /> Tokens totais
           </div>
