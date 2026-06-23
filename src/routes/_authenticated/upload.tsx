@@ -244,8 +244,9 @@ function UploadPage() {
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const extractFn = useServerFn(extractFieldsWithGemini);
+  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude">(null);
+  const extractGeminiFn = useServerFn(extractFieldsWithGemini);
+  const extractClaudeFn = useServerFn(extractFieldsWithClaude);
 
   const types = useMemo(() => {
     let list = allTypes;
