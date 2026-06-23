@@ -394,7 +394,7 @@ function AuditPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((l) => (
+                {paged.map((l) => (
                   <TableRow key={l.id}>
                     <TableCell className="text-xs whitespace-nowrap">
                       {formatDateTime(l.created_at)}
