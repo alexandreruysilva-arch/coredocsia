@@ -231,15 +231,15 @@ function AuditPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/10 to-amber-500/10 p-6">
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-teal-500/10 via-cyan-500/10 to-sky-500/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-cyan-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-fuchsia-500" />
+            <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
             Painel de uso de IA
           </div>
-          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent">
             Auditoria de IA
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl">
