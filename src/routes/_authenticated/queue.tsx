@@ -221,7 +221,7 @@ function QueuePage() {
         <div className="relative flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-              <ListChecks className="h-3.5 w-3.5 text-indigo-500" />
+              <ListChecks className="h-3.5 w-3.5 text-cyan-500" />
               Tempo real
             </div>
             <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent">

@@ -226,7 +226,7 @@ function Dashboard() {
         <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-              <Sparkles className="h-3.5 w-3.5 text-fuchsia-500" />
+              <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
               Painel geral
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent">

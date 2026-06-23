@@ -236,7 +236,7 @@ function AuditPage() {
         <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-teal-500/20 blur-3xl pointer-events-none" />
         <div className="relative">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-fuchsia-500" />
+            <Sparkles className="h-3.5 w-3.5 text-cyan-500" />
             Painel de uso de IA
           </div>
           <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-teal-500 via-cyan-600 to-sky-600 bg-clip-text text-transparent">
