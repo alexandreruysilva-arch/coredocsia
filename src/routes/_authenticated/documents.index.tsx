@@ -293,8 +293,70 @@ function DocumentsPage() {
 
 
 
+  function handleExportXlsx() {
+    if (filteredDocs.length === 0) {
+      toast.error("Nada para exportar");
+      return;
+    }
+    const companyName =
+      companyId === "all"
+        ? "todas"
+        : companies.find((c) => c.id === companyId)?.name ?? "empresa";
+    const typeName =
+      typeId === "all"
+        ? "todos"
+        : allTypes.find((t) => t.id === typeId)?.name ?? "tipo";
+
+    const rows = filteredDocs.map((doc: any) => {
+      const fv = (doc.field_values ?? {}) as Record<string, unknown>;
+      const row: Record<string, unknown> = {
+        "Nome do arquivo": doc.name,
+        Empresa: companies.find((c) => c.id === doc.company_id)?.name ?? "—",
+        Tipo: allTypes.find((t) => t.id === doc.document_type_id)?.name ?? "—",
+        Status: doc.status,
+        "Tamanho (bytes)": doc.size_bytes ?? "",
+        "Criado em": doc.created_at
+          ? format(new Date(doc.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+          : "",
+        "Editado em":
+          doc.updated_at && doc.updated_at !== doc.created_at
+            ? format(new Date(doc.updated_at), "dd/MM/yyyy HH:mm", { locale: ptBR })
+            : "",
+        Operador: uploaderMap[doc.uploaded_by] ?? "",
+        "Último editor": editorMap[doc.last_edited_by] ?? "",
+      };
+      if (typeId !== "all") {
+        for (const f of typeFields) {
+          const raw = fv[f.field_key];
+          let val: unknown = raw ?? "";
+          if (
+            f.field_type === "date" &&
+            typeof raw === "string" &&
+            /^\d{4}-\d{2}-\d{2}$/.test(raw)
+          ) {
+            const [y, m, d] = raw.split("-");
+            val = `${d}/${m}/${y}`;
+          } else if (typeof raw === "boolean") {
+            val = raw ? "Sim" : "Não";
+          }
+          row[f.label] = val;
+        }
+      }
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Documentos");
+    const safe = (s: string) => s.replace(/[^a-zA-Z0-9-_]+/g, "_").slice(0, 40);
+    const filename = `documentos_${safe(companyName)}_${safe(typeName)}_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    toast.success(`Exportado ${rows.length} registro(s)`);
+  }
+
   return (
     <div className="flex h-full">
+
       <div className="flex-1 overflow-auto">
         <div className="p-6 max-w-7xl mx-auto space-y-6">
           <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-6">
