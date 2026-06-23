@@ -70,18 +70,24 @@ function SettingsPage() {
   const isAdmin = profileBundle?.roles.includes("org_admin") || profileBundle?.isPlatformAdmin;
 
   return (
-    <div className="container max-w-6xl py-8 px-4">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Settings className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-muted-foreground">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-6">
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+            <Settings className="h-3.5 w-3.5 text-blue-800" />
+            Painel de configurações
+          </div>
+          <h1 className="text-3xl font-display font-bold tracking-tight bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 bg-clip-text text-transparent">
+            Configurações
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-3xl">
             Gerencie sua conta, organização e preferências do sistema.
           </p>
         </div>
-      </div>
+      </header>
+
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="bg-muted/50 p-1">
