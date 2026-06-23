@@ -16,7 +16,7 @@ import {
   Building2,
   TrendingUp,
 } from "lucide-react";
-import { PageHeader } from "@/components/page-stub";
+
 import { useProfileBundle } from "@/hooks/use-profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
