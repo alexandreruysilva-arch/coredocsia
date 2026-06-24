@@ -463,6 +463,13 @@ function UploadPage() {
     if (queued.length === 0) return;
 
     for (const item of queued) {
+      if (item.aiStatus === "failed" || item.aiStatus === "incomplete") {
+        toast.error(
+          `${item.file.name}: ${item.aiMessage ?? "Processamento incompleto — preencha manualmente antes de enviar."}`,
+        );
+        updateItem(item.id, { expanded: true });
+        return;
+      }
       for (const f of fields) {
         if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
           toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
@@ -471,6 +478,7 @@ function UploadPage() {
         }
       }
     }
+
 
     setIsUploading(true);
 
