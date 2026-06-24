@@ -248,19 +248,20 @@ function Dashboard() {
         {stats.map((s) => (
           <Card
             key={s.label}
-            className={`p-5 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all`}
+            className={`p-3 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">
+              <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">
                 {s.label}
               </span>
-              <s.icon className="h-5 w-5 text-white/90" />
+              <s.icon className="h-4 w-4 text-white/90" />
             </div>
-            <div className="font-display text-3xl font-bold mt-2 tabular-nums">
+            <div className="font-display text-2xl font-bold mt-1 tabular-nums leading-tight">
               {isLoading ? "…" : s.value}
             </div>
-            <p className="text-xs text-white/85 mt-1">{s.hint}</p>
+            <p className="text-[11px] text-white/85 mt-0.5">{s.hint}</p>
           </Card>
+
         ))}
       </div>
 
