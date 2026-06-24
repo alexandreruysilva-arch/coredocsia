@@ -48,6 +48,7 @@ const schema = z.object({
   company_id: z.string().uuid("Selecione a empresa"),
   name: z.string().trim().min(1, "Informe o nome").max(150),
   slug: z.string().trim().max(150).optional().or(z.literal("")),
+  store_files: z.boolean(),
 });
 type FormVals = z.infer<typeof schema>;
 
@@ -62,9 +63,11 @@ interface DocTypeRow {
   name: string;
   slug: string;
   created_at: string;
+  store_files: boolean;
 }
 
-const emptyForm: FormVals = { company_id: "", name: "", slug: "" };
+const emptyForm: FormVals = { company_id: "", name: "", slug: "", store_files: true };
+
 
 function slugify(s: string) {
   return s
@@ -127,6 +130,7 @@ function TipoDocumentoPage() {
         company_id: payload.company_id,
         name: payload.name.trim(),
         slug,
+        store_files: payload.store_files,
       };
       if (editing) {
         const { error } = await supabase
@@ -180,7 +184,7 @@ function TipoDocumentoPage() {
   }
   function openEdit(r: DocTypeRow) {
     setEditing(r);
-    setForm({ company_id: r.company_id ?? "", name: r.name, slug: r.slug });
+    setForm({ company_id: r.company_id ?? "", name: r.name, slug: r.slug, store_files: r.store_files ?? true });
     setErrors({});
     setOpen(true);
   }
@@ -379,6 +383,22 @@ function TipoDocumentoPage() {
                 placeholder="nota-fiscal"
               />
               {errors.slug && <p className="text-xs text-destructive">{errors.slug}</p>}
+            </div>
+            <div className="rounded-lg border border-border p-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <Checkbox
+                  checked={form.store_files}
+                  onCheckedChange={(v) => setForm((f) => ({ ...f, store_files: v === true }))}
+                  className="mt-0.5"
+                />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Armazenar imagens no Google Drive</p>
+                  <p className="text-xs text-muted-foreground">
+                    Se desmarcado, apenas os dados indexados serão salvos no banco — o arquivo
+                    original não fica disponível para visualização no GED.
+                  </p>
+                </div>
+              </label>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>

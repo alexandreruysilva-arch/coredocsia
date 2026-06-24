@@ -61,8 +61,6 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     if (!userId) throw new Error("Usuário não autenticado");
     const { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage } = data;
 
-    const { ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
-      await import("./drive.server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Verifica empresa + tipo e descobre org_id via RLS.
@@ -75,48 +73,60 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
 
     const { data: docType, error: dtErr } = await supabase
       .from("document_types")
-      .select("id, org_id, name, drive_folder_id, company_id")
+      .select("id, org_id, name, drive_folder_id, company_id, store_files")
       .eq("id", documentTypeId)
       .single();
     if (dtErr || !docType) throw new Error("Tipo de documento não encontrado");
     if (docType.org_id !== company.org_id) throw new Error("Tipo de documento de outra organização");
 
-    // 2. Garante pasta da empresa na raiz do Drive: "Lovable - <Empresa>".
-    let companyFolderId = company.drive_folder_id;
-    if (!companyFolderId) {
-      companyFolderId = await ensureCompanyFolder(null, company.id, company.name);
-      await supabaseAdmin
-        .from("companies")
-        .update({ drive_folder_id: companyFolderId })
-        .eq("id", company.id);
+    const storeFiles = docType.store_files !== false;
+
+    let driveFileId: string | null = null;
+    let driveWebViewLink: string | null = null;
+
+    if (storeFiles) {
+      const { ensureCompanyFolder, ensureDocTypeFolder, uploadFileToDrive } =
+        await import("./drive.server");
+
+      // 2. Garante pasta da empresa na raiz do Drive: "Lovable - <Empresa>".
+      let companyFolderId = company.drive_folder_id;
+      if (!companyFolderId) {
+        companyFolderId = await ensureCompanyFolder(null, company.id, company.name);
+        await supabaseAdmin
+          .from("companies")
+          .update({ drive_folder_id: companyFolderId })
+          .eq("id", company.id);
+      }
+
+      // 4. Garante pasta do tipo de documento (cache global no tipo, mas única por empresa via scopeKey).
+      const scopeKey = `${company.id}:${docType.id}`;
+      let docTypeFolderId = docType.drive_folder_id;
+      if (!docTypeFolderId) {
+        docTypeFolderId = await ensureDocTypeFolder(companyFolderId, scopeKey, docType.name);
+        await supabaseAdmin
+          .from("document_types")
+          .update({ drive_folder_id: docTypeFolderId })
+          .eq("id", docType.id);
+      }
+
+      // 5. Upload binário.
+      const buffer = await file.arrayBuffer();
+      const uploaded = await uploadFileToDrive({
+        folderId: docTypeFolderId,
+        filename: file.name,
+        mimeType: file.type || "application/octet-stream",
+        body: buffer,
+        appProperties: {
+          lovableOrgId: company.org_id,
+          lovableCompanyId: company.id,
+          lovableDocTypeId: docType.id,
+          uploadedBy: userId,
+        },
+      });
+      driveFileId = uploaded.id;
+      driveWebViewLink = uploaded.webViewLink ?? null;
     }
 
-
-    // 4. Garante pasta do tipo de documento (cache global no tipo, mas única por empresa via scopeKey).
-    const scopeKey = `${company.id}:${docType.id}`;
-    let docTypeFolderId = docType.drive_folder_id;
-    if (!docTypeFolderId) {
-      docTypeFolderId = await ensureDocTypeFolder(companyFolderId, scopeKey, docType.name);
-      await supabaseAdmin
-        .from("document_types")
-        .update({ drive_folder_id: docTypeFolderId })
-        .eq("id", docType.id);
-    }
-
-    // 5. Upload binário.
-    const buffer = await file.arrayBuffer();
-    const uploaded = await uploadFileToDrive({
-      folderId: docTypeFolderId,
-      filename: file.name,
-      mimeType: file.type || "application/octet-stream",
-      body: buffer,
-      appProperties: {
-        lovableOrgId: company.org_id,
-        lovableCompanyId: company.id,
-        lovableDocTypeId: docType.id,
-        uploadedBy: userId,
-      },
-    });
 
     // 6. Cria a linha em documents.
     const { data: row, error: insertErr } = await supabase
@@ -134,16 +144,18 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         field_values: fieldValues as never,
         tags,
         storage_path: null,
-        drive_file_id: uploaded.id,
-        drive_web_view_link: uploaded.webViewLink ?? null,
+        drive_file_id: driveFileId,
+        drive_web_view_link: driveWebViewLink,
         status: "processed",
       })
       .select("*")
       .single();
 
     if (insertErr || !row) {
-      const { deleteDriveFile } = await import("./drive.server");
-      await deleteDriveFile(uploaded.id).catch(() => {});
+      if (driveFileId) {
+        const { deleteDriveFile } = await import("./drive.server");
+        await deleteDriveFile(driveFileId).catch(() => {});
+      }
       throw insertErr ?? new Error("Falha ao criar documento");
     }
 

@@ -164,6 +164,7 @@ export type Database = {
       }
       document_type_fields: {
         Row: {
+          char_length: number | null
           created_at: string
           document_type_id: string
           field_key: string
@@ -178,6 +179,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          char_length?: number | null
           created_at?: string
           document_type_id: string
           field_key: string
@@ -192,6 +194,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          char_length?: number | null
           created_at?: string
           document_type_id?: string
           field_key?: string
@@ -286,6 +289,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          store_files: boolean
         }
         Insert: {
           company_id?: string | null
@@ -295,6 +299,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          store_files?: boolean
         }
         Update: {
           company_id?: string | null
@@ -304,6 +309,7 @@ export type Database = {
           name?: string
           org_id?: string
           slug?: string
+          store_files?: boolean
         }
         Relationships: [
           {
