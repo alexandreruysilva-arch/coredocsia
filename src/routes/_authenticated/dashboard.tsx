@@ -220,19 +220,19 @@ function Dashboard() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto">
       {/* Hero header */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-6 md:p-8 mb-6">
-        <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
-        <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-4 md:p-5 mb-6">
+        <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground mb-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-0.5 text-xs font-medium text-muted-foreground mb-2">
               <Sparkles className="h-3.5 w-3.5 text-blue-800" />
               Painel geral
             </div>
-            <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 bg-clip-text text-transparent">
+            <h1 className="font-display text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-800 via-blue-800 to-sky-700 bg-clip-text text-transparent">
               Olá, {loading ? "..." : firstName}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm text-muted-foreground mt-1">
               {profile?.currentOrg ? (
                 <>Organização ativa: <span className="font-semibold text-foreground">{profile.currentOrg.name}</span></>
               ) : (
