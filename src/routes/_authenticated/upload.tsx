@@ -737,6 +737,17 @@ function UploadPage() {
                           <AlertCircle className="h-3 w-3" /> {item.error}
                         </p>
                       )}
+                      {item.status !== "error" && item.aiStatus === "failed" && (
+                        <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                        </p>
+                      )}
+                      {item.status !== "error" && item.aiStatus === "incomplete" && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                        </p>
+                      )}
+
                     </div>
                     {item.status === "done" && (
                       <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
