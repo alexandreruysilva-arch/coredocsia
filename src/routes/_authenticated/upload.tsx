@@ -357,6 +357,7 @@ function UploadPage() {
       field_key: f.field_key,
       field_type: f.field_type,
       options: f.options,
+      char_length: f.char_length ?? null,
     }));
     const fieldsJson = JSON.stringify(fieldDefs);
     const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
