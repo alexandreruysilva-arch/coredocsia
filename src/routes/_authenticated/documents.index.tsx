@@ -370,40 +370,41 @@ function DocumentsPage() {
 
           {filtersSelected && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card className="p-4 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Resultados</span>
-                  <FolderOpen className="h-4 w-4 text-white/90" />
+              <Card className="p-2.5 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20">
+                <div className="relative flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Resultados</span>
+                  <FolderOpen className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-2 tabular-nums">{filteredDocs.length}</p>
+                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{filteredDocs.length}</p>
               </Card>
-              <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Processados</span>
-                  <Search className="h-4 w-4 text-white/90" />
+              <Card className="p-2.5 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+                <div className="relative flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Processados</span>
+                  <Search className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
                   {filteredDocs.filter((d) => d.status === "processed").length}
                 </p>
               </Card>
-              <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Pendentes</span>
-                  <Loader2 className="h-4 w-4 text-white/90" />
+              <Card className="p-2.5 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+                <div className="relative flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Pendentes</span>
+                  <Loader2 className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
                   {filteredDocs.filter((d) => d.status === "pending" || d.status === "processing").length}
                 </p>
               </Card>
-              <Card className="p-4 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Falhas</span>
-                  <X className="h-4 w-4 text-white/90" />
+              <Card className="p-2.5 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
+                <div className="relative flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Falhas</span>
+                  <X className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-2 tabular-nums">
+                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
                   {filteredDocs.filter((d) => d.status === "failed").length}
                 </p>
               </Card>
+
             </div>
           )}
 
