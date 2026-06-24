@@ -166,7 +166,7 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     // Caso contrário (ex.: upload sem extração prévia), insere o log agora.
     if (aiUsage && aiUsage.total_tokens != null) {
       if (aiUsage.log_id) {
-        await supabase
+        await supabaseAdmin
           .from("ai_usage_logs")
           .update({ document_id: row.id })
           .eq("id", aiUsage.log_id);
