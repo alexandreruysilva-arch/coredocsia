@@ -272,45 +272,49 @@ function AuditPage() {
       </header>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
-            <FileText className="h-4 w-4" /> Arquivos processados
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <FileText className="absolute right-0 h-3.5 w-3.5" />
+            <span>Arquivos processados</span>
           </div>
-          <div className="text-3xl font-bold mt-1 tabular-nums">{totals.files.toLocaleString("pt-BR")}</div>
-          <div className="text-xs text-white/85 mt-1">
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">{totals.files.toLocaleString("pt-BR")}</div>
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
             {totals.success} sucesso · {totals.failed} falha
           </div>
         </Card>
-        <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
-            <Sparkles className="h-4 w-4" /> Custo total
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <Sparkles className="absolute right-0 h-3.5 w-3.5" />
+            <span>Custo total</span>
           </div>
-          <div className="text-3xl font-bold mt-1 tabular-nums">
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
-          <div className="text-xs text-white/85 mt-1">
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
             Base R$ {(orgPrice ?? 0.15).toFixed(2).replace(".", ",")} até 1.100 tokens · +R$ 0,01/500
           </div>
         </Card>
-        <Card className="p-4 border-0 bg-gradient-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-700/20 hover:shadow-slate-700/40 hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
-            <TrendingUp className="h-4 w-4" /> Tokens totais
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-700/20 hover:shadow-slate-700/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <TrendingUp className="absolute right-0 h-3.5 w-3.5" />
+            <span>Tokens totais</span>
           </div>
-          <div className="text-3xl font-bold mt-1 tabular-nums">{totals.total.toLocaleString("pt-BR")}</div>
-          <div className="text-xs text-white/85 mt-1">
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">{totals.total.toLocaleString("pt-BR")}</div>
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
             {totals.prompt.toLocaleString("pt-BR")} prompt · {totals.completion.toLocaleString("pt-BR")} compl.
           </div>
         </Card>
-        <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center gap-2 text-white/85 text-xs font-medium">
-            <Timer className="h-4 w-4" /> Tempo médio IA
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <Timer className="absolute right-0 h-3.5 w-3.5" />
+            <span>Tempo médio IA</span>
           </div>
-          <div className="text-3xl font-bold mt-1 tabular-nums">
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
             {totals.durationCount > 0
               ? formatDuration(Math.round(totals.durationTotal / totals.durationCount))
               : "—"}
           </div>
-          <div className="text-xs text-white/85 mt-1">
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
             {totals.durationCount} medições
           </div>
         </Card>
