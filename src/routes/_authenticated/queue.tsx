@@ -251,15 +251,16 @@ function QueuePage() {
               key={s.label}
               type="button"
               onClick={() => setStatus(isActive ? "all" : s.status)}
-              className={`text-left rounded-xl p-4 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all ${isActive ? "ring-2 ring-white/70 ring-offset-2 ring-offset-background" : ""}`}
+              className={`text-left rounded-xl p-2.5 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all ${isActive ? "ring-2 ring-white/70 ring-offset-2 ring-offset-background" : ""}`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-white/85 uppercase tracking-wider">
+                <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">
                   {s.label}
                 </span>
-                <s.icon className={`h-4 w-4 text-white/90 ${s.spin ? "animate-spin" : ""}`} />
+                <s.icon className={`h-3.5 w-3.5 text-white/90 ${s.spin ? "animate-spin" : ""}`} />
               </div>
-              <p className="text-3xl font-display font-bold mt-2 tabular-nums">{s.value}</p>
+              <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight">{s.value}</p>
+
             </button>
           );
         })}
