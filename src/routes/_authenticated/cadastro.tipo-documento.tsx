@@ -475,6 +475,10 @@ function FieldsDialog({
       const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
       if (!label.trim()) throw new Error("Informe o rótulo");
       if (!key) throw new Error("Informe a chave do campo");
+      const cl = charLength.trim() === "" ? null : Math.max(1, Math.min(1000, parseInt(charLength, 10) || 0));
+      if (charLength.trim() !== "" && (cl === null || cl < 1)) {
+        throw new Error("Quantidade de caracteres inválida");
+      }
       if (editingId) {
         const { error } = await supabase
           .from("document_type_fields")
@@ -484,6 +488,7 @@ function FieldsDialog({
             field_type: fieldType,
             required,
             is_lookup_key: isLookupKey,
+            char_length: cl,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -497,6 +502,7 @@ function FieldsDialog({
           field_type: fieldType,
           required,
           is_lookup_key: isLookupKey,
+          char_length: cl,
           position,
         });
         if (error) throw error;
