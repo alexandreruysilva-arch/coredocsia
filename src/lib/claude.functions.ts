@@ -123,6 +123,9 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
         if (isMatricula) {
           desc += `, APENAS NÚMEROS (remova letras, pontos, traços, barras e espaços)`;
         }
+        if (typeof f.char_length === "number" && f.char_length > 0) {
+          desc += `, EXATAMENTE ${f.char_length} caracteres`;
+        }
         if (f.field_type === "select" && Array.isArray(f.options)) {
           desc += `, opções permitidas: ${(f.options as string[]).join(" | ")}`;
         }
@@ -142,6 +145,7 @@ Regras de saída (siga RIGOROSAMENTE):
 - Campos do tipo "date": formato brasileiro "DD/MM/AAAA" (dia/mês/ano com 2/2/4 dígitos, separados por barra).
 - Campos do tipo "number": apenas o número, sem símbolos de moeda nem separador de milhar; use ponto como decimal.
 - Campos cujo field_key contenha "matricula": retorne APENAS os dígitos numéricos, removendo letras, pontos, traços, barras e espaços.
+- Campos com quantidade exata de caracteres indicada: retorne EXATAMENTE essa quantidade, sem mais nem menos. Se vier maior, considere apenas os caracteres relevantes; se vier menor, complete com zeros à esquerda quando o campo for numérico/matrícula.
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
