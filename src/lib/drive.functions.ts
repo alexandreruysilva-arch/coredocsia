@@ -144,16 +144,18 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         field_values: fieldValues as never,
         tags,
         storage_path: null,
-        drive_file_id: uploaded.id,
-        drive_web_view_link: uploaded.webViewLink ?? null,
+        drive_file_id: driveFileId,
+        drive_web_view_link: driveWebViewLink,
         status: "processed",
       })
       .select("*")
       .single();
 
     if (insertErr || !row) {
-      const { deleteDriveFile } = await import("./drive.server");
-      await deleteDriveFile(uploaded.id).catch(() => {});
+      if (driveFileId) {
+        const { deleteDriveFile } = await import("./drive.server");
+        await deleteDriveFile(driveFileId).catch(() => {});
+      }
       throw insertErr ?? new Error("Falha ao criar documento");
     }
 
