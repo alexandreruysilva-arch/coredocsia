@@ -674,6 +674,20 @@ function FieldsDialog({
               Obrig.
             </label>
           </div>
+          <div className="md:col-span-3 space-y-1.5">
+            <Label>Qtd. caracteres</Label>
+            <Input
+              type="number"
+              min={1}
+              max={1000}
+              value={charLength}
+              onChange={(e) => setCharLength(e.target.value.replace(/\D/g, ""))}
+              placeholder="Ex.: 9"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Opcional. Ajuda a IA a extrair com o tamanho exato (ex.: matrícula com 9 dígitos).
+            </p>
+          </div>
           <div className="md:col-span-12 flex items-center gap-2 -mt-1">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
