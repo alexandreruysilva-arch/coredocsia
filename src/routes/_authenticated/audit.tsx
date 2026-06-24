@@ -290,6 +290,9 @@ function AuditPage() {
           <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
             R$ {totals.cost.toFixed(2).replace(".", ",")}
           </div>
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
+            Média R$ {(totals.files > 0 ? totals.cost / totals.files : 0).toFixed(2).replace(".", ",")} por arquivo
+          </div>
         </Card>
         <Card className="p-2.5 border-0 bg-gradient-to-br from-slate-700 to-blue-900 text-white shadow-lg shadow-slate-700/20 hover:shadow-slate-700/40 hover:-translate-y-0.5 transition-all">
           <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
