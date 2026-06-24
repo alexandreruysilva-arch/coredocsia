@@ -574,6 +574,7 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Qtd. chars</TableHead>
                 <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
