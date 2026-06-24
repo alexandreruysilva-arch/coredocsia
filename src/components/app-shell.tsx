@@ -50,6 +50,7 @@ import {
   Building2,
   FileType,
   Users,
+  PenLine,
 } from "lucide-react";
 import { useProfileBundle } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
