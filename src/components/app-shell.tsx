@@ -60,6 +60,7 @@ const navMain = [
   { to: "/upload", label: "Upload", icon: Upload },
   { to: "/queue", label: "Fila de processamento", icon: ListChecks },
   { to: "/documents", label: "Documentos (GED)", icon: FolderOpen },
+  { to: "/signature", label: "Assinatura Digital", icon: PenLine },
 ];
 
 const navCadastro = [
