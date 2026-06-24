@@ -274,6 +274,47 @@ Regras de saída (siga RIGOROSAMENTE):
       }
     }
 
+    // Registra log de sucesso já na extração (mesmo sem upload concluído).
+    // O handler de upload depois atualiza este log com o document_id criado.
+    let logId: string | null = null;
+    if (orgId) {
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("ai_cost_per_file, ai_price_base_threshold, ai_price_tier_step, ai_price_tier_increment")
+        .eq("id", orgId)
+        .maybeSingle();
+      const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
+      const { computeAiCost } = await import("./ai-pricing");
+      const cost = computeAiCost(totalTokens, basePrice, {
+        baseThreshold: org?.ai_price_base_threshold ?? undefined,
+        tierStep: org?.ai_price_tier_step ?? undefined,
+        tierIncrement:
+          org?.ai_price_tier_increment != null ? Number(org.ai_price_tier_increment) : undefined,
+      });
+
+      const { data: inserted } = await supabase
+        .from("ai_usage_logs")
+        .insert({
+          org_id: orgId,
+          user_id: userId,
+          company_id: companyId,
+          company_name: companyName,
+          document_type_id: documentTypeId,
+          document_type_name: documentTypeName,
+          file_name: uploadFile.name,
+          model: MODEL,
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          total_tokens: totalTokens,
+          cost_brl: cost,
+          duration_ms: Date.now() - startedAt,
+          success: true,
+        })
+        .select("id")
+        .single();
+      logId = inserted?.id ?? null;
+    }
+
     return {
       values: result,
       usage: {
@@ -282,6 +323,8 @@ Regras de saída (siga RIGOROSAMENTE):
         total_tokens: totalTokens,
         model: MODEL,
         duration_ms: Date.now() - startedAt,
+        log_id: logId,
       },
     };
+
   });
