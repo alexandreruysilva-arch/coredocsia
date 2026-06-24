@@ -33,7 +33,7 @@ import {
   Upload,
   ListChecks,
   FolderOpen,
-  Tags,
+  
   FileText,
   CheckSquare,
   Archive,
