@@ -64,8 +64,11 @@ interface QueueItem {
   error?: string;
   fieldValues: Record<string, string>;
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string } | null;
+  aiStatus?: "success" | "failed" | "incomplete";
+  aiMessage?: string;
   expanded: boolean;
 }
+
 
 
 interface FieldEditorProps {
