@@ -114,7 +114,6 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
                 onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
                 onBlur={handleBlur}
                 rows={2}
-                maxLength={f.char_length ?? undefined}
                 className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
@@ -139,7 +138,6 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
                 onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                 placeholder={f.field_type === "date" ? "DD/MM/AAAA" : undefined}
                 inputMode={f.field_type === "date" ? "numeric" : undefined}
-                maxLength={f.field_type !== "date" ? (f.char_length ?? undefined) : undefined}
                 className={cn(
                   "h-8 px-2 text-sm",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
@@ -359,7 +357,6 @@ function UploadPage() {
       field_key: f.field_key,
       field_type: f.field_type,
       options: f.options,
-      char_length: f.char_length ?? null,
     }));
     const fieldsJson = JSON.stringify(fieldDefs);
     const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;

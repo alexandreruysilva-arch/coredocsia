@@ -11,7 +11,6 @@ export interface DocTypeField {
   position: number;
   options: any;
   is_lookup_key?: boolean;
-  char_length?: number | null;
 }
 
 export function useDocumentTypeFields(documentTypeId: string | null | undefined) {
