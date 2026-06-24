@@ -22,6 +22,12 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
     setFileData(null);
     setError(null);
 
+    if (!doc.drive_file_id) {
+      setLoading(false);
+      setError("Este tipo de documento não armazena o arquivo original — apenas os dados indexados.");
+      return;
+    }
+
     getFileUrl(doc.id)
       .then(async (viewUrl) => {
         if (!viewUrl) throw new Error("Sessão não encontrada");
@@ -59,7 +65,7 @@ export function DocumentViewer({ doc }: { doc: DocumentRow }) {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [doc.id, doc.mime_type]);
+  }, [doc.id, doc.mime_type, doc.drive_file_id]);
 
   const { data: fields } = useDocumentTypeFields(doc.document_type_id);
   const values = (doc.field_values ?? {}) as Record<string, unknown>;
