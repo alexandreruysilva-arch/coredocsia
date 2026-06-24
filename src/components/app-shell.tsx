@@ -33,7 +33,7 @@ import {
   Upload,
   ListChecks,
   FolderOpen,
-  Tags,
+  
   FileText,
   CheckSquare,
   Archive,
@@ -69,7 +69,6 @@ const navCadastro = [
 ];
 
 const navConfig = [
-  { to: "/groups", label: "Grupos & Metadados", icon: Tags },
   { to: "/templates", label: "Templates de extração", icon: FileText },
   { to: "/workflow", label: "Workflow de qualidade", icon: CheckSquare },
   { to: "/retention", label: "Retenção documental", icon: Archive },
