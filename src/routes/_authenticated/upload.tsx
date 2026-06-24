@@ -463,9 +463,9 @@ function UploadPage() {
     if (queued.length === 0) return;
 
     for (const item of queued) {
-      if (item.aiStatus === "failed" || item.aiStatus === "incomplete") {
+      if (item.aiStatus === "failed") {
         toast.error(
-          `${item.file.name}: ${item.aiMessage ?? "Processamento incompleto — preencha manualmente antes de enviar."}`,
+          `${item.file.name}: ${item.aiMessage ?? "Falha no processamento — preencha manualmente antes de enviar."}`,
         );
         updateItem(item.id, { expanded: true });
         return;
