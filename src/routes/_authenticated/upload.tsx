@@ -543,34 +543,35 @@ function UploadPage() {
 
       {items.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card className="p-4 border-0 bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Total</span>
-              <FileText className="h-4 w-4 text-white/90" />
+          <Card className="p-2.5 border-0 bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+            <div className="relative flex items-center justify-center">
+              <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Total</span>
+              <FileText className="absolute right-0 h-3.5 w-3.5 text-white/90" />
             </div>
-            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{items.length}</p>
+            <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{items.length}</p>
           </Card>
-          <Card className="p-4 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Na fila</span>
-              <Upload className="h-4 w-4 text-white/90" />
+          <Card className="p-2.5 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+            <div className="relative flex items-center justify-center">
+              <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Na fila</span>
+              <Upload className="absolute right-0 h-3.5 w-3.5 text-white/90" />
             </div>
-            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{queuedCount}</p>
+            <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{queuedCount}</p>
           </Card>
-          <Card className="p-4 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Enviados</span>
-              <CheckCircle2 className="h-4 w-4 text-white/90" />
+          <Card className="p-2.5 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+            <div className="relative flex items-center justify-center">
+              <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Enviados</span>
+              <CheckCircle2 className="absolute right-0 h-3.5 w-3.5 text-white/90" />
             </div>
-            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{doneCount}</p>
+            <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{doneCount}</p>
           </Card>
-          <Card className="p-4 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-white/85 uppercase tracking-wider">Falhas</span>
-              <AlertCircle className="h-4 w-4 text-white/90" />
+          <Card className="p-2.5 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
+            <div className="relative flex items-center justify-center">
+              <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Falhas</span>
+              <AlertCircle className="absolute right-0 h-3.5 w-3.5 text-white/90" />
             </div>
-            <p className="text-2xl font-display font-bold mt-2 tabular-nums">{errorCount}</p>
+            <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{errorCount}</p>
           </Card>
+
         </div>
       )}
 
