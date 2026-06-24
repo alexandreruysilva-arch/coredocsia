@@ -16,7 +16,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWorkflowRouteImport } from './routes/_authenticated/workflow'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated/upload'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
-import { Route as AuthenticatedSignatureRouteImport } from './routes/_authenticated/signature'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetentionRouteImport } from './routes/_authenticated/retention'
 import { Route as AuthenticatedQueueRouteImport } from './routes/_authenticated/queue'
@@ -64,11 +63,6 @@ const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSignatureRoute = AuthenticatedSignatureRouteImport.update({
-  id: '/signature',
-  path: '/signature',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -160,7 +154,6 @@ export interface FileRoutesByFullPath {
   '/queue': typeof AuthenticatedQueueRoute
   '/retention': typeof AuthenticatedRetentionRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/signature': typeof AuthenticatedSignatureRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/workflow': typeof AuthenticatedWorkflowRoute
@@ -183,7 +176,6 @@ export interface FileRoutesByTo {
   '/queue': typeof AuthenticatedQueueRoute
   '/retention': typeof AuthenticatedRetentionRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/signature': typeof AuthenticatedSignatureRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/workflow': typeof AuthenticatedWorkflowRoute
@@ -208,7 +200,6 @@ export interface FileRoutesById {
   '/_authenticated/queue': typeof AuthenticatedQueueRoute
   '/_authenticated/retention': typeof AuthenticatedRetentionRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/signature': typeof AuthenticatedSignatureRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/_authenticated/workflow': typeof AuthenticatedWorkflowRoute
@@ -233,7 +224,6 @@ export interface FileRouteTypes {
     | '/queue'
     | '/retention'
     | '/settings'
-    | '/signature'
     | '/templates'
     | '/upload'
     | '/workflow'
@@ -256,7 +246,6 @@ export interface FileRouteTypes {
     | '/queue'
     | '/retention'
     | '/settings'
-    | '/signature'
     | '/templates'
     | '/upload'
     | '/workflow'
@@ -280,7 +269,6 @@ export interface FileRouteTypes {
     | '/_authenticated/queue'
     | '/_authenticated/retention'
     | '/_authenticated/settings'
-    | '/_authenticated/signature'
     | '/_authenticated/templates'
     | '/_authenticated/upload'
     | '/_authenticated/workflow'
@@ -349,13 +337,6 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/signature': {
-      id: '/_authenticated/signature'
-      path: '/signature'
-      fullPath: '/signature'
-      preLoaderRoute: typeof AuthenticatedSignatureRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -468,7 +449,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedQueueRoute: typeof AuthenticatedQueueRoute
   AuthenticatedRetentionRoute: typeof AuthenticatedRetentionRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSignatureRoute: typeof AuthenticatedSignatureRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
   AuthenticatedWorkflowRoute: typeof AuthenticatedWorkflowRoute
@@ -488,7 +468,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedQueueRoute: AuthenticatedQueueRoute,
   AuthenticatedRetentionRoute: AuthenticatedRetentionRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedSignatureRoute: AuthenticatedSignatureRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
   AuthenticatedWorkflowRoute: AuthenticatedWorkflowRoute,
