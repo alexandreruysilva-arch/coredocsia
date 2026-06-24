@@ -411,6 +411,7 @@ interface FieldRow {
   required: boolean;
   position: number;
   is_lookup_key: boolean;
+  char_length: number | null;
 }
 
 function FieldsDialog({
