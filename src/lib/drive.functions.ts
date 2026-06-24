@@ -161,42 +161,52 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       throw insertErr ?? new Error("Falha ao criar documento");
     }
 
-    // 7. Registra log de uso de tokens da IA vinculado ao documento criado.
+    // 7. Vincula log de uso de IA ao documento criado.
+    // Se a extração já gravou o log (com log_id), apenas atualiza o document_id.
+    // Caso contrário (ex.: upload sem extração prévia), insere o log agora.
     if (aiUsage && aiUsage.total_tokens != null) {
-      const { data: org } = await supabase
-        .from("organizations")
-        .select("ai_cost_per_file, ai_price_base_threshold, ai_price_tier_step, ai_price_tier_increment")
-        .eq("id", company.org_id)
-        .maybeSingle();
-      const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
-      const { computeAiCost } = await import("./ai-pricing");
-      const promptTokens = aiUsage.prompt_tokens ?? 0;
-      const totalTokens = aiUsage.total_tokens ?? promptTokens;
-      const cost = computeAiCost(totalTokens, basePrice, {
-        baseThreshold: org?.ai_price_base_threshold ?? undefined,
-        tierStep: org?.ai_price_tier_step ?? undefined,
-        tierIncrement: org?.ai_price_tier_increment != null ? Number(org.ai_price_tier_increment) : undefined,
-      });
+      if (aiUsage.log_id) {
+        await supabase
+          .from("ai_usage_logs")
+          .update({ document_id: row.id })
+          .eq("id", aiUsage.log_id);
+      } else {
+        const { data: org } = await supabase
+          .from("organizations")
+          .select("ai_cost_per_file, ai_price_base_threshold, ai_price_tier_step, ai_price_tier_increment")
+          .eq("id", company.org_id)
+          .maybeSingle();
+        const basePrice = Number(org?.ai_cost_per_file ?? 0.15);
+        const { computeAiCost } = await import("./ai-pricing");
+        const promptTokens = aiUsage.prompt_tokens ?? 0;
+        const totalTokens = aiUsage.total_tokens ?? promptTokens;
+        const cost = computeAiCost(totalTokens, basePrice, {
+          baseThreshold: org?.ai_price_base_threshold ?? undefined,
+          tierStep: org?.ai_price_tier_step ?? undefined,
+          tierIncrement:
+            org?.ai_price_tier_increment != null ? Number(org.ai_price_tier_increment) : undefined,
+        });
 
-
-      await supabase.from("ai_usage_logs").insert({
-        org_id: company.org_id,
-        user_id: userId,
-        document_id: row.id,
-        company_id: company.id,
-        company_name: company.name,
-        document_type_id: docType.id,
-        document_type_name: docType.name,
-        file_name: file.name,
-        model: aiUsage.model ?? "gemini-2.5-flash-lite",
-        prompt_tokens: promptTokens,
-        completion_tokens: aiUsage.completion_tokens ?? 0,
-        total_tokens: aiUsage.total_tokens ?? 0,
-        cost_brl: cost,
-        duration_ms: (aiUsage as { duration_ms?: number })?.duration_ms ?? null,
-        success: true,
-      });
+        await supabase.from("ai_usage_logs").insert({
+          org_id: company.org_id,
+          user_id: userId,
+          document_id: row.id,
+          company_id: company.id,
+          company_name: company.name,
+          document_type_id: docType.id,
+          document_type_name: docType.name,
+          file_name: file.name,
+          model: aiUsage.model ?? "gemini-2.5-flash-lite",
+          prompt_tokens: promptTokens,
+          completion_tokens: aiUsage.completion_tokens ?? 0,
+          total_tokens: aiUsage.total_tokens ?? 0,
+          cost_brl: cost,
+          duration_ms: (aiUsage as { duration_ms?: number })?.duration_ms ?? null,
+          success: true,
+        });
+      }
     }
+
 
 
     return row;
