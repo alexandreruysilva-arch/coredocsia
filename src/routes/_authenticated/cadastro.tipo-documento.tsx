@@ -408,13 +408,6 @@ function TipoDocumentoPage() {
                 {upsert.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </DialogFooter>
-              <Button type="button" variant="outline" onClick={closeDialog}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={upsert.isPending}>
-                {upsert.isPending ? "Salvando..." : "Salvar"}
-              </Button>
-            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
