@@ -270,6 +270,24 @@ Regras de saída (siga RIGOROSAMENTE):
       } else {
         result[f.field_key] = s.toUpperCase();
       }
+      // Enforce char_length quando informado (não aplica a date)
+      if (
+        typeof f.char_length === "number" &&
+        f.char_length > 0 &&
+        f.field_type !== "date" &&
+        result[f.field_key]
+      ) {
+        const cur = result[f.field_key];
+        const isNumericLike =
+          f.field_key.toLowerCase().includes("matricula") ||
+          f.field_type === "number" ||
+          /^\d+$/.test(cur);
+        if (cur.length > f.char_length) {
+          result[f.field_key] = cur.slice(0, f.char_length);
+        } else if (cur.length < f.char_length && isNumericLike) {
+          result[f.field_key] = cur.padStart(f.char_length, "0");
+        }
+      }
     }
 
     return {
