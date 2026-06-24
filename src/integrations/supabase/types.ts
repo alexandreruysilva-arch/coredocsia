@@ -289,6 +289,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          store_files: boolean
         }
         Insert: {
           company_id?: string | null
@@ -298,6 +299,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          store_files?: boolean
         }
         Update: {
           company_id?: string | null
@@ -307,6 +309,7 @@ export type Database = {
           name?: string
           org_id?: string
           slug?: string
+          store_files?: boolean
         }
         Relationships: [
           {
