@@ -6,7 +6,9 @@ interface AiUsagePayload {
   completion_tokens?: number;
   total_tokens?: number;
   model?: string;
+  log_id?: string | null;
 }
+
 
 // Upload via multipart FormData. Server fn cria a hierarquia de pastas
 // (Org → Empresa → Tipo) no Google Drive, faz o upload binário e
