@@ -60,7 +60,7 @@ export interface UploadOptions {
   companyId: string;
   fieldValues?: Record<string, unknown>;
   tags?: string[];
-  aiUsage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string };
+  aiUsage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string; log_id?: string | null };
   onProgress?: (pct: number) => void;
 }
 
