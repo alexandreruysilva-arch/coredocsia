@@ -183,7 +183,7 @@ function TipoDocumentoPage() {
   }
   function openEdit(r: DocTypeRow) {
     setEditing(r);
-    setForm({ company_id: r.company_id ?? "", name: r.name, slug: r.slug });
+    setForm({ company_id: r.company_id ?? "", name: r.name, slug: r.slug, store_files: r.store_files ?? true });
     setErrors({});
     setOpen(true);
   }
