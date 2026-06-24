@@ -382,6 +382,7 @@ function UploadPage() {
 
     let ok = 0;
     let fail = 0;
+    let incomplete = 0;
     for (const item of queued) {
       try {
         const form = new FormData();
@@ -393,13 +394,25 @@ function UploadPage() {
           values: Record<string, string>;
           usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string };
         };
+        const mergedValues = { ...item.fieldValues, ...res.values };
+        const missingRequired = fields.filter(
+          (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
+        );
+        const isIncomplete = missingRequired.length > 0;
+        if (isIncomplete) incomplete++;
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id
               ? {
                   ...i,
-                  fieldValues: { ...i.fieldValues, ...res.values },
+                  fieldValues: mergedValues,
                   aiUsage: res.usage,
+                  aiStatus: isIncomplete ? "incomplete" : "success",
+                  aiMessage: isIncomplete
+                    ? `Processamento incompleto — preencha manualmente: ${missingRequired
+                        .map((f) => f.label)
+                        .join(", ")}.`
+                    : undefined,
                   expanded: true,
                 }
               : i,
@@ -408,12 +421,37 @@ function UploadPage() {
         ok++;
       } catch (e: any) {
         fail++;
-        toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
+        const msg = e?.message ?? "Falha na extração";
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  aiStatus: "failed",
+                  aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
+                  expanded: true,
+                }
+              : i,
+          ),
+        );
+        toast.error(`${item.file.name}: ${msg}`);
       }
     }
     setIsExtracting(null);
-    if (ok > 0) toast.success(`Preenchimento ${providerLabel} concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+    if (ok > 0 || fail > 0) {
+      const parts: string[] = [];
+      if (ok > 0) parts.push(`${ok} ok`);
+      if (incomplete > 0) parts.push(`${incomplete} incompleto(s)`);
+      if (fail > 0) parts.push(`${fail} falha(s)`);
+      const summary = `Extração ${providerLabel}: ${parts.join(", ")}.`;
+      if (fail > 0 || incomplete > 0) {
+        toast.warning(`${summary} Itens marcados precisam de preenchimento manual antes do envio.`);
+      } else {
+        toast.success(`${summary} Revise antes de enviar.`);
+      }
+    }
   }
+
 
 
   async function handleUploadAll() {
