@@ -130,6 +130,7 @@ function TipoDocumentoPage() {
         company_id: payload.company_id,
         name: payload.name.trim(),
         slug,
+        store_files: payload.store_files,
       };
       if (editing) {
         const { error } = await supabase
