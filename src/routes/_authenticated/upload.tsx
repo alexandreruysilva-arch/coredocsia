@@ -63,7 +63,7 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
-  aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string } | null;
+  aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiStatus?: "success" | "failed" | "incomplete";
   aiMessage?: string;
   expanded: boolean;
@@ -392,7 +392,7 @@ function UploadPage() {
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
         const res = (await extractFn({ data: form })) as {
           values: Record<string, string>;
-          usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string };
+          usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
         };
         const mergedValues = { ...item.fieldValues, ...res.values };
         const missingRequired = fields.filter(
