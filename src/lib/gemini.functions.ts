@@ -6,6 +6,7 @@ interface FieldDef {
   field_key: string;
   field_type: string;
   options?: unknown;
+  char_length?: number | null;
 }
 
 const MODEL = "gemini-2.5-flash-lite";
