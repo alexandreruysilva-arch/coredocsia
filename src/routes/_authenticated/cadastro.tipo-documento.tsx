@@ -48,6 +48,7 @@ const schema = z.object({
   company_id: z.string().uuid("Selecione a empresa"),
   name: z.string().trim().min(1, "Informe o nome").max(150),
   slug: z.string().trim().max(150).optional().or(z.literal("")),
+  store_files: z.boolean(),
 });
 type FormVals = z.infer<typeof schema>;
 
@@ -62,9 +63,11 @@ interface DocTypeRow {
   name: string;
   slug: string;
   created_at: string;
+  store_files: boolean;
 }
 
-const emptyForm: FormVals = { company_id: "", name: "", slug: "" };
+const emptyForm: FormVals = { company_id: "", name: "", slug: "", store_files: true };
+
 
 function slugify(s: string) {
   return s
