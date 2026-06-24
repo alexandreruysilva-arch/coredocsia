@@ -593,6 +593,7 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.char_length ?? "—"}</TableCell>
                     <TableCell>
                       {f.is_lookup_key ? (
                         <Badge variant="default" className="gap-1">
