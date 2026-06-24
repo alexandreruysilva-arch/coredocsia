@@ -162,6 +162,94 @@ export type Database = {
           },
         ]
       }
+      credit_balances: {
+        Row: {
+          balance_brl: number
+          created_at: string
+          low_balance_alert_enabled: boolean
+          low_balance_threshold_brl: number
+          org_id: string
+          total_consumed_brl: number
+          total_recharged_brl: number
+          updated_at: string
+        }
+        Insert: {
+          balance_brl?: number
+          created_at?: string
+          low_balance_alert_enabled?: boolean
+          low_balance_threshold_brl?: number
+          org_id: string
+          total_consumed_brl?: number
+          total_recharged_brl?: number
+          updated_at?: string
+        }
+        Update: {
+          balance_brl?: number
+          created_at?: string
+          low_balance_alert_enabled?: boolean
+          low_balance_threshold_brl?: number
+          org_id?: string
+          total_consumed_brl?: number
+          total_recharged_brl?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_balances_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_transactions: {
+        Row: {
+          amount_brl: number
+          balance_after_brl: number | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          org_id: string
+          reference_id: string | null
+          reference_type: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+        }
+        Insert: {
+          amount_brl: number
+          balance_after_brl?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          org_id: string
+          reference_id?: string | null
+          reference_type?: string | null
+          type: Database["public"]["Enums"]["credit_transaction_type"]
+        }
+        Update: {
+          amount_brl?: number
+          balance_after_brl?: number | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          org_id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: Database["public"]["Enums"]["credit_transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_type_fields: {
         Row: {
           char_length: number | null
@@ -627,6 +715,11 @@ export type Database = {
     }
     Enums: {
       app_role: "platform_admin" | "org_admin" | "operator" | "viewer"
+      credit_transaction_type:
+        | "recharge"
+        | "consumption"
+        | "adjustment"
+        | "refund"
       doc_status: "pending" | "processing" | "processed" | "failed"
     }
     CompositeTypes: {
@@ -756,6 +849,12 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["platform_admin", "org_admin", "operator", "viewer"],
+      credit_transaction_type: [
+        "recharge",
+        "consumption",
+        "adjustment",
+        "refund",
+      ],
       doc_status: ["pending", "processing", "processed", "failed"],
     },
   },
