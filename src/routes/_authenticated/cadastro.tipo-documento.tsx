@@ -411,6 +411,7 @@ interface FieldRow {
   required: boolean;
   position: number;
   is_lookup_key: boolean;
+  char_length: number | null;
 }
 
 function FieldsDialog({
@@ -429,6 +430,7 @@ function FieldsDialog({
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
+  const [charLength, setCharLength] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
@@ -438,6 +440,7 @@ function FieldsDialog({
     setFieldType("text");
     setRequired(false);
     setIsLookupKey(false);
+    setCharLength("");
   };
 
   const startEdit = (f: FieldRow) => {
@@ -447,6 +450,7 @@ function FieldsDialog({
     setFieldType(f.field_type);
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
+    setCharLength(f.char_length != null ? String(f.char_length) : "");
   };
 
 
@@ -471,6 +475,10 @@ function FieldsDialog({
       const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
       if (!label.trim()) throw new Error("Informe o rótulo");
       if (!key) throw new Error("Informe a chave do campo");
+      const cl = charLength.trim() === "" ? null : Math.max(1, Math.min(1000, parseInt(charLength, 10) || 0));
+      if (charLength.trim() !== "" && (cl === null || cl < 1)) {
+        throw new Error("Quantidade de caracteres inválida");
+      }
       if (editingId) {
         const { error } = await supabase
           .from("document_type_fields")
@@ -480,6 +488,7 @@ function FieldsDialog({
             field_type: fieldType,
             required,
             is_lookup_key: isLookupKey,
+            char_length: cl,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -493,6 +502,7 @@ function FieldsDialog({
           field_type: fieldType,
           required,
           is_lookup_key: isLookupKey,
+          char_length: cl,
           position,
         });
         if (error) throw error;
@@ -564,6 +574,7 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Qtd. chars</TableHead>
                 <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
@@ -571,7 +582,7 @@ function FieldsDialog({
             <TableBody>
               {(fields.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-6 text-sm text-muted-foreground">
                     Nenhum campo definido.
                   </TableCell>
                 </TableRow>
@@ -582,6 +593,7 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.char_length ?? "—"}</TableCell>
                     <TableCell>
                       {f.is_lookup_key ? (
                         <Badge variant="default" className="gap-1">
@@ -661,6 +673,20 @@ function FieldsDialog({
               />
               Obrig.
             </label>
+          </div>
+          <div className="md:col-span-3 space-y-1.5">
+            <Label>Qtd. caracteres</Label>
+            <Input
+              type="number"
+              min={1}
+              max={1000}
+              value={charLength}
+              onChange={(e) => setCharLength(e.target.value.replace(/\D/g, ""))}
+              placeholder="Ex.: 9"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Opcional. Ajuda a IA a extrair com o tamanho exato (ex.: matrícula com 9 dígitos).
+            </p>
           </div>
           <div className="md:col-span-12 flex items-center gap-2 -mt-1">
             <label className="flex items-center gap-2 text-sm">

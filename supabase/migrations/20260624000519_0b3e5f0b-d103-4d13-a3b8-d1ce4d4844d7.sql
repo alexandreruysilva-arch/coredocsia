@@ -1,0 +1,1 @@
+ALTER TABLE public.document_type_fields ADD COLUMN IF NOT EXISTS char_length integer NULL CHECK (char_length IS NULL OR (char_length >= 1 AND char_length <= 1000));
