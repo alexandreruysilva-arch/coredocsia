@@ -64,8 +64,11 @@ interface QueueItem {
   error?: string;
   fieldValues: Record<string, string>;
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string } | null;
+  aiStatus?: "success" | "failed" | "incomplete";
+  aiMessage?: string;
   expanded: boolean;
 }
+
 
 
 interface FieldEditorProps {
@@ -308,11 +311,26 @@ function UploadPage() {
 
   function setItemFieldValue(id: string, key: string, value: string) {
     setItems((prev) =>
-      prev.map((i) =>
-        i.id === id ? { ...i, fieldValues: { ...i.fieldValues, [key]: value } } : i,
-      ),
+      prev.map((i) => {
+        if (i.id !== id) return i;
+        const nextValues = { ...i.fieldValues, [key]: value };
+        let aiStatus = i.aiStatus;
+        let aiMessage = i.aiMessage;
+        // Se o usuário preencher manualmente tudo que falta, libera o envio.
+        if (aiStatus === "incomplete" || aiStatus === "failed") {
+          const missing = fields.some(
+            (f) => f.required && !String(nextValues[f.field_key] ?? "").trim(),
+          );
+          if (!missing) {
+            aiStatus = "success";
+            aiMessage = undefined;
+          }
+        }
+        return { ...i, fieldValues: nextValues, aiStatus, aiMessage };
+      }),
     );
   }
+
 
   async function handleKeyFieldBlur(itemId: string, fieldKey: string, value: string) {
     if (docTypeId === "none") return;
@@ -364,6 +382,7 @@ function UploadPage() {
 
     let ok = 0;
     let fail = 0;
+    let incomplete = 0;
     for (const item of queued) {
       try {
         const form = new FormData();
@@ -375,13 +394,25 @@ function UploadPage() {
           values: Record<string, string>;
           usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string };
         };
+        const mergedValues = { ...item.fieldValues, ...res.values };
+        const missingRequired = fields.filter(
+          (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
+        );
+        const isIncomplete = missingRequired.length > 0;
+        if (isIncomplete) incomplete++;
         setItems((prev) =>
           prev.map((i) =>
             i.id === item.id
               ? {
                   ...i,
-                  fieldValues: { ...i.fieldValues, ...res.values },
+                  fieldValues: mergedValues,
                   aiUsage: res.usage,
+                  aiStatus: isIncomplete ? "incomplete" : "success",
+                  aiMessage: isIncomplete
+                    ? `Processamento incompleto — preencha manualmente: ${missingRequired
+                        .map((f) => f.label)
+                        .join(", ")}.`
+                    : undefined,
                   expanded: true,
                 }
               : i,
@@ -390,12 +421,37 @@ function UploadPage() {
         ok++;
       } catch (e: any) {
         fail++;
-        toast.error(`${item.file.name}: ${e.message ?? "Falha na extração"}`);
+        const msg = e?.message ?? "Falha na extração";
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === item.id
+              ? {
+                  ...i,
+                  aiStatus: "failed",
+                  aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
+                  expanded: true,
+                }
+              : i,
+          ),
+        );
+        toast.error(`${item.file.name}: ${msg}`);
       }
     }
     setIsExtracting(null);
-    if (ok > 0) toast.success(`Preenchimento ${providerLabel} concluído (${ok} ok${fail ? `, ${fail} falha(s)` : ""}). Revise antes de enviar.`);
+    if (ok > 0 || fail > 0) {
+      const parts: string[] = [];
+      if (ok > 0) parts.push(`${ok} ok`);
+      if (incomplete > 0) parts.push(`${incomplete} incompleto(s)`);
+      if (fail > 0) parts.push(`${fail} falha(s)`);
+      const summary = `Extração ${providerLabel}: ${parts.join(", ")}.`;
+      if (fail > 0 || incomplete > 0) {
+        toast.warning(`${summary} Itens marcados precisam de preenchimento manual antes do envio.`);
+      } else {
+        toast.success(`${summary} Revise antes de enviar.`);
+      }
+    }
   }
+
 
 
   async function handleUploadAll() {
@@ -407,6 +463,13 @@ function UploadPage() {
     if (queued.length === 0) return;
 
     for (const item of queued) {
+      if (item.aiStatus === "failed" || item.aiStatus === "incomplete") {
+        toast.error(
+          `${item.file.name}: ${item.aiMessage ?? "Processamento incompleto — preencha manualmente antes de enviar."}`,
+        );
+        updateItem(item.id, { expanded: true });
+        return;
+      }
       for (const f of fields) {
         if (f.required && !String(item.fieldValues[f.field_key] ?? "").trim()) {
           toast.error(`${item.file.name}: campo obrigatório "${f.label}"`);
@@ -415,6 +478,7 @@ function UploadPage() {
         }
       }
     }
+
 
     setIsUploading(true);
 
@@ -673,6 +737,17 @@ function UploadPage() {
                           <AlertCircle className="h-3 w-3" /> {item.error}
                         </p>
                       )}
+                      {item.status !== "error" && item.aiStatus === "failed" && (
+                        <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                        </p>
+                      )}
+                      {item.status !== "error" && item.aiStatus === "incomplete" && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                        </p>
+                      )}
+
                     </div>
                     {item.status === "done" && (
                       <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
