@@ -430,6 +430,7 @@ function FieldsDialog({
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
+  const [charLength, setCharLength] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
@@ -439,6 +440,7 @@ function FieldsDialog({
     setFieldType("text");
     setRequired(false);
     setIsLookupKey(false);
+    setCharLength("");
   };
 
   const startEdit = (f: FieldRow) => {
@@ -448,6 +450,7 @@ function FieldsDialog({
     setFieldType(f.field_type);
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
+    setCharLength(f.char_length != null ? String(f.char_length) : "");
   };
 
 
