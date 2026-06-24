@@ -311,11 +311,26 @@ function UploadPage() {
 
   function setItemFieldValue(id: string, key: string, value: string) {
     setItems((prev) =>
-      prev.map((i) =>
-        i.id === id ? { ...i, fieldValues: { ...i.fieldValues, [key]: value } } : i,
-      ),
+      prev.map((i) => {
+        if (i.id !== id) return i;
+        const nextValues = { ...i.fieldValues, [key]: value };
+        let aiStatus = i.aiStatus;
+        let aiMessage = i.aiMessage;
+        // Se o usuário preencher manualmente tudo que falta, libera o envio.
+        if (aiStatus === "incomplete" || aiStatus === "failed") {
+          const missing = fields.some(
+            (f) => f.required && !String(nextValues[f.field_key] ?? "").trim(),
+          );
+          if (!missing) {
+            aiStatus = "success";
+            aiMessage = undefined;
+          }
+        }
+        return { ...i, fieldValues: nextValues, aiStatus, aiMessage };
+      }),
     );
   }
+
 
   async function handleKeyFieldBlur(itemId: string, fieldKey: string, value: string) {
     if (docTypeId === "none") return;
