@@ -154,7 +154,7 @@ function CreditsPage() {
           </div>
           <Button
             size="sm"
-            className="gap-2"
+            className="gap-2 justify-center"
             onClick={() =>
               toast.info("Recarga via Stripe", {
                 description:
