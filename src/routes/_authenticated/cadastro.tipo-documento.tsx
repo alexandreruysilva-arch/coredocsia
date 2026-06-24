@@ -384,7 +384,30 @@ function TipoDocumentoPage() {
               />
               {errors.slug && <p className="text-xs text-destructive">{errors.slug}</p>}
             </div>
+            <div className="rounded-lg border border-border p-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <Checkbox
+                  checked={form.store_files}
+                  onCheckedChange={(v) => setForm((f) => ({ ...f, store_files: v === true }))}
+                  className="mt-0.5"
+                />
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">Armazenar imagens no Google Drive</p>
+                  <p className="text-xs text-muted-foreground">
+                    Se desmarcado, apenas os dados indexados serão salvos no banco — o arquivo
+                    original não fica disponível para visualização no GED.
+                  </p>
+                </div>
+              </label>
+            </div>
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeDialog}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={upsert.isPending}>
+                {upsert.isPending ? "Salvando..." : "Salvar"}
+              </Button>
+            </DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>
                 Cancelar
               </Button>
