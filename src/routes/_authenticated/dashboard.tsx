@@ -250,17 +250,18 @@ function Dashboard() {
             key={s.label}
             className={`p-3 border-0 bg-gradient-to-br ${s.gradient} text-white shadow-lg ${s.shadow} hover:-translate-y-0.5 transition-all`}
           >
-            <div className="flex items-center justify-between">
+            <div className="relative flex items-center justify-center">
               <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">
                 {s.label}
               </span>
-              <s.icon className="h-4 w-4 text-white/90" />
+              <s.icon className="absolute right-0 h-4 w-4 text-white/90" />
             </div>
-            <div className="font-display text-2xl font-bold mt-1 tabular-nums leading-tight">
+            <div className="font-display text-2xl font-bold mt-1 tabular-nums leading-tight text-center">
               {isLoading ? "…" : s.value}
             </div>
-            <p className="text-[11px] text-white/85 mt-0.5">{s.hint}</p>
+            <p className="text-[11px] text-white/85 mt-0.5 text-center">{s.hint}</p>
           </Card>
+
 
         ))}
       </div>
