@@ -290,6 +290,7 @@ export type Database = {
           org_id: string
           slug: string
           store_files: boolean
+          updated_at: string
         }
         Insert: {
           company_id?: string | null
@@ -300,6 +301,7 @@ export type Database = {
           org_id: string
           slug: string
           store_files?: boolean
+          updated_at?: string
         }
         Update: {
           company_id?: string | null
@@ -310,6 +312,7 @@ export type Database = {
           org_id?: string
           slug?: string
           store_files?: boolean
+          updated_at?: string
         }
         Relationships: [
           {
