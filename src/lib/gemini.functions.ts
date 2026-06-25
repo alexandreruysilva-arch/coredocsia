@@ -10,7 +10,7 @@ interface FieldDef {
 }
 
 
-const MODEL = "gemini-2.5-flash-lite";
+const MODEL = "gemini-2.5-flash";
 
 /**
  * Extrai valores de indexação da PRIMEIRA PÁGINA de um documento (PDF/imagem)
