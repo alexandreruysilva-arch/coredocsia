@@ -692,15 +692,27 @@ function FieldsDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2 flex items-end gap-2">
+          <div className="md:col-span-2 space-y-1.5">
+            <Label>Qtd. caracteres</Label>
+            <Input
+              type="number"
+              min={1}
+              max={4000}
+              value={expectedLength}
+              onChange={(e) => setExpectedLength(e.target.value)}
+              placeholder="opcional"
+            />
+          </div>
+          <div className="md:col-span-12 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={required}
                 onCheckedChange={(c) => setRequired(c === true)}
               />
-              Obrig.
+              Campo obrigatório
             </label>
           </div>
+
           <div className="md:col-span-12 flex items-center gap-2 -mt-1">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
