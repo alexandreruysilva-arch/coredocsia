@@ -74,6 +74,17 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
     const documentTypeName =
       (typeRes?.data as { name?: string } | null)?.name ?? null;
 
+    // Modelo configurado pela organização (com fallback)
+    let MODEL = DEFAULT_MODEL;
+    if (orgId) {
+      const { data: orgModel } = await supabase
+        .from("organizations")
+        .select("ai_claude_model")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (orgModel?.ai_claude_model) MODEL = orgModel.ai_claude_model;
+    }
+
     async function writeFailureLog(args: {
       prompt: number;
       completion: number;
