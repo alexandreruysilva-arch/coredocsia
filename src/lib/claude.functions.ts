@@ -279,7 +279,16 @@ Regras de saída (siga RIGOROSAMENTE):
       } else {
         result[f.field_key] = s.toUpperCase();
       }
+      // Validação de tamanho exato: se valor tem espaços ou tamanho diferente, descarta.
+      const exp = f.expected_length ?? null;
+      if (exp && exp > 0) {
+        const cur = result[f.field_key];
+        if (!cur || /\s/.test(cur) || cur.length !== exp) {
+          delete result[f.field_key];
+        }
+      }
     }
+
 
     // Registra log de sucesso já na extração (mesmo sem upload concluído).
     // O handler de upload depois atualiza este log com o document_id criado.
