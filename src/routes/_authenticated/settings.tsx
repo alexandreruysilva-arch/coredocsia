@@ -135,6 +135,7 @@ function SettingsPage() {
 
         {isAdmin && (
           <TabsContent value="billing" className="space-y-6">
+            <AiModelsSettings organizationId={profileBundle?.currentOrg?.id} />
             <BillingSettings organizationId={profileBundle?.currentOrg?.id} />
           </TabsContent>
         )}
