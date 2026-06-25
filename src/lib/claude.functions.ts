@@ -10,7 +10,7 @@ interface FieldDef {
 }
 
 
-const MODEL = "claude-haiku-4-5-20251001";
+const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 
 /**
  * Extrai valores de indexação da PRIMEIRA PÁGINA de um documento (PDF/imagem)
@@ -73,6 +73,17 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
     const companyName = (companyRes?.data as { name?: string } | null)?.name ?? null;
     const documentTypeName =
       (typeRes?.data as { name?: string } | null)?.name ?? null;
+
+    // Modelo configurado pela organização (com fallback)
+    let MODEL = DEFAULT_MODEL;
+    if (orgId) {
+      const { data: orgModel } = await supabase
+        .from("organizations")
+        .select("ai_claude_model")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (orgModel?.ai_claude_model) MODEL = orgModel.ai_claude_model;
+    }
 
     async function writeFailureLog(args: {
       prompt: number;
