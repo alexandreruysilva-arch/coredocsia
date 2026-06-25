@@ -600,6 +600,7 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Qtd.</TableHead>
                 <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
@@ -607,7 +608,7 @@ function FieldsDialog({
             <TableBody>
               {(fields.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-6 text-sm text-muted-foreground">
                     Nenhum campo definido.
                   </TableCell>
                 </TableRow>
@@ -618,6 +619,8 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.expected_length ?? "—"}</TableCell>
+
                     <TableCell>
                       {f.is_lookup_key ? (
                         <Badge variant="default" className="gap-1">
