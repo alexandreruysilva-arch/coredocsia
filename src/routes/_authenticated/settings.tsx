@@ -145,7 +145,7 @@ function SettingsPage() {
 }
 
 const GEMINI_MODELS = [
-  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro — máxima qualidade" },
+  
   { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash — equilíbrio (recomendado)" },
   { value: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite — mais barato/rápido" },
   { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash — legado" },
