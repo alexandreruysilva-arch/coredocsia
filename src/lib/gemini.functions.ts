@@ -123,6 +123,9 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
         if (f.field_type === "select" && Array.isArray(f.options)) {
           desc += `, opções permitidas: ${(f.options as string[]).join(" | ")}`;
         }
+        if (f.expected_length && f.expected_length > 0) {
+          desc += `, deve conter EXATAMENTE ${f.expected_length} caracteres (sem espaços em branco); se não encontrar com esse tamanho, retorne ""`;
+        }
         return desc;
       })
       .join("\n");
@@ -141,7 +144,9 @@ Regras de saída (siga RIGOROSAMENTE):
 - Campos cujo field_key contenha "matricula": retorne APENAS os dígitos numéricos, removendo letras, pontos, traços, barras e espaços.
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
+- Se um campo definir tamanho exato (caracteres), o valor extraído NÃO pode conter espaços em branco e deve ter exatamente esse número de caracteres; caso contrário, retorne "".
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
+
 
     const requestBody = JSON.stringify({
       contents: [
