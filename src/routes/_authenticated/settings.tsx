@@ -144,6 +144,113 @@ function SettingsPage() {
   );
 }
 
+const GEMINI_MODELS = [
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro — máxima qualidade" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash — equilíbrio (recomendado)" },
+  { value: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash Lite — mais barato/rápido" },
+  { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash — legado" },
+];
+
+const CLAUDE_MODELS = [
+  { value: "claude-opus-4-5", label: "Claude Opus 4.5 — máxima qualidade" },
+  { value: "claude-sonnet-4-5", label: "Claude Sonnet 4.5 — equilíbrio" },
+  { value: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5 — rápido (recomendado)" },
+];
+
+function AiModelsSettings({ organizationId }: { organizationId: string | undefined }) {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["org-ai-models", organizationId],
+    enabled: !!organizationId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("ai_gemini_model, ai_claude_model")
+        .eq("id", organizationId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [geminiModel, setGeminiModel] = useState<string>("gemini-2.5-flash");
+  const [claudeModel, setClaudeModel] = useState<string>("claude-haiku-4-5-20251001");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!data) return;
+    if (data.ai_gemini_model) setGeminiModel(data.ai_gemini_model);
+    if (data.ai_claude_model) setClaudeModel(data.ai_claude_model);
+  }, [data]);
+
+  async function handleSave() {
+    if (!organizationId) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("organizations")
+        .update({ ai_gemini_model: geminiModel, ai_claude_model: claudeModel })
+        .eq("id", organizationId);
+      if (error) throw error;
+      toast.success("Modelos de IA atualizados!");
+      queryClient.invalidateQueries({ queryKey: ["org-ai-models", organizationId] });
+    } catch (e: any) {
+      toast.error("Erro ao salvar: " + e.message);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Modelos de IA</CardTitle>
+        <CardDescription>
+          Escolha o modelo usado em cada motor de extração. Aplica-se aos próximos processamentos.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Motor Gemini</Label>
+                <Select value={geminiModel} onValueChange={setGeminiModel}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {GEMINI_MODELS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Modelo atual: <code>{geminiModel}</code></p>
+              </div>
+              <div className="space-y-2">
+                <Label>Motor Claude</Label>
+                <Select value={claudeModel} onValueChange={setClaudeModel}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {CLAUDE_MODELS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Modelo atual: <code>{claudeModel}</code></p>
+              </div>
+            </div>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Salvar modelos
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function BillingSettings({ organizationId }: { organizationId: string | undefined }) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
