@@ -10,7 +10,7 @@ interface FieldDef {
 }
 
 
-const MODEL = "claude-haiku-4-5-20251001";
+const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 
 /**
  * Extrai valores de indexação da PRIMEIRA PÁGINA de um documento (PDF/imagem)

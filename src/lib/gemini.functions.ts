@@ -10,7 +10,7 @@ interface FieldDef {
 }
 
 
-const MODEL = "gemini-2.5-flash";
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
 /**
  * Extrai valores de indexação da PRIMEIRA PÁGINA de um documento (PDF/imagem)
@@ -74,6 +74,17 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
     const companyName = (companyRes?.data as { name?: string } | null)?.name ?? null;
     const documentTypeName =
       (typeRes?.data as { name?: string } | null)?.name ?? null;
+
+    // Modelo configurado pela organização (com fallback)
+    let MODEL = DEFAULT_MODEL;
+    if (orgId) {
+      const { data: orgModel } = await supabase
+        .from("organizations")
+        .select("ai_gemini_model")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (orgModel?.ai_gemini_model) MODEL = orgModel.ai_gemini_model;
+    }
 
     const logContext = {
       orgId,
@@ -165,7 +176,7 @@ Regras de saída (siga RIGOROSAMENTE):
 
     // Tenta o modelo principal e, em caso de sobrecarga (503/429/5xx),
     // faz retries com backoff e por fim tenta um modelo de fallback.
-    const MODELS_TO_TRY = [MODEL, "gemini-2.5-flash-lite", "gemini-1.5-flash"];
+    const MODELS_TO_TRY = Array.from(new Set([MODEL, "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"]));
     const MAX_ATTEMPTS_PER_MODEL = 3;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
