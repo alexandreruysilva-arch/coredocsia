@@ -255,6 +255,7 @@ export type Database = {
           char_length: number | null
           created_at: string
           document_type_id: string
+          expected_length: number | null
           field_key: string
           field_type: string
           id: string
@@ -270,6 +271,7 @@ export type Database = {
           char_length?: number | null
           created_at?: string
           document_type_id: string
+          expected_length?: number | null
           field_key: string
           field_type?: string
           id?: string
@@ -285,6 +287,7 @@ export type Database = {
           char_length?: number | null
           created_at?: string
           document_type_id?: string
+          expected_length?: number | null
           field_key?: string
           field_type?: string
           id?: string

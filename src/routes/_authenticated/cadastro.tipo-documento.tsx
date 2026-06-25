@@ -431,6 +431,7 @@ interface FieldRow {
   required: boolean;
   position: number;
   is_lookup_key: boolean;
+  expected_length: number | null;
 }
 
 function FieldsDialog({
@@ -449,6 +450,7 @@ function FieldsDialog({
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
+  const [expectedLength, setExpectedLength] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
@@ -458,6 +460,7 @@ function FieldsDialog({
     setFieldType("text");
     setRequired(false);
     setIsLookupKey(false);
+    setExpectedLength("");
   };
 
   const startEdit = (f: FieldRow) => {
@@ -467,7 +470,9 @@ function FieldsDialog({
     setFieldType(f.field_type);
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
+    setExpectedLength(f.expected_length != null ? String(f.expected_length) : "");
   };
+
 
 
   const fields = useQuery({
@@ -491,6 +496,14 @@ function FieldsDialog({
       const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
       if (!label.trim()) throw new Error("Informe o rótulo");
       if (!key) throw new Error("Informe a chave do campo");
+      let expLen: number | null = null;
+      if (expectedLength.trim()) {
+        const n = Number(expectedLength.trim());
+        if (!Number.isInteger(n) || n <= 0 || n > 4000) {
+          throw new Error("Qtd. de caracteres deve ser um inteiro entre 1 e 4000");
+        }
+        expLen = n;
+      }
       if (editingId) {
         const { error } = await supabase
           .from("document_type_fields")
@@ -500,6 +513,7 @@ function FieldsDialog({
             field_type: fieldType,
             required,
             is_lookup_key: isLookupKey,
+            expected_length: expLen,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -513,10 +527,12 @@ function FieldsDialog({
           field_type: fieldType,
           required,
           is_lookup_key: isLookupKey,
+          expected_length: expLen,
           position,
         });
         if (error) throw error;
       }
+
     },
     onSuccess: () => {
       toast.success(editingId ? "Campo atualizado" : "Campo adicionado");
@@ -584,6 +600,7 @@ function FieldsDialog({
                 <TableHead>Chave</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Obrig.</TableHead>
+                <TableHead>Qtd.</TableHead>
                 <TableHead>Lookup</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
@@ -591,7 +608,7 @@ function FieldsDialog({
             <TableBody>
               {(fields.data ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-6 text-sm text-muted-foreground">
                     Nenhum campo definido.
                   </TableCell>
                 </TableRow>
@@ -602,6 +619,8 @@ function FieldsDialog({
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_type}</TableCell>
                     <TableCell className="text-muted-foreground">{f.required ? "Sim" : "Não"}</TableCell>
+                    <TableCell className="text-muted-foreground">{f.expected_length ?? "—"}</TableCell>
+
                     <TableCell>
                       {f.is_lookup_key ? (
                         <Badge variant="default" className="gap-1">
@@ -673,15 +692,27 @@ function FieldsDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2 flex items-end gap-2">
+          <div className="md:col-span-2 space-y-1.5">
+            <Label>Qtd. caracteres</Label>
+            <Input
+              type="number"
+              min={1}
+              max={4000}
+              value={expectedLength}
+              onChange={(e) => setExpectedLength(e.target.value)}
+              placeholder="opcional"
+            />
+          </div>
+          <div className="md:col-span-12 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
                 checked={required}
                 onCheckedChange={(c) => setRequired(c === true)}
               />
-              Obrig.
+              Campo obrigatório
             </label>
           </div>
+
           <div className="md:col-span-12 flex items-center gap-2 -mt-1">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox

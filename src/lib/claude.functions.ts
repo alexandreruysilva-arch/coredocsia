@@ -6,7 +6,9 @@ interface FieldDef {
   field_key: string;
   field_type: string;
   options?: unknown;
+  expected_length?: number | null;
 }
+
 
 const MODEL = "claude-haiku-4-5-20251001";
 
@@ -125,6 +127,9 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
         if (f.field_type === "select" && Array.isArray(f.options)) {
           desc += `, opções permitidas: ${(f.options as string[]).join(" | ")}`;
         }
+        if (f.expected_length && f.expected_length > 0) {
+          desc += `, deve conter EXATAMENTE ${f.expected_length} caracteres (sem espaços em branco); se não encontrar com esse tamanho, retorne ""`;
+        }
         return desc;
       })
       .join("\n");
@@ -143,7 +148,9 @@ Regras de saída (siga RIGOROSAMENTE):
 - Campos cujo field_key contenha "matricula": retorne APENAS os dígitos numéricos, removendo letras, pontos, traços, barras e espaços.
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
+- Se um campo definir tamanho exato (caracteres), o valor extraído NÃO pode conter espaços em branco e deve ter exatamente esse número de caracteres; caso contrário, retorne "".
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
+
 
     const sourceBlock = isPdf
       ? {
@@ -272,7 +279,16 @@ Regras de saída (siga RIGOROSAMENTE):
       } else {
         result[f.field_key] = s.toUpperCase();
       }
+      // Validação de tamanho exato: se valor tem espaços ou tamanho diferente, descarta.
+      const exp = f.expected_length ?? null;
+      if (exp && exp > 0) {
+        const cur = result[f.field_key];
+        if (!cur || /\s/.test(cur) || cur.length !== exp) {
+          delete result[f.field_key];
+        }
+      }
     }
+
 
     // Registra log de sucesso já na extração (mesmo sem upload concluído).
     // O handler de upload depois atualiza este log com o document_id criado.
