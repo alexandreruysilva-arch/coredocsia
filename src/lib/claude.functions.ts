@@ -6,7 +6,9 @@ interface FieldDef {
   field_key: string;
   field_type: string;
   options?: unknown;
+  expected_length?: number | null;
 }
+
 
 const MODEL = "claude-haiku-4-5-20251001";
 
