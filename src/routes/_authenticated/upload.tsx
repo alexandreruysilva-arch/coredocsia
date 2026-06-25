@@ -538,7 +538,7 @@ function UploadPage() {
             Upload de documentos
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
-            Selecione empresa e tipo, arraste ou clique no botão para adicionar as imagens e depois escolha qual a IA de sua escolha ou preencha a indexação de cada arquivo individualmente.
+            Selecione empresa e tipo, arraste ou clique no botão para adicionar as imagens e depois escolha qual a IA de sua preferência ou preencha a indexação de cada arquivo individualmente.
           </p>
         </div>
       </header>
