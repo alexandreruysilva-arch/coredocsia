@@ -539,7 +539,6 @@ function UploadPage() {
           </h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-3xl">
             Selecione empresa e tipo, depois preencha a indexação de cada arquivo individualmente.
-            Até {MAX_FILES_PER_BATCH} arquivos por lote. PDF, JPG, PNG, TIFF, WEBP — até 50 MB cada.
           </p>
         </div>
       </header>
