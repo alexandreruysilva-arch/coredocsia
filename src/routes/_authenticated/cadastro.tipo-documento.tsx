@@ -431,6 +431,7 @@ interface FieldRow {
   required: boolean;
   position: number;
   is_lookup_key: boolean;
+  expected_length: number | null;
 }
 
 function FieldsDialog({
@@ -449,6 +450,7 @@ function FieldsDialog({
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
+  const [expectedLength, setExpectedLength] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
@@ -458,6 +460,7 @@ function FieldsDialog({
     setFieldType("text");
     setRequired(false);
     setIsLookupKey(false);
+    setExpectedLength("");
   };
 
   const startEdit = (f: FieldRow) => {
@@ -467,7 +470,9 @@ function FieldsDialog({
     setFieldType(f.field_type);
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
+    setExpectedLength(f.expected_length != null ? String(f.expected_length) : "");
   };
+
 
 
   const fields = useQuery({
