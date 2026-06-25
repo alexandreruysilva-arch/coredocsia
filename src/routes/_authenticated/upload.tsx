@@ -396,6 +396,27 @@ function UploadPage() {
           values: Record<string, string>;
           usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
         };
+        // [TESTE] Inspeção do retorno bruto da extração antes de preencher os campos
+        // eslint-disable-next-line no-console
+        console.groupCollapsed(
+          `🔎 [Extração ${providerLabel}] ${item.file.name}`,
+        );
+        // eslint-disable-next-line no-console
+        console.log("values (bruto):", res.values);
+        // eslint-disable-next-line no-console
+        console.log("usage:", res.usage);
+        // eslint-disable-next-line no-console
+        console.log("JSON:", JSON.stringify(res, null, 2));
+        // eslint-disable-next-line no-console
+        console.groupEnd();
+        toast.info(`Extração ${providerLabel} — ${item.file.name}`, {
+          description: (
+            <pre className="mt-2 max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
+              {JSON.stringify(res.values, null, 2)}
+            </pre>
+          ),
+          duration: 15000,
+        });
         const mergedValues = { ...item.fieldValues, ...res.values };
         const missingRequired = fields.filter(
           (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
