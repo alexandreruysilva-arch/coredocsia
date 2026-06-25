@@ -496,6 +496,14 @@ function FieldsDialog({
       const key = (fieldKey.trim() || slugify(label)).replace(/-/g, "_");
       if (!label.trim()) throw new Error("Informe o rótulo");
       if (!key) throw new Error("Informe a chave do campo");
+      let expLen: number | null = null;
+      if (expectedLength.trim()) {
+        const n = Number(expectedLength.trim());
+        if (!Number.isInteger(n) || n <= 0 || n > 4000) {
+          throw new Error("Qtd. de caracteres deve ser um inteiro entre 1 e 4000");
+        }
+        expLen = n;
+      }
       if (editingId) {
         const { error } = await supabase
           .from("document_type_fields")
@@ -505,6 +513,7 @@ function FieldsDialog({
             field_type: fieldType,
             required,
             is_lookup_key: isLookupKey,
+            expected_length: expLen,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -518,10 +527,12 @@ function FieldsDialog({
           field_type: fieldType,
           required,
           is_lookup_key: isLookupKey,
+          expected_length: expLen,
           position,
         });
         if (error) throw error;
       }
+
     },
     onSuccess: () => {
       toast.success(editingId ? "Campo atualizado" : "Campo adicionado");
