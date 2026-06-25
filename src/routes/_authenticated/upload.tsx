@@ -646,7 +646,7 @@ function UploadPage() {
             {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            PDF, JPG, PNG, TIFF, WEBP • máx 50 MB
+            PDF, JPG, PNG
           </p>
         </div>
 
