@@ -176,7 +176,7 @@ Regras de saída (siga RIGOROSAMENTE):
 
     // Tenta o modelo principal e, em caso de sobrecarga (503/429/5xx),
     // faz retries com backoff e por fim tenta um modelo de fallback.
-    const MODELS_TO_TRY = Array.from(new Set([MODEL, "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"]));
+    const MODELS_TO_TRY = Array.from(new Set([MODEL, "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.1-flash-lite"]));
     const MAX_ATTEMPTS_PER_MODEL = 3;
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
