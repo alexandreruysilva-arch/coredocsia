@@ -584,17 +584,22 @@ function UploadPage() {
             const b = final[k] == null ? "" : String(final[k]);
             if (a !== b) correctedChars += charDiff(a, b);
           }
-          if (correctedChars > 0) {
-            const { data: logRow } = await supabase
-              .from("ai_usage_logs")
-              .select("corrected_chars")
-              .eq("id", logId)
-              .maybeSingle();
-            await supabase
-              .from("ai_usage_logs")
-              .update({ corrected_chars: (logRow?.corrected_chars ?? 0) + correctedChars })
-              .eq("id", logId);
-          }
+          const extractedChars = Object.values(original).reduce(
+            (sum, v) => sum + (v == null ? 0 : String(v).length),
+            0,
+          );
+          const { data: logRow } = await supabase
+            .from("ai_usage_logs")
+            .select("corrected_chars, extracted_chars")
+            .eq("id", logId)
+            .maybeSingle();
+          await supabase
+            .from("ai_usage_logs")
+            .update({
+              corrected_chars: (logRow?.corrected_chars ?? 0) + correctedChars,
+              extracted_chars: (logRow?.extracted_chars ?? 0) + extractedChars,
+            })
+            .eq("id", logId);
         }
       } catch (e: any) {
         updateItem(item.id, { status: "error", error: e.message ?? "Erro" });
