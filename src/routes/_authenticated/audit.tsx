@@ -404,7 +404,29 @@ function AuditPage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold">Detalhes por arquivo</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={companyFilter} onValueChange={setCompanyFilter}>
+              <SelectTrigger className="h-9 w-[200px]">
+                <SelectValue placeholder="Empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas as empresas</SelectItem>
+                {companyOptions.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
+              <SelectTrigger className="h-9 w-[200px]">
+                <SelectValue placeholder="Tipo de documento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos os tipos</SelectItem>
+                {docTypeOptions.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
               placeholder="Buscar por arquivo, empresa ou tipo..."
               value={search}
