@@ -28,6 +28,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
 
@@ -130,6 +137,8 @@ function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
   const [search, setSearch] = useState("");
+  const [companyFilter, setCompanyFilter] = useState<string>("__all__");
+  const [docTypeFilter, setDocTypeFilter] = useState<string>("__all__");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
   const queryClient = useQueryClient();
@@ -165,16 +174,31 @@ function AuditPage() {
   });
 
 
+  const companyOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of logs) if (l.company_name) set.add(l.company_name);
+    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [logs]);
+
+  const docTypeOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of logs) if (l.document_type_name) set.add(l.document_type_name);
+    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [logs]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return logs;
-    return logs.filter(
-      (l) =>
+    return logs.filter((l) => {
+      if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) return false;
+      if (docTypeFilter !== "__all__" && (l.document_type_name ?? "") !== docTypeFilter) return false;
+      if (!q) return true;
+      return (
         l.file_name.toLowerCase().includes(q) ||
         (l.company_name ?? "").toLowerCase().includes(q) ||
-        (l.document_type_name ?? "").toLowerCase().includes(q),
-    );
-  }, [logs, search]);
+        (l.document_type_name ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [logs, search, companyFilter, docTypeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = useMemo(
@@ -184,7 +208,7 @@ function AuditPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [search, companyFilter, docTypeFilter]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
@@ -380,7 +404,29 @@ function AuditPage() {
       <Card className="p-5 space-y-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold">Detalhes por arquivo</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={companyFilter} onValueChange={setCompanyFilter}>
+              <SelectTrigger className="h-9 w-[200px]">
+                <SelectValue placeholder="Empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todas as empresas</SelectItem>
+                {companyOptions.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
+              <SelectTrigger className="h-9 w-[200px]">
+                <SelectValue placeholder="Tipo de documento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">Todos os tipos</SelectItem>
+                {docTypeOptions.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Input
               placeholder="Buscar por arquivo, empresa ou tipo..."
               value={search}
