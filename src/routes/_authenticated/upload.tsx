@@ -53,11 +53,56 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 function charDiff(a: string, b: string): number {
-  const minLen = Math.min(a.length, b.length);
-  let diff = Math.abs(a.length - b.length);
-  for (let i = 0; i < minLen; i++) {
-    if (a.charCodeAt(i) !== b.charCodeAt(i)) diff++;
+  const original = Array.from(a);
+  const corrected = Array.from(b);
+  const originalLength = original.length;
+  const correctedLength = corrected.length;
+
+  if (originalLength === 0) return correctedLength;
+  if (correctedLength === 0) return originalLength;
+
+  const lcs: number[][] = Array.from({ length: originalLength + 1 }, () =>
+    Array(correctedLength + 1).fill(0),
+  );
+
+  for (let i = originalLength - 1; i >= 0; i--) {
+    for (let j = correctedLength - 1; j >= 0; j--) {
+      lcs[i][j] =
+        original[i] === corrected[j]
+          ? lcs[i + 1][j + 1] + 1
+          : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+    }
   }
+
+  let i = 0;
+  let j = 0;
+  let diff = 0;
+  let removed = 0;
+  let inserted = 0;
+  const flushEditBlock = () => {
+    diff += Math.max(removed, inserted);
+    removed = 0;
+    inserted = 0;
+  };
+
+  while (i < originalLength && j < correctedLength) {
+    if (original[i] === corrected[j]) {
+      flushEditBlock();
+      i++;
+      j++;
+    } else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
+      removed++;
+      i++;
+    } else {
+      inserted++;
+      j++;
+    }
+  }
+
+  removed += originalLength - i;
+  inserted += correctedLength - j;
+  flushEditBlock();
+
   return diff;
 }
 
