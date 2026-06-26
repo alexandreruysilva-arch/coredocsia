@@ -87,7 +87,7 @@ function exportLogsXlsx(rows: AiLogRow[]) {
     "Tempo IA",
     "Caracteres corrigidos",
     "Caracteres extraídos",
-    "% Correção",
+    "% Acerto",
     "Status",
     "Erro",
   ];
