@@ -407,6 +407,7 @@ function AuditPage() {
                   <TableHead className="text-right">Total Token</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
+                  <TableHead className="text-right">Caract. extraídos</TableHead>
                   <TableHead className="text-right">Caract. corrigidos</TableHead>
                   <TableHead className="text-right">% Correção</TableHead>
                   <TableHead>Status</TableHead>
