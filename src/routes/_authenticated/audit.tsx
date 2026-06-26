@@ -384,8 +384,8 @@ function AuditPage() {
             Nenhuma indexação por IA registrada ainda.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
+          <div className="overflow-x-auto -mx-5 px-5">
+            <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle">
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
@@ -393,67 +393,72 @@ function AuditPage() {
                   <TableHead>Tipo</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead className="text-right">Total Token</TableHead>
-                  <TableHead className="text-right">Custo (R$)</TableHead>
+                  <TableHead className="text-right">Tokens</TableHead>
+                  <TableHead className="text-right">Custo</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
-                  <TableHead className="text-right">Caract. extraídos</TableHead>
-                  <TableHead className="text-right">Caract. corrigidos</TableHead>
-                  <TableHead className="text-right">% Correção</TableHead>
+                  <TableHead className="text-right">Extraídos</TableHead>
+                  <TableHead className="text-right">Corrigidos</TableHead>
+                  <TableHead className="text-right">% Corr.</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-16">Ações</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map((l) => (
                   <TableRow key={l.id}>
-                    <TableCell className="text-xs whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {formatDateTime(l.created_at)}
                     </TableCell>
-                    <TableCell className="text-sm">{l.company_name ?? "—"}</TableCell>
-                    <TableCell className="text-sm">{l.document_type_name ?? "—"}</TableCell>
-                    <TableCell className="text-sm max-w-[240px] truncate" title={l.file_name}>
+                    <TableCell className="max-w-[140px] truncate" title={l.company_name ?? ""}>
+                      {l.company_name ?? "—"}
+                    </TableCell>
+                    <TableCell className="max-w-[120px] truncate" title={l.document_type_name ?? ""}>
+                      {l.document_type_name ?? "—"}
+                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={l.file_name}>
                       {l.file_name}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="whitespace-nowrap text-muted-foreground">
                       {l.model === "gemini-2.5-flash-lite"
                         ? "2.5 Flash Lite"
                         : l.model === "claude-haiku-4-5-20251001"
                           ? "Haiku 4.5"
                           : l.model}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium">
+                    <TableCell className="text-right tabular-nums font-medium whitespace-nowrap">
                       {l.total_tokens.toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell className="text-right tabular-nums whitespace-nowrap">
                       {l.cost_brl != null
                         ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
                         : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {(l.extracted_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">
+                    <TableCell className="text-right tabular-nums whitespace-nowrap">
                       {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.extracted_chars && l.extracted_chars > 0
                         ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(1).replace(".", ",")}%`
                         : "—"}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
-                        <Badge variant="secondary">OK</Badge>
+                        <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">OK</Badge>
                       ) : (
-                        <Badge variant="destructive" className="gap-1">
+                        <Badge variant="destructive" className="gap-1 px-1.5 py-0 text-[10px]">
                           <AlertCircle className="h-3 w-3" />
                           Falha
                         </Badge>
                       )}
                     </TableCell>
                     <TableCell>
+
                       <Button
                         variant="ghost"
                         size="icon"
