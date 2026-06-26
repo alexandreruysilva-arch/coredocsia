@@ -432,7 +432,7 @@ function AuditPage() {
               placeholder="Buscar por arquivo, empresa ou tipo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
+              className="h-8 max-w-[220px] text-xs"
             />
             <Button
               variant="outline"
