@@ -437,7 +437,7 @@ function AuditPage() {
                     <TableCell className="max-w-[120px] truncate" title={l.document_type_name ?? ""}>
                       {l.document_type_name ?? "—"}
                     </TableCell>
-                    <TableCell className="max-w-[200px] truncate" title={l.file_name}>
+                    <TableCell className="max-w-[200px] truncate text-left" title={l.file_name}>
                       {l.file_name}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-muted-foreground">
