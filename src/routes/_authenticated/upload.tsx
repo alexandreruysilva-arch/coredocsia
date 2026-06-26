@@ -518,6 +518,31 @@ function UploadPage() {
         });
 
         updateItem(item.id, { status: "done", progress: 100 });
+
+        // Soma de caracteres corrigidos manualmente vs. extração da IA
+        const logId = item.aiUsage?.log_id;
+        if (logId && item.aiOriginalValues) {
+          const original = item.aiOriginalValues;
+          const final = item.fieldValues;
+          let correctedChars = 0;
+          const keys = new Set([...Object.keys(original), ...Object.keys(final)]);
+          for (const k of keys) {
+            const a = original[k] == null ? "" : String(original[k]);
+            const b = final[k] == null ? "" : String(final[k]);
+            if (a !== b) correctedChars += charDiff(a, b);
+          }
+          if (correctedChars > 0) {
+            const { data: logRow } = await supabase
+              .from("ai_usage_logs")
+              .select("corrected_chars")
+              .eq("id", logId)
+              .maybeSingle();
+            await supabase
+              .from("ai_usage_logs")
+              .update({ corrected_chars: (logRow?.corrected_chars ?? 0) + correctedChars })
+              .eq("id", logId);
+          }
+        }
       } catch (e: any) {
         updateItem(item.id, { status: "error", error: e.message ?? "Erro" });
       }
