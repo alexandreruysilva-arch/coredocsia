@@ -444,7 +444,7 @@ function AuditPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.extracted_chars && l.extracted_chars > 0
-                        ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(1).replace(".", ",")}%`
+                        ? `${((Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100).toFixed(1).replace(".", ",")}%`
                         : "—"}
                     </TableCell>
                     <TableCell>
