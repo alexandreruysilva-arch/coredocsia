@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
