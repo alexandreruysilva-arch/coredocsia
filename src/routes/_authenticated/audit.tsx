@@ -418,7 +418,7 @@ function AuditPage() {
               </SelectContent>
             </Select>
             <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
-              <SelectTrigger className="h-9 w-[200px]">
+              <SelectTrigger className="h-8 w-[170px] text-xs">
                 <SelectValue placeholder="Tipo de documento" />
               </SelectTrigger>
               <SelectContent>
