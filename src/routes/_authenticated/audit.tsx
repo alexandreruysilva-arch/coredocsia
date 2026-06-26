@@ -408,6 +408,7 @@ function AuditPage() {
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
                   <TableHead className="text-right">Caract. corrigidos</TableHead>
+                  <TableHead className="text-right">% Correção</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
