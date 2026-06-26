@@ -90,23 +90,38 @@ function SettingsPage() {
 
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-muted/50 p-1">
-          <TabsTrigger value="profile" className="gap-2">
+        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-2xl border border-border bg-gradient-to-br from-slate-900/5 via-blue-900/5 to-sky-700/5 p-1.5">
+          <TabsTrigger
+            value="profile"
+            className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+          >
             <User className="h-4 w-4" /> Perfil
           </TabsTrigger>
-          <TabsTrigger value="organization" className="gap-2">
+          <TabsTrigger
+            value="organization"
+            className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+          >
             <Building className="h-4 w-4" /> Organização
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="members" className="gap-2">
+            <TabsTrigger
+              value="members"
+              className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               <Users className="h-4 w-4" /> Membros
             </TabsTrigger>
           )}
-          <TabsTrigger value="notifications" className="gap-2">
+          <TabsTrigger
+            value="notifications"
+            className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+          >
             <Bell className="h-4 w-4" /> Notificações
           </TabsTrigger>
           {isAdmin && (
-            <TabsTrigger value="billing" className="gap-2">
+            <TabsTrigger
+              value="billing"
+              className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+            >
               <Sparkles className="h-4 w-4" /> Faturamento IA
             </TabsTrigger>
           )}
