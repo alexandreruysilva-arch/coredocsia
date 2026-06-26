@@ -174,16 +174,31 @@ function AuditPage() {
   });
 
 
+  const companyOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of logs) if (l.company_name) set.add(l.company_name);
+    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [logs]);
+
+  const docTypeOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of logs) if (l.document_type_name) set.add(l.document_type_name);
+    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [logs]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return logs;
-    return logs.filter(
-      (l) =>
+    return logs.filter((l) => {
+      if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) return false;
+      if (docTypeFilter !== "__all__" && (l.document_type_name ?? "") !== docTypeFilter) return false;
+      if (!q) return true;
+      return (
         l.file_name.toLowerCase().includes(q) ||
         (l.company_name ?? "").toLowerCase().includes(q) ||
-        (l.document_type_name ?? "").toLowerCase().includes(q),
-    );
-  }, [logs, search]);
+        (l.document_type_name ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [logs, search, companyFilter, docTypeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = useMemo(
@@ -193,7 +208,7 @@ function AuditPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search]);
+  }, [search, companyFilter, docTypeFilter]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
