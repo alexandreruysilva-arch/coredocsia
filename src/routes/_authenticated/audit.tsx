@@ -48,6 +48,7 @@ interface AiLogRow {
   cost_brl: number | null;
   duration_ms: number | null;
   corrected_chars: number | null;
+  extracted_chars: number | null;
   success: boolean;
   error_message: string | null;
 }
@@ -90,6 +91,8 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Custo (R$)",
     "Tempo IA",
     "Caracteres corrigidos",
+    "Caracteres extraídos",
+    "% Correção",
     "Status",
     "Erro",
   ];
@@ -112,6 +115,10 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
         l.duration_ms != null ? formatDuration(l.duration_ms) : "",
         l.corrected_chars ?? 0,
+        l.extracted_chars ?? 0,
+        l.extracted_chars && l.extracted_chars > 0
+          ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(2).replace(".", ",")}%`
+          : "",
         l.success ? "OK" : "Falha",
         l.error_message ?? "",
       ]
@@ -147,7 +154,7 @@ function AuditPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, success, error_message",
+          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, extracted_chars, success, error_message",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
@@ -401,6 +408,7 @@ function AuditPage() {
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
                   <TableHead className="text-right">Caract. corrigidos</TableHead>
+                  <TableHead className="text-right">% Correção</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
@@ -436,6 +444,11 @@ function AuditPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {l.extracted_chars && l.extracted_chars > 0
+                        ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(1).replace(".", ",")}%`
+                        : "—"}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
