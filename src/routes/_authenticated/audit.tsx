@@ -406,7 +406,8 @@ function AuditPage() {
           <h3 className="font-semibold text-sm">Detalhes por arquivo</h3>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
-              <SelectTrigger className="h-9 w-[200px]">
+              <SelectTrigger className="h-8 w-[170px] text-xs">
+
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
               <SelectContent>
