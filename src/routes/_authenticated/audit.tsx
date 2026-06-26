@@ -274,7 +274,7 @@ function AuditPage() {
         </div>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="p-2.5 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
           <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
             <FileText className="absolute right-0 h-3.5 w-3.5" />
