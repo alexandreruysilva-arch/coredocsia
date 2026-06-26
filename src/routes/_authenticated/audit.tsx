@@ -401,12 +401,13 @@ function AuditPage() {
         </Card>
       )}
 
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h3 className="font-semibold">Detalhes por arquivo</h3>
+      <Card className="p-3 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="font-semibold text-sm">Detalhes por arquivo</h3>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
-              <SelectTrigger className="h-9 w-[200px]">
+              <SelectTrigger className="h-8 w-[170px] text-xs">
+
                 <SelectValue placeholder="Empresa" />
               </SelectTrigger>
               <SelectContent>
@@ -417,7 +418,7 @@ function AuditPage() {
               </SelectContent>
             </Select>
             <Select value={docTypeFilter} onValueChange={setDocTypeFilter}>
-              <SelectTrigger className="h-9 w-[200px]">
+              <SelectTrigger className="h-8 w-[170px] text-xs">
                 <SelectValue placeholder="Tipo de documento" />
               </SelectTrigger>
               <SelectContent>
@@ -431,7 +432,7 @@ function AuditPage() {
               placeholder="Buscar por arquivo, empresa ou tipo..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
+              className="h-8 max-w-[220px] text-xs"
             />
             <Button
               variant="outline"
@@ -453,7 +454,7 @@ function AuditPage() {
             Nenhuma indexação por IA registrada ainda.
           </p>
         ) : (
-          <div className="overflow-x-auto -mx-5 px-5">
+          <div className="overflow-x-auto -mx-3 px-3">
             <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-center [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle [&_td]:text-center">
               <TableHeader>
                 <TableRow>
