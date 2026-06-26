@@ -407,7 +407,14 @@ function UploadPage() {
           values: Record<string, string>;
           usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
         };
-        const mergedValues = { ...item.fieldValues, ...res.values };
+        // Normaliza os valores da IA com o mesmo sanitize aplicado ao digitar,
+        // para que a baseline reflita o que ficaria salvo sem nenhuma edição.
+        const sanitizedAi: Record<string, string> = {};
+        for (const f of fields) {
+          const v = res.values?.[f.field_key];
+          if (v != null) sanitizedAi[f.field_key] = sanitizeFieldValue(f, String(v));
+        }
+        const mergedValues = { ...item.fieldValues, ...sanitizedAi };
 
         const missingRequired = fields.filter(
           (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
@@ -420,7 +427,8 @@ function UploadPage() {
               ? {
                   ...i,
                   fieldValues: mergedValues,
-                  aiOriginalValues: { ...res.values },
+                  aiOriginalValues: { ...sanitizedAi },
+
                   aiUsage: res.usage,
                   aiStatus: isIncomplete ? "incomplete" : "success",
                   aiMessage: isIncomplete
