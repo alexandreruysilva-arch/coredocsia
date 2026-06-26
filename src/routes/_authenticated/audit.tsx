@@ -203,6 +203,8 @@ function AuditPage() {
       cost: 0,
       durationCount: 0,
       durationTotal: 0,
+      extracted: 0,
+      corrected: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -215,6 +217,8 @@ function AuditPage() {
         t.durationCount++;
         t.durationTotal += l.duration_ms;
       }
+      t.extracted += l.extracted_chars ?? 0;
+      t.corrected += l.corrected_chars ?? 0;
     }
     return t;
   }, [filtered]);
