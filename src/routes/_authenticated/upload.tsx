@@ -50,6 +50,16 @@ import {
   validateFile,
 } from "@/lib/documents";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+function charDiff(a: string, b: string): number {
+  const minLen = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < minLen; i++) {
+    if (a.charCodeAt(i) !== b.charCodeAt(i)) diff++;
+  }
+  return diff;
+}
 
 export const Route = createFileRoute("/_authenticated/upload")({
   component: UploadPage,
