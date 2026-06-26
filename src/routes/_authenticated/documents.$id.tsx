@@ -110,15 +110,30 @@ function DocumentDetailPage() {
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
 
+    // Normaliza ao salvar (uppercase + trim) sem interferir na digitação.
+    const normalized: Record<string, unknown> = {};
+    for (const f of fields) {
+      const raw = values[f.field_key];
+      const str = raw == null ? "" : String(raw).trim();
+      if (f.field_key.toLowerCase().includes("matricula")) {
+        normalized[f.field_key] = str.replace(/\D/g, "");
+      } else if (f.field_type === "number" || f.field_type === "date") {
+        normalized[f.field_key] = str;
+      } else {
+        normalized[f.field_key] = str.toUpperCase();
+      }
+    }
+
     // Soma os blocos de edição manuais sem multiplicar caracteres deslocados por inserções/remoções.
     const original = (doc!.field_values ?? {}) as Record<string, unknown>;
     let correctedChars = 0;
-    const keys = new Set([...Object.keys(original), ...Object.keys(values)]);
+    const keys = new Set([...Object.keys(original), ...Object.keys(normalized)]);
     for (const k of keys) {
       const a = original[k] == null ? "" : String(original[k]);
-      const b = values[k] == null ? "" : String(values[k]);
+      const b = normalized[k] == null ? "" : String(normalized[k]);
       if (a !== b) correctedChars += charDiff(a, b);
     }
+
 
     const { error } = await supabase
       .from("documents")
