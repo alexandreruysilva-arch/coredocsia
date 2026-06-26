@@ -91,6 +91,8 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Custo (R$)",
     "Tempo IA",
     "Caracteres corrigidos",
+    "Caracteres extraídos",
+    "% Correção",
     "Status",
     "Erro",
   ];
