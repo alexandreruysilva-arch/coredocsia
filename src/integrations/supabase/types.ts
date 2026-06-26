@@ -19,6 +19,7 @@ export type Database = {
           company_id: string | null
           company_name: string | null
           completion_tokens: number
+          corrected_chars: number
           cost_brl: number | null
           created_at: string
           document_id: string | null
@@ -39,6 +40,7 @@ export type Database = {
           company_id?: string | null
           company_name?: string | null
           completion_tokens?: number
+          corrected_chars?: number
           cost_brl?: number | null
           created_at?: string
           document_id?: string | null
@@ -59,6 +61,7 @@ export type Database = {
           company_id?: string | null
           company_name?: string | null
           completion_tokens?: number
+          corrected_chars?: number
           cost_brl?: number | null
           created_at?: string
           document_id?: string | null

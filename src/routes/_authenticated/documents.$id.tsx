@@ -23,6 +23,26 @@ export const Route = createFileRoute("/_authenticated/documents/$id")({
   component: DocumentDetailPage,
 });
 
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const m = a.length;
+  const n = b.length;
+  let prev = new Array<number>(n + 1);
+  let curr = new Array<number>(n + 1);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[n];
+}
+
 function DocumentDetailPage() {
   const { id } = Route.useParams();
   const router = useRouter();
@@ -55,6 +75,17 @@ function DocumentDetailPage() {
     setSaving(true);
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData.user?.id;
+
+    // Soma do nº de caracteres alterados em cada campo (Levenshtein)
+    const original = (doc!.field_values ?? {}) as Record<string, unknown>;
+    let correctedChars = 0;
+    const keys = new Set([...Object.keys(original), ...Object.keys(values)]);
+    for (const k of keys) {
+      const a = original[k] == null ? "" : String(original[k]);
+      const b = values[k] == null ? "" : String(values[k]);
+      if (a !== b) correctedChars += levenshtein(a, b);
+    }
+
     const { error } = await supabase
       .from("documents")
       .update({
@@ -62,14 +93,33 @@ function DocumentDetailPage() {
         last_edited_by: userId ?? doc!.uploaded_by,
       })
       .eq("id", doc!.id);
-    setSaving(false);
     if (error) {
+      setSaving(false);
       toast.error(error.message);
       return;
     }
+
+    if (correctedChars > 0) {
+      const { data: logRow } = await supabase
+        .from("ai_usage_logs")
+        .select("id, corrected_chars")
+        .eq("document_id", doc!.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (logRow) {
+        await supabase
+          .from("ai_usage_logs")
+          .update({ corrected_chars: (logRow.corrected_chars ?? 0) + correctedChars })
+          .eq("id", logRow.id);
+      }
+    }
+
+    setSaving(false);
     toast.success("Indexação atualizada");
     queryClient.invalidateQueries({ queryKey: ["document", doc!.id] });
     queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["ai-usage-logs"] });
     router.history.back();
   }
 

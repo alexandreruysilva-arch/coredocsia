@@ -47,6 +47,7 @@ interface AiLogRow {
   total_tokens: number;
   cost_brl: number | null;
   duration_ms: number | null;
+  corrected_chars: number | null;
   success: boolean;
   error_message: string | null;
 }
@@ -88,6 +89,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Total tokens",
     "Custo (R$)",
     "Tempo IA",
+    "Caracteres corrigidos",
     "Status",
     "Erro",
   ];
@@ -109,6 +111,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.total_tokens,
         l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
         l.duration_ms != null ? formatDuration(l.duration_ms) : "",
+        l.corrected_chars ?? 0,
         l.success ? "OK" : "Falha",
         l.error_message ?? "",
       ]
@@ -144,7 +147,7 @@ function AuditPage() {
       const { data, error } = await supabase
         .from("ai_usage_logs")
         .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, success, error_message",
+          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, success, error_message",
         )
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
@@ -397,6 +400,7 @@ function AuditPage() {
                   <TableHead className="text-right">Total Token</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
+                  <TableHead className="text-right">Caract. corrigidos</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-16">Ações</TableHead>
                 </TableRow>
@@ -429,6 +433,9 @@ function AuditPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">
                       {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell>
                       {l.success ? (
