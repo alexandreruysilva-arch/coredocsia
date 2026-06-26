@@ -420,6 +420,7 @@ function UploadPage() {
               ? {
                   ...i,
                   fieldValues: mergedValues,
+                  aiOriginalValues: { ...res.values },
                   aiUsage: res.usage,
                   aiStatus: isIncomplete ? "incomplete" : "success",
                   aiMessage: isIncomplete
