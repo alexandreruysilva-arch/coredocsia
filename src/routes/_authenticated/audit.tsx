@@ -416,12 +416,12 @@ function AuditPage() {
                   <TableHead>Tipo</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead>Tokens</TableHead>
-                  <TableHead>Custo</TableHead>
-                  <TableHead>Tempo</TableHead>
-                  <TableHead>Caract. Extr.</TableHead>
-                  <TableHead>% Acerto</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="!px-1">Tokens</TableHead>
+                  <TableHead className="!px-1">Custo</TableHead>
+                  <TableHead className="!px-1">Tempo</TableHead>
+                  <TableHead className="!px-1">Caract. Extr.</TableHead>
+                  <TableHead className="!px-1">% Acerto</TableHead>
+                  <TableHead className="!px-1">Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -447,26 +447,26 @@ function AuditPage() {
                           ? "Haiku 4.5"
                           : l.model}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums font-medium whitespace-nowrap">
+                    <TableCell className="!px-1 text-right tabular-nums font-medium whitespace-nowrap">
                       {l.total_tokens.toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums whitespace-nowrap">
+                    <TableCell className="!px-1 text-right tabular-nums whitespace-nowrap">
                       {l.cost_brl != null
                         ? `R$ ${l.cost_brl.toFixed(2).replace(".", ",")}`
                         : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
+                    <TableCell className="!px-1 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
+                    <TableCell className="!px-1 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {(l.extracted_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
+                    <TableCell className="!px-1 text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.extracted_chars && l.extracted_chars > 0
                         ? `${Math.trunc((Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100)}%`
                         : "—"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="!px-1">
                       {l.success ? (
                         <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">OK</Badge>
                       ) : (
