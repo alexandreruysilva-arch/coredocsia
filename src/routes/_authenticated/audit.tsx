@@ -416,12 +416,12 @@ function AuditPage() {
                   <TableHead>Tipo</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead>Tokens</TableHead>
-                  <TableHead>Custo</TableHead>
-                  <TableHead>Tempo</TableHead>
-                  <TableHead>Caract. Extr.</TableHead>
-                  <TableHead>% Acerto</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="!px-1">Tokens</TableHead>
+                  <TableHead className="!px-1">Custo</TableHead>
+                  <TableHead className="!px-1">Tempo</TableHead>
+                  <TableHead className="!px-1">Caract. Extr.</TableHead>
+                  <TableHead className="!px-1">% Acerto</TableHead>
+                  <TableHead className="!px-1">Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
