@@ -205,6 +205,8 @@ function AuditPage() {
       durationTotal: 0,
       extracted: 0,
       corrected: 0,
+      accuracySum: 0,
+      accuracyCount: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -219,6 +221,11 @@ function AuditPage() {
       }
       t.extracted += l.extracted_chars ?? 0;
       t.corrected += l.corrected_chars ?? 0;
+      if (l.extracted_chars && l.extracted_chars > 0) {
+        t.accuracySum +=
+          (Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100;
+        t.accuracyCount++;
+      }
     }
     return t;
   }, [filtered]);
@@ -327,12 +334,12 @@ function AuditPage() {
             <span>% Acerto médio</span>
           </div>
           <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
-            {totals.extracted > 0
-              ? `${((Math.max(0, totals.extracted - totals.corrected) / totals.extracted) * 100).toFixed(1).replace(".", ",")}%`
+            {totals.accuracyCount > 0
+              ? `${(totals.accuracySum / totals.accuracyCount).toFixed(2).replace(".", ",")}%`
               : "—"}
           </div>
           <div className="text-center text-[11px] text-white/85 mt-0.5">
-            {totals.corrected.toLocaleString("pt-BR")} corrigidos / {totals.extracted.toLocaleString("pt-BR")} extraídos
+            Média de {totals.accuracyCount} arquivo{totals.accuracyCount === 1 ? "" : "s"}
           </div>
         </Card>
       </div>
