@@ -335,7 +335,7 @@ function AuditPage() {
           </div>
           <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
             {totals.accuracyCount > 0
-              ? `${(totals.accuracySum / totals.accuracyCount).toFixed(2).replace(".", ",")}%`
+              ? `${Math.trunc(totals.accuracySum / totals.accuracyCount)}%`
               : "—"}
           </div>
           <div className="text-center text-[11px] text-white/85 mt-0.5">
