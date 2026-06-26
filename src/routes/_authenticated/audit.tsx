@@ -422,7 +422,7 @@ function AuditPage() {
                   <TableHead className="text-right">Custo</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
                   <TableHead className="text-right">Extraídos</TableHead>
-                  <TableHead className="text-right">Corrigidos</TableHead>
+                  
                   <TableHead className="text-right">% Acerto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -463,9 +463,6 @@ function AuditPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {(l.extracted_chars ?? 0).toLocaleString("pt-BR")}
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums whitespace-nowrap">
-                      {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground whitespace-nowrap">
                       {l.extracted_chars && l.extracted_chars > 0
