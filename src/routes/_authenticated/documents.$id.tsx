@@ -74,7 +74,7 @@ function DocumentDetailPage() {
     for (const k of keys) {
       const a = original[k] == null ? "" : String(original[k]);
       const b = values[k] == null ? "" : String(values[k]);
-      if (a !== b) correctedChars += levenshtein(a, b);
+      if (a !== b) correctedChars += charDiff(a, b);
     }
 
     const { error } = await supabase
