@@ -419,7 +419,7 @@ function AuditPage() {
                   <TableHead className="text-right">Tokens</TableHead>
                   <TableHead className="text-right">Custo</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
-                  <TableHead className="text-right">Extraídos</TableHead>
+                  <TableHead className="text-right">Caract. Extr.</TableHead>
                   
                   <TableHead className="text-right">% Acerto</TableHead>
                   <TableHead>Status</TableHead>
