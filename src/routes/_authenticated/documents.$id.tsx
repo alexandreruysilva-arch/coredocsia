@@ -138,7 +138,7 @@ function DocumentDetailPage() {
     const { error } = await supabase
       .from("documents")
       .update({
-        field_values: values as never,
+        field_values: normalized as never,
         last_edited_by: userId ?? doc!.uploaded_by,
       })
       .eq("id", doc!.id);
