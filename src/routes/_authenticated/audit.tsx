@@ -111,6 +111,7 @@ function exportLogsCsv(rows: AiLogRow[]) {
         l.total_tokens,
         l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
         l.duration_ms != null ? formatDuration(l.duration_ms) : "",
+        l.corrected_chars ?? 0,
         l.success ? "OK" : "Falha",
         l.error_message ?? "",
       ]
