@@ -321,6 +321,20 @@ function AuditPage() {
             {totals.durationCount} medições
           </div>
         </Card>
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <Sparkles className="absolute right-0 h-3.5 w-3.5" />
+            <span>% Acerto médio</span>
+          </div>
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
+            {totals.extracted > 0
+              ? `${((Math.max(0, totals.extracted - totals.corrected) / totals.extracted) * 100).toFixed(1).replace(".", ",")}%`
+              : "—"}
+          </div>
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
+            {totals.corrected.toLocaleString("pt-BR")} corrigidos / {totals.extracted.toLocaleString("pt-BR")} extraídos
+          </div>
+        </Card>
       </div>
 
       {byCompany.length > 0 && (
