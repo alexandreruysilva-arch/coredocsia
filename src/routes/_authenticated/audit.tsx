@@ -445,6 +445,11 @@ function AuditPage() {
                     <TableCell className="text-right tabular-nums">
                       {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {l.extracted_chars && l.extracted_chars > 0
+                        ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(1).replace(".", ",")}%`
+                        : "—"}
+                    </TableCell>
                     <TableCell>
                       {l.success ? (
                         <Badge variant="secondary">OK</Badge>
