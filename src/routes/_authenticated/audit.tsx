@@ -408,7 +408,7 @@ function AuditPage() {
           </p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle">
+            <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-center [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle">
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
@@ -416,12 +416,11 @@ function AuditPage() {
                   <TableHead>Tipo</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead>Modelo</TableHead>
-                  <TableHead className="text-right">Tokens</TableHead>
-                  <TableHead className="text-right">Custo</TableHead>
-                  <TableHead className="text-right">Tempo</TableHead>
-                  <TableHead className="text-right">Caract. Extr.</TableHead>
-                  
-                  <TableHead className="text-right">% Acerto</TableHead>
+                  <TableHead>Tokens</TableHead>
+                  <TableHead>Custo</TableHead>
+                  <TableHead>Tempo</TableHead>
+                  <TableHead>Caract. Extr.</TableHead>
+                  <TableHead>% Acerto</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
