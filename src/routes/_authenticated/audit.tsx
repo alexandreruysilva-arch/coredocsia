@@ -443,6 +443,9 @@ function AuditPage() {
                     <TableCell className="text-right tabular-nums text-muted-foreground">
                       {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
                     </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {(l.extracted_chars ?? 0).toLocaleString("pt-BR")}
+                    </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
