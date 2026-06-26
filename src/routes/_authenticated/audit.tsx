@@ -48,6 +48,7 @@ interface AiLogRow {
   cost_brl: number | null;
   duration_ms: number | null;
   corrected_chars: number | null;
+  extracted_chars: number | null;
   success: boolean;
   error_message: string | null;
 }
