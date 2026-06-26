@@ -23,24 +23,15 @@ export const Route = createFileRoute("/_authenticated/documents/$id")({
   component: DocumentDetailPage,
 });
 
-function levenshtein(a: string, b: string): number {
-  if (a === b) return 0;
-  if (!a.length) return b.length;
-  if (!b.length) return a.length;
-  const m = a.length;
-  const n = b.length;
-  let prev = new Array<number>(n + 1);
-  let curr = new Array<number>(n + 1);
-  for (let j = 0; j <= n; j++) prev[j] = j;
-  for (let i = 1; i <= m; i++) {
-    curr[0] = i;
-    for (let j = 1; j <= n; j++) {
-      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
-      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
-    }
-    [prev, curr] = [curr, prev];
+function charDiff(a: string, b: string): number {
+  // Conta correções de forma intuitiva:
+  // diferença de comprimento + caracteres distintos posição-a-posição
+  const minLen = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < minLen; i++) {
+    if (a.charCodeAt(i) !== b.charCodeAt(i)) diff++;
   }
-  return prev[n];
+  return diff;
 }
 
 function DocumentDetailPage() {
@@ -83,7 +74,7 @@ function DocumentDetailPage() {
     for (const k of keys) {
       const a = original[k] == null ? "" : String(original[k]);
       const b = values[k] == null ? "" : String(values[k]);
-      if (a !== b) correctedChars += levenshtein(a, b);
+      if (a !== b) correctedChars += charDiff(a, b);
     }
 
     const { error } = await supabase
