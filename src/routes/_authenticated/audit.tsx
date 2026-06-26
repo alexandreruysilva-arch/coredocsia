@@ -85,7 +85,6 @@ function exportLogsXlsx(rows: AiLogRow[]) {
     "Total tokens",
     "Custo (R$)",
     "Tempo IA",
-    "Caracteres corrigidos",
     "Caracteres extraídos",
     "% Acerto",
     "Status",
@@ -106,7 +105,6 @@ function exportLogsXlsx(rows: AiLogRow[]) {
     l.total_tokens,
     l.cost_brl != null ? Number(l.cost_brl.toFixed(4)) : "",
     l.duration_ms != null ? formatDuration(l.duration_ms) : "",
-    l.corrected_chars ?? 0,
     l.extracted_chars ?? 0,
     l.extracted_chars && l.extracted_chars > 0
       ? Number(((Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100).toFixed(2)) / 100
@@ -116,10 +114,10 @@ function exportLogsXlsx(rows: AiLogRow[]) {
   ]);
   const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
   ws["!cols"] = headers.map((h) => ({ wch: Math.max(12, h.length + 2) }));
-  // Format % column (index 12, letter M) as percentage
+  // Format % Acerto column (index 11, letter L) as percentage
   for (let i = 0; i < data.length; i++) {
-    const cell = ws[XLSX.utils.encode_cell({ r: i + 1, c: 12 })];
-    if (cell && typeof cell.v === "number") cell.z = "0.00%";
+    const cell = ws[XLSX.utils.encode_cell({ r: i + 1, c: 11 })];
+    if (cell && typeof cell.v === "number") cell.z = "0%";
   }
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Auditoria IA");
