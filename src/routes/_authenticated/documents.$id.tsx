@@ -158,14 +158,10 @@ function DocumentDetailPage() {
   }
 
   const sanitize = (f: (typeof fields)[number], raw: string) => {
-    const value = raw.trim();
     if (f.field_key.toLowerCase().includes("matricula")) {
-      return value.replace(/\D/g, "");
+      return raw.replace(/\D/g, "");
     }
-    if (f.field_type === "number" || f.field_type === "date") {
-      return value;
-    }
-    return value.toUpperCase();
+    return raw;
   };
 
   const set = (f: (typeof fields)[number], raw: string) =>
