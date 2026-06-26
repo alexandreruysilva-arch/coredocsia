@@ -401,9 +401,9 @@ function AuditPage() {
         </Card>
       )}
 
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h3 className="font-semibold">Detalhes por arquivo</h3>
+      <Card className="p-3 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="font-semibold text-sm">Detalhes por arquivo</h3>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
               <SelectTrigger className="h-9 w-[200px]">
