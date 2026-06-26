@@ -203,6 +203,8 @@ function AuditPage() {
       cost: 0,
       durationCount: 0,
       durationTotal: 0,
+      extracted: 0,
+      corrected: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -215,6 +217,8 @@ function AuditPage() {
         t.durationCount++;
         t.durationTotal += l.duration_ms;
       }
+      t.extracted += l.extracted_chars ?? 0;
+      t.corrected += l.corrected_chars ?? 0;
     }
     return t;
   }, [filtered]);
@@ -270,7 +274,7 @@ function AuditPage() {
         </div>
       </header>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="p-2.5 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all">
           <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
             <FileText className="absolute right-0 h-3.5 w-3.5" />
@@ -315,6 +319,20 @@ function AuditPage() {
           </div>
           <div className="text-center text-[11px] text-white/85 mt-0.5">
             {totals.durationCount} medições
+          </div>
+        </Card>
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all">
+          <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
+            <Sparkles className="absolute right-0 h-3.5 w-3.5" />
+            <span>% Acerto médio</span>
+          </div>
+          <div className="text-center text-2xl font-bold mt-1 tabular-nums leading-tight">
+            {totals.extracted > 0
+              ? `${((Math.max(0, totals.extracted - totals.corrected) / totals.extracted) * 100).toFixed(1).replace(".", ",")}%`
+              : "—"}
+          </div>
+          <div className="text-center text-[11px] text-white/85 mt-0.5">
+            {totals.corrected.toLocaleString("pt-BR")} corrigidos / {totals.extracted.toLocaleString("pt-BR")} extraídos
           </div>
         </Card>
       </div>
