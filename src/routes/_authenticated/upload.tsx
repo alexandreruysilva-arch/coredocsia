@@ -50,6 +50,16 @@ import {
   validateFile,
 } from "@/lib/documents";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+function charDiff(a: string, b: string): number {
+  const minLen = Math.min(a.length, b.length);
+  let diff = Math.abs(a.length - b.length);
+  for (let i = 0; i < minLen; i++) {
+    if (a.charCodeAt(i) !== b.charCodeAt(i)) diff++;
+  }
+  return diff;
+}
 
 export const Route = createFileRoute("/_authenticated/upload")({
   component: UploadPage,
@@ -64,6 +74,7 @@ interface QueueItem {
   error?: string;
   fieldValues: Record<string, string>;
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
+  aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
   aiMessage?: string;
   expanded: boolean;
@@ -409,6 +420,7 @@ function UploadPage() {
               ? {
                   ...i,
                   fieldValues: mergedValues,
+                  aiOriginalValues: { ...res.values },
                   aiUsage: res.usage,
                   aiStatus: isIncomplete ? "incomplete" : "success",
                   aiMessage: isIncomplete
@@ -506,6 +518,31 @@ function UploadPage() {
         });
 
         updateItem(item.id, { status: "done", progress: 100 });
+
+        // Soma de caracteres corrigidos manualmente vs. extração da IA
+        const logId = item.aiUsage?.log_id;
+        if (logId && item.aiOriginalValues) {
+          const original = item.aiOriginalValues;
+          const final = item.fieldValues;
+          let correctedChars = 0;
+          const keys = new Set([...Object.keys(original), ...Object.keys(final)]);
+          for (const k of keys) {
+            const a = original[k] == null ? "" : String(original[k]);
+            const b = final[k] == null ? "" : String(final[k]);
+            if (a !== b) correctedChars += charDiff(a, b);
+          }
+          if (correctedChars > 0) {
+            const { data: logRow } = await supabase
+              .from("ai_usage_logs")
+              .select("corrected_chars")
+              .eq("id", logId)
+              .maybeSingle();
+            await supabase
+              .from("ai_usage_logs")
+              .update({ corrected_chars: (logRow?.corrected_chars ?? 0) + correctedChars })
+              .eq("id", logId);
+          }
+        }
       } catch (e: any) {
         updateItem(item.id, { status: "error", error: e.message ?? "Erro" });
       }
@@ -513,6 +550,7 @@ function UploadPage() {
 
     setIsUploading(false);
     queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["ai-usage-logs"] });
     toast.success("Upload finalizado");
   }
 
