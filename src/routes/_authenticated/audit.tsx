@@ -369,7 +369,7 @@ function AuditPage() {
               size="sm"
               className="gap-2"
               disabled={filtered.length === 0}
-              onClick={() => exportLogsCsv(filtered)}
+              onClick={() => exportLogsXlsx(filtered)}
             >
               <Download className="h-4 w-4" /> Exportar CSV
             </Button>
