@@ -550,6 +550,7 @@ function UploadPage() {
 
     setIsUploading(false);
     queryClient.invalidateQueries({ queryKey: ["documents"] });
+    queryClient.invalidateQueries({ queryKey: ["ai-usage-logs"] });
     toast.success("Upload finalizado");
   }
 
