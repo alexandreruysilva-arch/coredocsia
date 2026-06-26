@@ -27,6 +27,7 @@ export type Database = {
           document_type_name: string | null
           duration_ms: number | null
           error_message: string | null
+          extracted_chars: number
           file_name: string
           id: string
           model: string
@@ -48,6 +49,7 @@ export type Database = {
           document_type_name?: string | null
           duration_ms?: number | null
           error_message?: string | null
+          extracted_chars?: number
           file_name: string
           id?: string
           model?: string
@@ -69,6 +71,7 @@ export type Database = {
           document_type_name?: string | null
           duration_ms?: number | null
           error_message?: string | null
+          extracted_chars?: number
           file_name?: string
           id?: string
           model?: string
