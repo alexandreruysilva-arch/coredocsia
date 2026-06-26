@@ -371,7 +371,7 @@ function AuditPage() {
               disabled={filtered.length === 0}
               onClick={() => exportLogsXlsx(filtered)}
             >
-              <Download className="h-4 w-4" /> Exportar CSV
+              <Download className="h-4 w-4" /> Exportar XLSX
             </Button>
           </div>
         </div>
