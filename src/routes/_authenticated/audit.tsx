@@ -72,13 +72,7 @@ function formatDuration(ms: number): string {
   return `${m}m ${r}s`;
 }
 
-function csvEscape(v: unknown): string {
-  const s = v == null ? "" : String(v);
-  if (/[",;\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
-
-function exportLogsCsv(rows: AiLogRow[]) {
+function exportLogsXlsx(rows: AiLogRow[]) {
   const headers = [
     "Data",
     "Empresa",
@@ -96,47 +90,41 @@ function exportLogsCsv(rows: AiLogRow[]) {
     "Status",
     "Erro",
   ];
-  const lines = [headers.join(";")];
-  for (const l of rows) {
-    lines.push(
-      [
-        formatDateTime(l.created_at),
-        l.company_name ?? "",
-        l.document_type_name ?? "",
-        l.file_name,
-        l.model === "gemini-2.5-flash-lite"
-          ? "2.5 Flash Lite"
-          : l.model === "claude-haiku-4-5-20251001"
-            ? "Haiku 4.5"
-            : l.model,
-        l.prompt_tokens,
-        l.completion_tokens,
-        l.total_tokens,
-        l.cost_brl != null ? l.cost_brl.toFixed(4).replace(".", ",") : "",
-        l.duration_ms != null ? formatDuration(l.duration_ms) : "",
-        l.corrected_chars ?? 0,
-        l.extracted_chars ?? 0,
-        l.extracted_chars && l.extracted_chars > 0
-          ? `${(((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(2).replace(".", ",")}%`
-          : "",
-        l.success ? "OK" : "Falha",
-        l.error_message ?? "",
-      ]
-        .map(csvEscape)
-        .join(";"),
-    );
+  const data = rows.map((l) => [
+    formatDateTime(l.created_at),
+    l.company_name ?? "",
+    l.document_type_name ?? "",
+    l.file_name,
+    l.model === "gemini-2.5-flash-lite"
+      ? "2.5 Flash Lite"
+      : l.model === "claude-haiku-4-5-20251001"
+        ? "Haiku 4.5"
+        : l.model,
+    l.prompt_tokens,
+    l.completion_tokens,
+    l.total_tokens,
+    l.cost_brl != null ? Number(l.cost_brl.toFixed(4)) : "",
+    l.duration_ms != null ? formatDuration(l.duration_ms) : "",
+    l.corrected_chars ?? 0,
+    l.extracted_chars ?? 0,
+    l.extracted_chars && l.extracted_chars > 0
+      ? Number((((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(2)) / 100
+      : "",
+    l.success ? "OK" : "Falha",
+    l.error_message ?? "",
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+  ws["!cols"] = headers.map((h) => ({ wch: Math.max(12, h.length + 2) }));
+  // Format % column (index 12, letter M) as percentage
+  for (let i = 0; i < data.length; i++) {
+    const cell = ws[XLSX.utils.encode_cell({ r: i + 1, c: 12 })];
+    if (cell && typeof cell.v === "number") cell.z = "0.00%";
   }
-  const csv = "\uFEFF" + lines.join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `auditoria-ia-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Auditoria IA");
+  XLSX.writeFile(wb, `auditoria-ia-${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
+
 
 
 function AuditPage() {
