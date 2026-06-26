@@ -408,7 +408,7 @@ function AuditPage() {
           </p>
         ) : (
           <div className="overflow-x-auto -mx-5 px-5">
-            <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-center [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle">
+            <Table className="text-xs [&_th]:h-9 [&_th]:px-2 [&_th]:text-[11px] [&_th]:font-medium [&_th]:whitespace-nowrap [&_th]:text-center [&_td]:px-2 [&_td]:py-2 [&_td]:align-middle [&_td]:text-center">
               <TableHeader>
                 <TableRow>
                   <TableHead>Data</TableHead>
