@@ -407,6 +407,7 @@ function AuditPage() {
                   <TableHead className="text-right">Total Token</TableHead>
                   <TableHead className="text-right">Custo (R$)</TableHead>
                   <TableHead className="text-right">Tempo</TableHead>
+                  <TableHead className="text-right">Caract. extraídos</TableHead>
                   <TableHead className="text-right">Caract. corrigidos</TableHead>
                   <TableHead className="text-right">% Correção</TableHead>
                   <TableHead>Status</TableHead>
@@ -441,6 +442,9 @@ function AuditPage() {
                     </TableCell>
                     <TableCell className="text-right tabular-nums text-muted-foreground">
                       {l.duration_ms != null ? formatDuration(l.duration_ms) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {(l.extracted_chars ?? 0).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {(l.corrected_chars ?? 0).toLocaleString("pt-BR")}
