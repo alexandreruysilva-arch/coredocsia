@@ -109,7 +109,7 @@ function exportLogsXlsx(rows: AiLogRow[]) {
     l.corrected_chars ?? 0,
     l.extracted_chars ?? 0,
     l.extracted_chars && l.extracted_chars > 0
-      ? Number((((l.corrected_chars ?? 0) / l.extracted_chars) * 100).toFixed(2)) / 100
+      ? Number(((Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100).toFixed(2)) / 100
       : "",
     l.success ? "OK" : "Falha",
     l.error_message ?? "",
