@@ -205,6 +205,8 @@ function AuditPage() {
       durationTotal: 0,
       extracted: 0,
       corrected: 0,
+      accuracySum: 0,
+      accuracyCount: 0,
     };
     for (const l of filtered) {
       if (l.success) t.success++;
@@ -219,6 +221,11 @@ function AuditPage() {
       }
       t.extracted += l.extracted_chars ?? 0;
       t.corrected += l.corrected_chars ?? 0;
+      if (l.extracted_chars && l.extracted_chars > 0) {
+        t.accuracySum +=
+          (Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100;
+        t.accuracyCount++;
+      }
     }
     return t;
   }, [filtered]);
