@@ -328,7 +328,7 @@ function AuditPage() {
             {totals.durationCount} medições
           </div>
         </Card>
-        <Card className="p-2.5 border-0 bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:-translate-y-0.5 transition-all">
+        <Card className="p-2.5 border-0 bg-gradient-to-br from-cyan-500 to-sky-600 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:-translate-y-0.5 transition-all">
           <div className="relative flex items-center justify-center text-white/85 text-[11px] font-medium">
             <Sparkles className="absolute right-0 h-3.5 w-3.5" />
             <span>% Acerto médio</span>
