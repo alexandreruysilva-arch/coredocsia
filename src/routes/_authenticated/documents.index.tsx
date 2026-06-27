@@ -344,6 +344,7 @@ function DocumentsPage() {
       const fv = (doc.field_values ?? {}) as Record<string, unknown>;
       const row: Record<string, unknown> = {
         "Nome do arquivo": doc.name,
+        "Diretório de upload": doc.source_path ?? "",
         Empresa: companies.find((c) => c.id === doc.company_id)?.name ?? "—",
         Tipo: allTypes.find((t) => t.id === doc.document_type_id)?.name ?? "—",
         Status: doc.status,
