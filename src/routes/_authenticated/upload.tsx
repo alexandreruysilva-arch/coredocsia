@@ -971,12 +971,12 @@ function UploadPage() {
             </ul>
             <div className="sticky bottom-4 z-10 mt-4 flex justify-end">
               <Button
-                size="lg"
+                size="sm"
                 onClick={handleUploadAll}
                 disabled={isUploading || !items.some((i) => i.status === "queued")}
-                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg shadow-indigo-500/40"
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-md shadow-indigo-500/30"
               >
-                <Upload className="h-5 w-5 mr-2" />
+                <Upload className="h-4 w-4 mr-1" />
                 Enviar {items.filter((i) => i.status === "queued").length} arquivo(s)
               </Button>
             </div>
