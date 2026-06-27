@@ -722,6 +722,7 @@ function FieldsDialog({
               Opcional. Descreva onde o campo costuma aparecer no documento para
               ajudar a IA a localizá-lo durante a extração.
             </p>
+          </div>
           <div className="md:col-span-12 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
