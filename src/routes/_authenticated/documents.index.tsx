@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info, Download } from "lucide-react";
+import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info, Download, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
@@ -158,7 +158,25 @@ function DocumentsPage() {
 
   const filtersSelected = companyId !== "all" && typeId !== "all";
 
-  const filteredDocs = !filtersSelected
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  useEffect(() => {
+    setSortKey(null);
+  }, [typeId]);
+
+  function toggleSort(key: string) {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+    }
+  }
+
+  const baseFiltered = !filtersSelected
     ? []
     : docs.filter((d: any) => {
         if (companyId !== "all" && d.company_id !== companyId) return false;
@@ -171,6 +189,30 @@ function DocumentsPage() {
         }
         return true;
       });
+
+  const filteredDocs = useMemo(() => {
+    if (!sortKey) return baseFiltered;
+    const field = typeFields.find((f) => f.field_key === sortKey);
+    const arr = [...baseFiltered];
+    arr.sort((a: any, b: any) => {
+      const av = (a.field_values ?? {})[sortKey];
+      const bv = (b.field_values ?? {})[sortKey];
+      const empty = (v: unknown) => v === null || v === undefined || v === "";
+      if (empty(av) && empty(bv)) return 0;
+      if (empty(av)) return 1;
+      if (empty(bv)) return -1;
+      let cmp = 0;
+      if (field?.field_type === "number") {
+        cmp = Number(av) - Number(bv);
+      } else if (field?.field_type === "date") {
+        cmp = String(av).localeCompare(String(bv));
+      } else {
+        cmp = String(av).localeCompare(String(bv), "pt-BR", { numeric: true, sensitivity: "base" });
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [baseFiltered, sortKey, sortDir, typeFields]);
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
@@ -603,9 +645,23 @@ function DocumentsPage() {
               <TableHeader>
                 <TableRow>
                   {typeId !== "all" &&
-                    typeFields.map((f) => (
-                      <TableHead key={f.id}>{f.label}</TableHead>
-                    ))}
+                    typeFields.map((f) => {
+                      const active = sortKey === f.field_key;
+                      const Icon = active ? (sortDir === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+                      return (
+                        <TableHead key={f.id}>
+                          <button
+                            type="button"
+                            onClick={() => toggleSort(f.field_key)}
+                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                            title="Ordenar"
+                          >
+                            {f.label}
+                            <Icon className={`h-3 w-3 ${active ? "text-foreground" : "text-muted-foreground/60"}`} />
+                          </button>
+                        </TableHead>
+                      );
+                    })}
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
