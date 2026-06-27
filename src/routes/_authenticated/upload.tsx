@@ -118,6 +118,7 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
+  sourcePath?: string | null;
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
@@ -329,15 +330,20 @@ function UploadPage() {
         toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
         return prev;
       }
-      const toAdd = accepted.slice(0, room).map<QueueItem>((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-        status: "queued",
-        progress: 0,
-        fieldValues: {},
-        expanded: true,
-      }));
+      const toAdd = accepted.slice(0, room).map<QueueItem>((file) => {
+        const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
+        const sourcePath = rel && rel.includes("/") ? rel.slice(0, rel.lastIndexOf("/")) : null;
+        return {
+          id: crypto.randomUUID(),
+          file,
+          previewUrl: URL.createObjectURL(file),
+          status: "queued",
+          progress: 0,
+          fieldValues: {},
+          sourcePath,
+          expanded: true,
+        };
+      });
 
       return [...prev, ...toAdd];
     });
@@ -568,6 +574,7 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
+          sourcePath: item.sourcePath ?? null,
           aiUsage: item.aiUsage ?? undefined,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });

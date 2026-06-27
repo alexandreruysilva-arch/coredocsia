@@ -56,12 +56,14 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         throw new Error("aiUsage inválido");
       }
     }
-    return { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage };
+    const sourcePathRaw = data.get("sourcePath");
+    const sourcePath = typeof sourcePathRaw === "string" && sourcePathRaw.trim() ? sourcePathRaw.trim() : null;
+    return { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage, sourcePath };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (!userId) throw new Error("Usuário não autenticado");
-    const { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage } = data;
+    const { file, name, companyId, documentTypeId, tags, fieldValues, aiUsage, sourcePath } = data;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -149,7 +151,8 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         drive_file_id: driveFileId,
         drive_web_view_link: driveWebViewLink,
         status: "processed",
-      })
+        source_path: sourcePath,
+      } as never)
       .select("*")
       .single();
 
