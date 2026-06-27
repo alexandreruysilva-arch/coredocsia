@@ -267,6 +267,7 @@ export type Database = {
           id: string
           is_lookup_key: boolean
           label: string
+          location_hint: string | null
           options: Json | null
           org_id: string
           position: number
@@ -283,6 +284,7 @@ export type Database = {
           id?: string
           is_lookup_key?: boolean
           label: string
+          location_hint?: string | null
           options?: Json | null
           org_id: string
           position?: number
@@ -299,6 +301,7 @@ export type Database = {
           id?: string
           is_lookup_key?: boolean
           label?: string
+          location_hint?: string | null
           options?: Json | null
           org_id?: string
           position?: number

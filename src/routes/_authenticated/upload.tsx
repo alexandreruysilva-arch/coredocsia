@@ -432,6 +432,7 @@ function UploadPage() {
       field_type: f.field_type,
       options: f.options,
       expected_length: f.expected_length ?? null,
+      location_hint: f.location_hint ?? null,
     }));
 
     const fieldsJson = JSON.stringify(fieldDefs);

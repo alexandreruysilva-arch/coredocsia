@@ -7,6 +7,7 @@ interface FieldDef {
   field_type: string;
   options?: unknown;
   expected_length?: number | null;
+  location_hint?: string | null;
 }
 
 
@@ -140,6 +141,9 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
         }
         if (f.expected_length && f.expected_length > 0) {
           desc += `, deve conter EXATAMENTE ${f.expected_length} caracteres (sem espaços em branco); se não encontrar com esse tamanho, retorne ""`;
+        }
+        if (f.location_hint && f.location_hint.trim()) {
+          desc += `, LOCALIZAÇÃO NO DOCUMENTO: ${f.location_hint.trim()}`;
         }
         return desc;
       })

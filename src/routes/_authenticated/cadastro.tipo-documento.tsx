@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/page-stub";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -432,6 +433,7 @@ interface FieldRow {
   position: number;
   is_lookup_key: boolean;
   expected_length: number | null;
+  location_hint: string | null;
 }
 
 function FieldsDialog({
@@ -451,6 +453,7 @@ function FieldsDialog({
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
   const [expectedLength, setExpectedLength] = useState<string>("");
+  const [locationHint, setLocationHint] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
@@ -461,6 +464,7 @@ function FieldsDialog({
     setRequired(false);
     setIsLookupKey(false);
     setExpectedLength("");
+    setLocationHint("");
   };
 
   const startEdit = (f: FieldRow) => {
@@ -471,6 +475,7 @@ function FieldsDialog({
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
     setExpectedLength(f.expected_length != null ? String(f.expected_length) : "");
+    setLocationHint(f.location_hint ?? "");
   };
 
 
@@ -514,6 +519,7 @@ function FieldsDialog({
             required,
             is_lookup_key: isLookupKey,
             expected_length: expLen,
+            location_hint: locationHint.trim() || null,
           })
           .eq("id", editingId);
         if (error) throw error;
@@ -528,6 +534,7 @@ function FieldsDialog({
           required,
           is_lookup_key: isLookupKey,
           expected_length: expLen,
+          location_hint: locationHint.trim() || null,
           position,
         });
         if (error) throw error;
@@ -702,6 +709,19 @@ function FieldsDialog({
               onChange={(e) => setExpectedLength(e.target.value)}
               placeholder="opcional"
             />
+          </div>
+          <div className="md:col-span-12 space-y-1.5">
+            <Label>Localização no documento (dica para a IA)</Label>
+            <Textarea
+              value={locationHint}
+              onChange={(e) => setLocationHint(e.target.value)}
+              placeholder='Ex.: "Canto superior direito, logo abaixo do número da nota fiscal" ou "Rodapé da página, ao lado do CNPJ"'
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              Opcional. Descreva onde o campo costuma aparecer no documento para
+              ajudar a IA a localizá-lo durante a extração.
+            </p>
           </div>
           <div className="md:col-span-12 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm">
