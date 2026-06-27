@@ -447,6 +447,7 @@ function FieldsDialog({
 }) {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [label, setLabel] = useState("");
   const [fieldKey, setFieldKey] = useState("");
   const [fieldType, setFieldType] = useState<FieldRow["field_type"]>("text");
@@ -455,9 +456,12 @@ function FieldsDialog({
   const [expectedLength, setExpectedLength] = useState<string>("");
   const [locationHint, setLocationHint] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const labelInputRef = useRef<HTMLInputElement | null>(null);
 
   const resetForm = () => {
     setEditingId(null);
+    setEditingLabel(null);
     setLabel("");
     setFieldKey("");
     setFieldType("text");
@@ -469,6 +473,7 @@ function FieldsDialog({
 
   const startEdit = (f: FieldRow) => {
     setEditingId(f.id);
+    setEditingLabel(f.label);
     setLabel(f.label);
     setFieldKey(f.field_key);
     setFieldType(f.field_type);
@@ -476,6 +481,10 @@ function FieldsDialog({
     setIsLookupKey(!!f.is_lookup_key);
     setExpectedLength(f.expected_length != null ? String(f.expected_length) : "");
     setLocationHint(f.location_hint ?? "");
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      labelInputRef.current?.focus();
+    }, 50);
   };
 
 
