@@ -34,7 +34,7 @@ export function useDocumentsList(params: ListDocumentsParams) {
         .select("*")
         .eq("org_id", orgId!)
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(5000);
 
       if (!includeDeleted) q = q.is("deleted_at", null);
       if (status !== "all") q = q.eq("status", status);
