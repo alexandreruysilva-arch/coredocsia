@@ -149,6 +149,27 @@ function sanitizeFieldValue(field: DocTypeField, raw: string): string {
   return raw.toUpperCase();
 }
 
+function handleCaretPreservingChange(
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  field: DocTypeField,
+  commit: (value: string) => void,
+) {
+  const el = e.target;
+  const original = el.value;
+  const start = el.selectionStart ?? original.length;
+  const newVal = sanitizeFieldValue(field, original);
+  const delta = newVal.length - original.length;
+  const nextPos = Math.max(0, Math.min(newVal.length, start + delta));
+  commit(newVal);
+  requestAnimationFrame(() => {
+    try {
+      el.setSelectionRange(nextPos, nextPos);
+    } catch {
+      /* element may have unmounted */
+    }
+  });
+}
+
 function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
@@ -171,7 +192,7 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
               <Textarea
                 id={id}
                 value={val}
-                onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onChange={(e) => handleCaretPreservingChange(e, f, (v) => onChange(f.field_key, v))}
                 onBlur={handleBlur}
                 rows={2}
                 className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
@@ -193,7 +214,7 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
               <Input
                 id={id}
                 value={val}
-                onChange={(e) => onChange(f.field_key, sanitizeFieldValue(f, e.target.value))}
+                onChange={(e) => handleCaretPreservingChange(e, f, (v) => onChange(f.field_key, v))}
                 onBlur={handleBlur}
                 onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
                 placeholder={f.field_type === "date" ? "DD/MM/AAAA" : undefined}
@@ -208,6 +229,7 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
           </div>
         );
       })}
+
     </div>
   );
 }
