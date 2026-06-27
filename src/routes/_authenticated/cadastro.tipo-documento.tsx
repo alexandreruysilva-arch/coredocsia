@@ -674,7 +674,20 @@ function FieldsDialog({
         </div>
 
 
+        {editingId && (
+          <div className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm flex items-center justify-between">
+            <span>
+              Editando campo:{" "}
+              <strong>{editingLabel ?? ""}</strong>
+            </span>
+            <Button type="button" size="sm" variant="ghost" onClick={resetForm}>
+              Cancelar edição
+            </Button>
+          </div>
+        )}
+
         <form
+          ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
             save.mutate();
@@ -683,7 +696,7 @@ function FieldsDialog({
         >
           <div className="md:col-span-4 space-y-1.5">
             <Label>Rótulo</Label>
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex.: Número NF" />
+            <Input ref={labelInputRef} value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex.: Número NF" />
           </div>
           <div className="md:col-span-3 space-y-1.5">
             <Label>Chave</Label>
