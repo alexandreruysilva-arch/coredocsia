@@ -29,24 +29,34 @@ export function useDocumentsList(params: ListDocumentsParams) {
     queryFn: async (): Promise<DocumentRow[]> => {
       if (allowedTypeIds && allowedTypeIds.length === 0) return [];
 
-      let q = supabase
-        .from("documents")
-        .select("*")
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false })
-        .limit(5000);
+      const buildQuery = () => {
+        let q = supabase
+          .from("documents")
+          .select("*")
+          .eq("org_id", orgId!)
+          .order("created_at", { ascending: false });
 
-      if (!includeDeleted) q = q.is("deleted_at", null);
-      if (status !== "all") q = q.eq("status", status);
-      if (typeId !== "all") q = q.eq("document_type_id", typeId);
-      if (allowedTypeIds && allowedTypeIds.length > 0) {
-        q = q.in("document_type_id", allowedTypeIds);
+        if (!includeDeleted) q = q.is("deleted_at", null);
+        if (status !== "all") q = q.eq("status", status);
+        if (typeId !== "all") q = q.eq("document_type_id", typeId);
+        if (allowedTypeIds && allowedTypeIds.length > 0) {
+          q = q.in("document_type_id", allowedTypeIds);
+        }
+        if (search.trim()) q = q.ilike("name", `%${search.trim()}%`);
+        return q;
+      };
+
+      // Pagina em lotes para contornar o limite padrão de 1000 do PostgREST
+      const PAGE = 1000;
+      const all: DocumentRow[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await buildQuery().range(from, from + PAGE - 1);
+        if (error) throw error;
+        const rows = data ?? [];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
       }
-      if (search.trim()) q = q.ilike("name", `%${search.trim()}%`);
-
-      const { data, error } = await q;
-      if (error) throw error;
-      return data ?? [];
+      return all;
     },
   });
 
