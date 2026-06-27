@@ -147,16 +147,23 @@ function AuditPage() {
     queryKey: ["ai-usage-logs", orgId],
     enabled: !!orgId,
     queryFn: async (): Promise<AiLogRow[]> => {
-      const { data, error } = await supabase
-        .from("ai_usage_logs")
-        .select(
-          "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, extracted_chars, success, error_message",
-        )
-        .eq("org_id", orgId!)
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return (data ?? []) as AiLogRow[];
+      const PAGE = 1000;
+      const all: AiLogRow[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("ai_usage_logs")
+          .select(
+            "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, extracted_chars, success, error_message",
+          )
+          .eq("org_id", orgId!)
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as AiLogRow[];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+      }
+      return all;
     },
   });
 
