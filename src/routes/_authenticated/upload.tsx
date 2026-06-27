@@ -300,6 +300,7 @@ function UploadPage() {
   const queryClient = useQueryClient();
 
   const [items, setItems] = useState<QueueItem[]>([]);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
