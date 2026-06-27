@@ -12,6 +12,7 @@ export interface DocTypeField {
   options: any;
   is_lookup_key?: boolean;
   expected_length?: number | null;
+  location_hint?: string | null;
 }
 
 
