@@ -625,6 +625,12 @@ function UploadPage() {
     setItems((p) => p.filter((i) => i.status !== "done"));
   }
 
+  function clearAll() {
+    if (isUploading) return;
+    if (!confirm("Remover todos os arquivos da fila?")) return;
+    setItems([]);
+  }
+
   const queuedCount = items.filter((i) => i.status === "queued").length;
   const doneCount = items.filter((i) => i.status === "done").length;
   const errorCount = items.filter((i) => i.status === "error").length;
