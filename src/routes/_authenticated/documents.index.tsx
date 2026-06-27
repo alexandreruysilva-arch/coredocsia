@@ -645,9 +645,23 @@ function DocumentsPage() {
               <TableHeader>
                 <TableRow>
                   {typeId !== "all" &&
-                    typeFields.map((f) => (
-                      <TableHead key={f.id}>{f.label}</TableHead>
-                    ))}
+                    typeFields.map((f) => {
+                      const active = sortKey === f.field_key;
+                      const Icon = active ? (sortDir === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+                      return (
+                        <TableHead key={f.id}>
+                          <button
+                            type="button"
+                            onClick={() => toggleSort(f.field_key)}
+                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                            title="Ordenar"
+                          >
+                            {f.label}
+                            <Icon className={`h-3 w-3 ${active ? "text-foreground" : "text-muted-foreground/60"}`} />
+                          </button>
+                        </TableHead>
+                      );
+                    })}
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
