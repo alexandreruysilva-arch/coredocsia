@@ -625,6 +625,12 @@ function UploadPage() {
     setItems((p) => p.filter((i) => i.status !== "done"));
   }
 
+  function clearAll() {
+    if (isUploading) return;
+    if (!confirm("Remover todos os arquivos da fila?")) return;
+    setItems([]);
+  }
+
   const queuedCount = items.filter((i) => i.status === "queued").length;
   const doneCount = items.filter((i) => i.status === "done").length;
   const errorCount = items.filter((i) => i.status === "error").length;
@@ -806,6 +812,17 @@ function UploadPage() {
                     Limpar finalizados
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearAll}
+                  disabled={isUploading}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Remove todos os arquivos da fila"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar fila
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
