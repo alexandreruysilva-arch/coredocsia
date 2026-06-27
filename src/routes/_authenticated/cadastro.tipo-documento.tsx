@@ -464,6 +464,7 @@ function FieldsDialog({
     setRequired(false);
     setIsLookupKey(false);
     setExpectedLength("");
+    setLocationHint("");
   };
 
   const startEdit = (f: FieldRow) => {
