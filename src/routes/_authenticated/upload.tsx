@@ -118,6 +118,7 @@ interface QueueItem {
   progress: number;
   error?: string;
   fieldValues: Record<string, string>;
+  sourcePath?: string | null;
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
