@@ -60,13 +60,14 @@ export interface UploadOptions {
   companyId: string;
   fieldValues?: Record<string, unknown>;
   tags?: string[];
+  sourcePath?: string | null;
   aiUsage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number; model?: string; log_id?: string | null };
   onProgress?: (pct: number) => void;
 }
 
 
 export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> {
-  const { file, name, documentTypeId, companyId, fieldValues, tags = [], aiUsage } = opts;
+  const { file, name, documentTypeId, companyId, fieldValues, tags = [], aiUsage, sourcePath } = opts;
 
   opts.onProgress?.(10);
 
@@ -79,6 +80,7 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   form.append("documentTypeId", documentTypeId);
   form.append("tags", tags.join(","));
   form.append("fieldValues", JSON.stringify(fieldValues ?? {}));
+  if (sourcePath) form.append("sourcePath", sourcePath);
   if (aiUsage) {
     form.append("aiUsage", JSON.stringify(aiUsage));
   }
