@@ -449,6 +449,7 @@ export type Database = {
           original_filename: string
           page_count: number | null
           size_bytes: number
+          source_path: string | null
           status: Database["public"]["Enums"]["doc_status"]
           storage_path: string | null
           tags: string[]
@@ -472,6 +473,7 @@ export type Database = {
           original_filename: string
           page_count?: number | null
           size_bytes: number
+          source_path?: string | null
           status?: Database["public"]["Enums"]["doc_status"]
           storage_path?: string | null
           tags?: string[]
@@ -495,6 +497,7 @@ export type Database = {
           original_filename?: string
           page_count?: number | null
           size_bytes?: number
+          source_path?: string | null
           status?: Database["public"]["Enums"]["doc_status"]
           storage_path?: string | null
           tags?: string[]
