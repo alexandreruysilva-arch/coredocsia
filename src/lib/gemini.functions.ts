@@ -7,6 +7,7 @@ interface FieldDef {
   field_type: string;
   options?: unknown;
   expected_length?: number | null;
+  location_hint?: string | null;
 }
 
 
