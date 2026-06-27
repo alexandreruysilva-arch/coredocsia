@@ -764,15 +764,25 @@ function UploadPage() {
               type="button"
               variant="outline"
               size="sm"
-              disabled={isUploading}
+              disabled={isUploading || companyId === "none" || docTypeId === "none"}
+              title={
+                companyId === "none" || docTypeId === "none"
+                  ? "Selecione a empresa e o tipo de documento primeiro"
+                  : undefined
+              }
               onClick={(e) => {
                 e.stopPropagation();
+                if (companyId === "none" || docTypeId === "none") {
+                  toast.error("Selecione a empresa e o tipo de documento primeiro");
+                  return;
+                }
                 folderInputRef.current?.click();
               }}
             >
               <Upload className="h-4 w-4 mr-1" />
               Selecionar pasta
             </Button>
+
             <input
               ref={folderInputRef}
               type="file"
