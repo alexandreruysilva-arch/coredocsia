@@ -64,35 +64,44 @@ function QueuePage() {
     queryKey: ["queue-documents", orgId, status],
     enabled: !!orgId,
     queryFn: async (): Promise<QueueDoc[]> => {
-      let q = supabase
-        .from("documents")
-        .select("*, ai_usage_logs(id, duration_ms)")
-        .eq("org_id", orgId!)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const buildQuery = () => {
+        let q = supabase
+          .from("documents")
+          .select("*, ai_usage_logs(id, duration_ms)")
+          .eq("org_id", orgId!)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
 
-      if (status === "pending") q = q.eq("status", "pending");
-      else if (status === "processing") q = q.eq("status", "processing");
-      else if (status === "failed") q = q.eq("status", "failed");
-      else if (
-        status === "processed" ||
-        status === "processed_ai" ||
-        status === "processed_manual"
-      ) {
-        q = q.eq("status", "processed");
+        if (status === "pending") q = q.eq("status", "pending");
+        else if (status === "processing") q = q.eq("status", "processing");
+        else if (status === "failed") q = q.eq("status", "failed");
+        else if (
+          status === "processed" ||
+          status === "processed_ai" ||
+          status === "processed_manual"
+        ) {
+          q = q.eq("status", "processed");
+        }
+        return q;
+      };
+
+      const PAGE = 1000;
+      const all: QueueDoc[] = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await buildQuery().range(from, from + PAGE - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as QueueDoc[];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
       }
-
-      const { data, error } = await q;
-      if (error) throw error;
-      const rows = (data ?? []) as QueueDoc[];
       if (status === "processed_ai") {
-        return rows.filter((d) => (d.ai_usage_logs?.length ?? 0) > 0);
+        return all.filter((d) => (d.ai_usage_logs?.length ?? 0) > 0);
       }
       if (status === "processed_manual") {
-        return rows.filter((d) => (d.ai_usage_logs?.length ?? 0) === 0);
+        return all.filter((d) => (d.ai_usage_logs?.length ?? 0) === 0);
       }
-      return rows;
+      return all;
+
     },
   });
 
