@@ -151,7 +151,8 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
         drive_file_id: driveFileId,
         drive_web_view_link: driveWebViewLink,
         status: "processed",
-      })
+        source_path: sourcePath,
+      } as never)
       .select("*")
       .single();
 
