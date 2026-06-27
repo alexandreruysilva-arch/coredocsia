@@ -158,7 +158,25 @@ function DocumentsPage() {
 
   const filtersSelected = companyId !== "all" && typeId !== "all";
 
-  const filteredDocs = !filtersSelected
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  useEffect(() => {
+    setSortKey(null);
+  }, [typeId]);
+
+  function toggleSort(key: string) {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortKey(null);
+    }
+  }
+
+  const baseFiltered = !filtersSelected
     ? []
     : docs.filter((d: any) => {
         if (companyId !== "all" && d.company_id !== companyId) return false;
@@ -171,6 +189,30 @@ function DocumentsPage() {
         }
         return true;
       });
+
+  const filteredDocs = useMemo(() => {
+    if (!sortKey) return baseFiltered;
+    const field = typeFields.find((f) => f.field_key === sortKey);
+    const arr = [...baseFiltered];
+    arr.sort((a: any, b: any) => {
+      const av = (a.field_values ?? {})[sortKey];
+      const bv = (b.field_values ?? {})[sortKey];
+      const empty = (v: unknown) => v === null || v === undefined || v === "";
+      if (empty(av) && empty(bv)) return 0;
+      if (empty(av)) return 1;
+      if (empty(bv)) return -1;
+      let cmp = 0;
+      if (field?.field_type === "number") {
+        cmp = Number(av) - Number(bv);
+      } else if (field?.field_type === "date") {
+        cmp = String(av).localeCompare(String(bv));
+      } else {
+        cmp = String(av).localeCompare(String(bv), "pt-BR", { numeric: true, sensitivity: "base" });
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [baseFiltered, sortKey, sortDir, typeFields]);
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
