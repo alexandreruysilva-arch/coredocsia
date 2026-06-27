@@ -710,6 +710,18 @@ function FieldsDialog({
               placeholder="opcional"
             />
           </div>
+          <div className="md:col-span-12 space-y-1.5">
+            <Label>Localização no documento (dica para a IA)</Label>
+            <Textarea
+              value={locationHint}
+              onChange={(e) => setLocationHint(e.target.value)}
+              placeholder='Ex.: "Canto superior direito, logo abaixo do número da nota fiscal" ou "Rodapé da página, ao lado do CNPJ"'
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              Opcional. Descreva onde o campo costuma aparecer no documento para
+              ajudar a IA a localizá-lo durante a extração.
+            </p>
           <div className="md:col-span-12 flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm">
               <Checkbox
