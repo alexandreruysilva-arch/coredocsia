@@ -745,6 +745,46 @@ function UploadPage() {
           <p className="text-xs text-muted-foreground mt-1">
             PDF, JPG, PNG
           </p>
+          <div className="mt-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isUploading}
+              onClick={(e) => {
+                e.stopPropagation();
+                folderInputRef.current?.click();
+              }}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Selecionar pasta
+            </Button>
+            <input
+              ref={folderInputRef}
+              type="file"
+              hidden
+              multiple
+              // @ts-expect-error - webkitdirectory is non-standard but widely supported
+              webkitdirectory=""
+              directory=""
+              onChange={(e) => {
+                const all = Array.from(e.target.files ?? []);
+                const accepted: File[] = [];
+                const rejected: { file: File; errors: { message: string }[] }[] = [];
+                all.forEach((f) => {
+                  if (!ALLOWED_MIME.includes(f.type)) {
+                    rejected.push({ file: f, errors: [{ message: "tipo não suportado" }] });
+                  } else if (f.size > 50 * 1024 * 1024) {
+                    rejected.push({ file: f, errors: [{ message: "excede 50 MB" }] });
+                  } else {
+                    accepted.push(f);
+                  }
+                });
+                onDrop(accepted, rejected);
+                e.target.value = "";
+              }}
+            />
+          </div>
         </div>
 
 
