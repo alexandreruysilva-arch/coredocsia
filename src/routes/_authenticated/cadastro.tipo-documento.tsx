@@ -572,7 +572,7 @@ function FieldsDialog({
 
   return (
     <Dialog open={!!docType} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-[1100px] w-[95vw]">
         <DialogHeader>
           <DialogTitle>Campos de indexação — {docType?.name}</DialogTitle>
           <DialogDescription>
