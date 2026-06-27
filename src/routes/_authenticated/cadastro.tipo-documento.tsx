@@ -519,6 +519,7 @@ function FieldsDialog({
             required,
             is_lookup_key: isLookupKey,
             expected_length: expLen,
+            location_hint: locationHint.trim() || null,
           })
           .eq("id", editingId);
         if (error) throw error;
