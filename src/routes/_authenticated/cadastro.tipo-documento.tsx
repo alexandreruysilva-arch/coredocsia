@@ -475,6 +475,7 @@ function FieldsDialog({
     setRequired(f.required);
     setIsLookupKey(!!f.is_lookup_key);
     setExpectedLength(f.expected_length != null ? String(f.expected_length) : "");
+    setLocationHint(f.location_hint ?? "");
   };
 
 
