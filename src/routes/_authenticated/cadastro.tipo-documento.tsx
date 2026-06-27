@@ -453,6 +453,7 @@ function FieldsDialog({
   const [required, setRequired] = useState(false);
   const [isLookupKey, setIsLookupKey] = useState(false);
   const [expectedLength, setExpectedLength] = useState<string>("");
+  const [locationHint, setLocationHint] = useState<string>("");
   const [lookupOpen, setLookupOpen] = useState(false);
 
   const resetForm = () => {
