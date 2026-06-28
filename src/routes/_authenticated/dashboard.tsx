@@ -63,12 +63,7 @@ function Dashboard() {
         1,
       ).toISOString();
 
-      const [docsRes, recentRes, aiRes, companiesRes, typesRes] = await Promise.all([
-        supabase
-          .from("documents")
-          .select("id, status, created_at, document_type_id, company_id")
-          .eq("org_id", orgId)
-          .is("deleted_at", null),
+      const [recentRes, aiRes, companiesRes, typesRes] = await Promise.all([
         supabase
           .from("documents")
           .select("*")
@@ -84,6 +79,24 @@ function Dashboard() {
         supabase.from("companies").select("id, name").eq("org_id", orgId),
         supabase.from("document_types").select("id, name").eq("org_id", orgId),
       ]);
+
+      // Pagina documentos para contornar o limite padrão de 1000 do PostgREST
+      const PAGE = 1000;
+      const all: Array<{ id: string; status: string; created_at: string; document_type_id: string | null; company_id: string | null }> = [];
+      for (let from = 0; ; from += PAGE) {
+        const { data, error } = await supabase
+          .from("documents")
+          .select("id, status, created_at, document_type_id, company_id")
+          .eq("org_id", orgId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as any[];
+        all.push(...rows);
+        if (rows.length < PAGE) break;
+      }
+
 
       const all = docsRes.data ?? [];
       const types = typesRes.data ?? [];
