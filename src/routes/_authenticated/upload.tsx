@@ -1009,8 +1009,8 @@ function UploadPage() {
                           {formatBytes(item.file.size)}
                         </span>
                         {isProcessing && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded shrink-0">
-                            {batchProgress?.action === "extract" ? "IA…" : "Enviando…"}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded shrink-0 whitespace-nowrap">
+                            {batchProgress?.action === "extract" ? "Processando IA" : "Enviando…"}
                           </span>
                         )}
                       </div>
