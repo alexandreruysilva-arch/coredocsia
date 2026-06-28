@@ -56,7 +56,7 @@ import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
 import { deleteDocumentFromDrive } from "@/lib/drive.functions";
 
-import { formatBytes, type DocumentRow } from "@/lib/documents";
+import { formatBytes, type DocStatus, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,
@@ -70,6 +70,20 @@ function formatDuration(ms: number): string {
   const r = Math.round(s % 60);
   return `${m}m ${r}s`;
 }
+
+interface DocumentStats {
+  total: number;
+  processed: number;
+  pending: number;
+  failed: number;
+}
+
+const EMPTY_DOCUMENT_STATS: DocumentStats = {
+  total: 0,
+  processed: 0,
+  pending: 0,
+  failed: 0,
+};
 
 function DocumentsPage() {
   const navigate = useNavigate();
@@ -213,6 +227,74 @@ function DocumentsPage() {
     });
     return arr;
   }, [baseFiltered, sortKey, sortDir, typeFields]);
+
+  const validFieldKeys = useMemo(
+    () => new Set(typeFields.map((field) => field.field_key)),
+    [typeFields],
+  );
+
+  const fieldFilterKey = useMemo(
+    () => JSON.stringify(activeFieldFilters),
+    [activeFieldFilters],
+  );
+
+  const { data: documentStats = EMPTY_DOCUMENT_STATS } = useQuery({
+    queryKey: [
+      "documents-stats",
+      orgId,
+      companyId,
+      typeId,
+      search.length >= 2 ? search : "",
+      allowedTypeIds,
+      fieldFilterKey,
+    ],
+    enabled: !!orgId && filtersSelected && (allowedTypeIds === null || allowedTypeIds.length > 0),
+    queryFn: async (): Promise<DocumentStats> => {
+      const searchTerm = search.length >= 2 ? search.trim() : "";
+
+      const buildCountQuery = (statuses?: DocStatus[]) => {
+        let q = supabase
+          .from("documents")
+          .select("id", { count: "exact", head: true })
+          .eq("org_id", orgId!)
+          .eq("company_id", companyId)
+          .eq("document_type_id", typeId)
+          .is("deleted_at", null);
+
+        if (allowedTypeIds && allowedTypeIds.length > 0) {
+          q = q.in("document_type_id", allowedTypeIds);
+        }
+        if (statuses && statuses.length > 0) q = q.in("status", statuses);
+        if (searchTerm) q = q.ilike("name", `%${searchTerm}%`);
+
+        for (const [key, value] of activeFieldFilters) {
+          const trimmed = value.trim();
+          if (!trimmed || !validFieldKeys.has(key)) continue;
+          q = q.filter(`field_values->>${key}`, "ilike", `%${trimmed}%`);
+        }
+
+        return q;
+      };
+
+      const [totalResult, processedResult, pendingResult, failedResult] = await Promise.all([
+        buildCountQuery(),
+        buildCountQuery(["processed"]),
+        buildCountQuery(["pending", "processing"]),
+        buildCountQuery(["failed"]),
+      ]);
+
+      const firstError =
+        totalResult.error ?? processedResult.error ?? pendingResult.error ?? failedResult.error;
+      if (firstError) throw firstError;
+
+      return {
+        total: totalResult.count ?? 0,
+        processed: processedResult.count ?? 0,
+        pending: pendingResult.count ?? 0,
+        failed: failedResult.count ?? 0,
+      };
+    },
+  });
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
@@ -418,7 +500,7 @@ function DocumentsPage() {
                   <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Resultados</span>
                   <FolderOpen className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">{filteredDocs.length.toLocaleString("pt-BR")}</p>
+                <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">{documentStats.total.toLocaleString("pt-BR")}</p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
                 <div className="relative flex items-center justify-center">
@@ -426,7 +508,7 @@ function DocumentsPage() {
                   <Search className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
                 <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">
-                  {filteredDocs.filter((d) => d.status === "processed").length.toLocaleString("pt-BR")}
+                  {documentStats.processed.toLocaleString("pt-BR")}
                 </p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
@@ -435,7 +517,7 @@ function DocumentsPage() {
                   <Loader2 className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
                 <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">
-                  {filteredDocs.filter((d) => d.status === "pending" || d.status === "processing").length.toLocaleString("pt-BR")}
+                  {documentStats.pending.toLocaleString("pt-BR")}
                 </p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
@@ -444,7 +526,7 @@ function DocumentsPage() {
                   <X className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
                 <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">
-                  {filteredDocs.filter((d) => d.status === "failed").length.toLocaleString("pt-BR")}
+                  {documentStats.failed.toLocaleString("pt-BR")}
                 </p>
               </Card>
 
