@@ -328,6 +328,13 @@ function UploadPage() {
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude">(null);
+  const [batchProgress, setBatchProgress] = useState<{
+    action: "extract" | "upload";
+    current: number;
+    total: number;
+    fileName: string;
+    itemId: string;
+  } | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
 
@@ -471,7 +478,15 @@ function UploadPage() {
     let ok = 0;
     let fail = 0;
     let incomplete = 0;
-    for (const item of queued) {
+    for (let idx = 0; idx < queued.length; idx++) {
+      const item = queued[idx];
+      setBatchProgress({
+        action: "extract",
+        current: idx + 1,
+        total: queued.length,
+        fileName: item.file.name,
+        itemId: item.id,
+      });
       try {
         const form = new FormData();
         form.append("file", item.file);
@@ -536,6 +551,7 @@ function UploadPage() {
       }
     }
     setIsExtracting(null);
+    setBatchProgress(null);
     if (ok > 0 || fail > 0) {
       const parts: string[] = [];
       if (ok > 0) parts.push(`${ok} ok`);
@@ -580,7 +596,15 @@ function UploadPage() {
 
     setIsUploading(true);
 
-    for (const item of queued) {
+    for (let idx = 0; idx < queued.length; idx++) {
+      const item = queued[idx];
+      setBatchProgress({
+        action: "upload",
+        current: idx + 1,
+        total: queued.length,
+        fileName: item.file.name,
+        itemId: item.id,
+      });
       const err = validateFile(item.file);
       if (err) {
         updateItem(item.id, { status: "error", error: err });
@@ -638,6 +662,7 @@ function UploadPage() {
     }
 
     setIsUploading(false);
+    setBatchProgress(null);
     queryClient.invalidateQueries({ queryKey: ["documents"] });
     queryClient.invalidateQueries({ queryKey: ["ai-usage-logs"] });
     toast.success("Upload finalizado");
@@ -675,6 +700,37 @@ function UploadPage() {
           </p>
         </div>
       </header>
+
+      {batchProgress && (
+        <div className="sticky top-2 z-30 rounded-xl border border-blue-300/60 bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 p-3 shadow-lg shadow-blue-500/30 text-white">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider">
+                <span>
+                  {batchProgress.action === "extract" ? "Processando IA" : "Enviando arquivo"}
+                  {" · "}
+                  {batchProgress.current} de {batchProgress.total}
+                </span>
+                <span className="tabular-nums">
+                  {Math.round((batchProgress.current / batchProgress.total) * 100)}%
+                </span>
+              </div>
+              <p className="text-sm font-medium truncate mt-0.5" title={batchProgress.fileName}>
+                {batchProgress.fileName}
+              </p>
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+                <div
+                  className="h-full rounded-full bg-white transition-all"
+                  style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
 
       {items.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -911,10 +967,20 @@ function UploadPage() {
               </div>
             </div>
             <ul className="divide-y divide-border rounded-md border border-border">
-              {items.map((item) => (
-                <li key={item.id} className="p-3 space-y-2">
+              {items.map((item) => {
+                const isProcessing = batchProgress?.itemId === item.id;
+                return (
+                <li
+                  key={item.id}
+                  className={cn(
+                    "p-3 space-y-2 transition-colors",
+                    isProcessing && "bg-blue-50 dark:bg-blue-950/30 ring-2 ring-inset ring-blue-500/60 animate-pulse",
+                  )}
+                >
                   <div className="flex items-center gap-3">
-                    {item.file.type.startsWith("image/") ? (
+                    {isProcessing ? (
+                      <Loader2 className="h-5 w-5 text-blue-600 shrink-0 animate-spin" />
+                    ) : item.file.type.startsWith("image/") ? (
                       <ImageIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                     ) : (
                       <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -925,7 +991,13 @@ function UploadPage() {
                         <span className="text-xs text-muted-foreground shrink-0">
                           {formatBytes(item.file.size)}
                         </span>
+                        {isProcessing && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded shrink-0">
+                            {batchProgress?.action === "extract" ? "IA…" : "Enviando…"}
+                          </span>
+                        )}
                       </div>
+
                       {item.status === "uploading" && (
                         <Progress value={item.progress} className="h-1 mt-1.5" />
                       )}
@@ -1016,7 +1088,8 @@ function UploadPage() {
                     </div>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <div className="sticky bottom-4 z-10 mt-4 flex justify-end">
               <Button
