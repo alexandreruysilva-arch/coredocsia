@@ -719,27 +719,27 @@ function UploadPage() {
                   {batchProgress.sourcePath ?? "— sem diretório —"}
                 </span>
               </p>
-              <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider mt-1">
-                <span>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mt-1 min-w-0">
+                <span className="shrink-0">
                   {batchProgress.action === "extract" ? "Processando IA" : "Enviando arquivo"}
                   {" · "}
                   {batchProgress.current} de {batchProgress.total}
                 </span>
-                <span className="tabular-nums">
+                <span className="truncate text-[11px] font-medium normal-case tracking-normal text-white/90" title={batchProgress.fileName}>
+                  · {batchProgress.fileName}
+                </span>
+                <span className="ml-auto tabular-nums shrink-0">
                   {Math.round((batchProgress.current / batchProgress.total) * 100)}%
                 </span>
               </div>
-              <p className="text-sm font-medium truncate mt-0.5 text-white/90" title={batchProgress.fileName}>
-                {batchProgress.fileName}
-              </p>
 
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
-
                 <div
                   className="h-full rounded-full bg-white transition-all"
                   style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
                 />
               </div>
+
             </div>
           </div>
         </div>
