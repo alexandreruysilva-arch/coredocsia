@@ -701,6 +701,37 @@ function UploadPage() {
         </div>
       </header>
 
+      {batchProgress && (
+        <div className="sticky top-2 z-30 rounded-xl border border-blue-300/60 bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 p-3 shadow-lg shadow-blue-500/30 text-white">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider">
+                <span>
+                  {batchProgress.action === "extract" ? "Processando IA" : "Enviando arquivo"}
+                  {" · "}
+                  {batchProgress.current} de {batchProgress.total}
+                </span>
+                <span className="tabular-nums">
+                  {Math.round((batchProgress.current / batchProgress.total) * 100)}%
+                </span>
+              </div>
+              <p className="text-sm font-medium truncate mt-0.5" title={batchProgress.fileName}>
+                {batchProgress.fileName}
+              </p>
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+                <div
+                  className="h-full rounded-full bg-white transition-all"
+                  style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
       {items.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="p-2.5 border-0 bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
