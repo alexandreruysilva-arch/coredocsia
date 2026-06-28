@@ -334,6 +334,7 @@ function UploadPage() {
     total: number;
     fileName: string;
     itemId: string;
+    sourcePath: string | null;
   } | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
