@@ -56,7 +56,7 @@ import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
 import { deleteDocumentFromDrive } from "@/lib/drive.functions";
 
-import { formatBytes, type DocStatus, type DocumentRow } from "@/lib/documents";
+import { formatBytes, type DocumentRow } from "@/lib/documents";
 
 export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,
@@ -252,46 +252,27 @@ function DocumentsPage() {
     queryFn: async (): Promise<DocumentStats> => {
       const searchTerm = search.length >= 2 ? search.trim() : "";
 
-      const buildCountQuery = (statuses?: DocStatus[]) => {
-        let q = supabase
-          .from("documents")
-          .select("id", { count: "exact", head: true })
-          .eq("org_id", orgId!)
-          .eq("company_id", companyId)
-          .eq("document_type_id", typeId)
-          .is("deleted_at", null);
+      const fieldFilterObject = Object.fromEntries(
+        activeFieldFilters.filter(([key, value]) => value.trim() && validFieldKeys.has(key)),
+      );
 
-        if (allowedTypeIds && allowedTypeIds.length > 0) {
-          q = q.in("document_type_id", allowedTypeIds);
-        }
-        if (statuses && statuses.length > 0) q = q.in("status", statuses);
-        if (searchTerm) q = q.ilike("name", `%${searchTerm}%`);
+      const { data, error } = await supabase.rpc("get_document_stats", {
+        _org_id: orgId!,
+        _company_id: companyId,
+        _document_type_id: typeId,
+        _search: searchTerm,
+        _allowed_type_ids: allowedTypeIds && allowedTypeIds.length > 0 ? allowedTypeIds : null,
+        _field_filters: fieldFilterObject,
+      });
 
-        for (const [key, value] of activeFieldFilters) {
-          const trimmed = value.trim();
-          if (!trimmed || !validFieldKeys.has(key)) continue;
-          q = q.filter(`field_values->>${key}`, "ilike", `%${trimmed}%`);
-        }
-
-        return q;
-      };
-
-      const [totalResult, processedResult, pendingResult, failedResult] = await Promise.all([
-        buildCountQuery(),
-        buildCountQuery(["processed"]),
-        buildCountQuery(["pending", "processing"]),
-        buildCountQuery(["failed"]),
-      ]);
-
-      const firstError =
-        totalResult.error ?? processedResult.error ?? pendingResult.error ?? failedResult.error;
-      if (firstError) throw firstError;
+      if (error) throw error;
+      const stats = data?.[0];
 
       return {
-        total: totalResult.count ?? 0,
-        processed: processedResult.count ?? 0,
-        pending: pendingResult.count ?? 0,
-        failed: failedResult.count ?? 0,
+        total: Number(stats?.total ?? 0),
+        processed: Number(stats?.processed ?? 0),
+        pending: Number(stats?.pending ?? 0),
+        failed: Number(stats?.failed ?? 0),
       };
     },
   });
