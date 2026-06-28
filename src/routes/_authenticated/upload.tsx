@@ -328,6 +328,13 @@ function UploadPage() {
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude">(null);
+  const [batchProgress, setBatchProgress] = useState<{
+    action: "extract" | "upload";
+    current: number;
+    total: number;
+    fileName: string;
+    itemId: string;
+  } | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
 
