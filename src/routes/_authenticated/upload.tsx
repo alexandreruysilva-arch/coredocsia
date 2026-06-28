@@ -1088,7 +1088,8 @@ function UploadPage() {
                     </div>
                   )}
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <div className="sticky bottom-4 z-10 mt-4 flex justify-end">
               <Button
