@@ -97,9 +97,8 @@ function Dashboard() {
         if (rows.length < PAGE) break;
       }
 
-
-      const all = docsRes.data ?? [];
       const types = typesRes.data ?? [];
+
       const companies = companiesRes.data ?? [];
       const typeMap = new Map(types.map((t: any) => [t.id, t.name]));
       const companyMap = new Map(companies.map((c: any) => [c.id, c.name]));
