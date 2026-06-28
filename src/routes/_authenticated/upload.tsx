@@ -967,10 +967,20 @@ function UploadPage() {
               </div>
             </div>
             <ul className="divide-y divide-border rounded-md border border-border">
-              {items.map((item) => (
-                <li key={item.id} className="p-3 space-y-2">
+              {items.map((item) => {
+                const isProcessing = batchProgress?.itemId === item.id;
+                return (
+                <li
+                  key={item.id}
+                  className={cn(
+                    "p-3 space-y-2 transition-colors",
+                    isProcessing && "bg-blue-50 dark:bg-blue-950/30 ring-2 ring-inset ring-blue-500/60 animate-pulse",
+                  )}
+                >
                   <div className="flex items-center gap-3">
-                    {item.file.type.startsWith("image/") ? (
+                    {isProcessing ? (
+                      <Loader2 className="h-5 w-5 text-blue-600 shrink-0 animate-spin" />
+                    ) : item.file.type.startsWith("image/") ? (
                       <ImageIcon className="h-5 w-5 text-muted-foreground shrink-0" />
                     ) : (
                       <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -981,7 +991,13 @@ function UploadPage() {
                         <span className="text-xs text-muted-foreground shrink-0">
                           {formatBytes(item.file.size)}
                         </span>
+                        {isProcessing && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded shrink-0">
+                            {batchProgress?.action === "extract" ? "IA…" : "Enviando…"}
+                          </span>
+                        )}
                       </div>
+
                       {item.status === "uploading" && (
                         <Progress value={item.progress} className="h-1 mt-1.5" />
                       )}
