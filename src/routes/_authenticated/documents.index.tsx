@@ -277,6 +277,27 @@ function DocumentsPage() {
     },
   });
 
+  const { data: orgDocumentStats = EMPTY_DOCUMENT_STATS } = useQuery({
+    queryKey: ["org-documents-stats", orgId, allowedTypeIds],
+    enabled: !!orgId && (allowedTypeIds === null || allowedTypeIds.length > 0),
+    queryFn: async (): Promise<DocumentStats> => {
+      const { data, error } = await supabase.rpc("get_org_document_stats", {
+        _org_id: orgId!,
+        _allowed_type_ids: allowedTypeIds && allowedTypeIds.length > 0 ? allowedTypeIds : undefined,
+      });
+
+      if (error) throw error;
+      const stats = data?.[0];
+
+      return {
+        total: Number(stats?.total ?? 0),
+        processed: Number(stats?.processed ?? 0),
+        pending: Number(stats?.pending ?? 0),
+        failed: Number(stats?.failed ?? 0),
+      };
+    },
+  });
+
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
   const displayTotal = filtersSelected ? documentStats.total : 0;
@@ -476,10 +497,17 @@ function DocumentsPage() {
 
 
           {filtersSelected && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <Card className="p-2.5 border-0 bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-lg shadow-slate-700/20">
+                <div className="relative flex items-center justify-center">
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Total GED</span>
+                  <FolderOpen className="absolute right-0 h-3.5 w-3.5 text-white/90" />
+                </div>
+                <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">{orgDocumentStats.total.toLocaleString("pt-BR")}</p>
+              </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-lg shadow-indigo-500/20">
                 <div className="relative flex items-center justify-center">
-                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Resultados</span>
+                  <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Filtrados</span>
                   <FolderOpen className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
                 <p className="text-lg font-display font-bold mt-1 tabular-nums leading-tight text-center whitespace-nowrap">{documentStats.total.toLocaleString("pt-BR")}</p>
