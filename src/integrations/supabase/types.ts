@@ -720,6 +720,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_document_stats: {
+        Args: {
+          _allowed_type_ids?: string[]
+          _company_id: string
+          _document_type_id: string
+          _field_filters?: Json
+          _org_id: string
+          _search?: string
+        }
+        Returns: {
+          failed: number
+          pending: number
+          processed: number
+          total: number
+        }[]
+      }
       has_role: {
         Args: {
           _org_id: string
