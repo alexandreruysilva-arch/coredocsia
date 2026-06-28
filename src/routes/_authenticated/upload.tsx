@@ -478,7 +478,15 @@ function UploadPage() {
     let ok = 0;
     let fail = 0;
     let incomplete = 0;
-    for (const item of queued) {
+    for (let idx = 0; idx < queued.length; idx++) {
+      const item = queued[idx];
+      setBatchProgress({
+        action: "extract",
+        current: idx + 1,
+        total: queued.length,
+        fileName: item.file.name,
+        itemId: item.id,
+      });
       try {
         const form = new FormData();
         form.append("file", item.file);
