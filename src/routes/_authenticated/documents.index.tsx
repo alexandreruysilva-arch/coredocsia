@@ -418,15 +418,15 @@ function DocumentsPage() {
                   <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Resultados</span>
                   <FolderOpen className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{filteredDocs.length}</p>
+                <p className="text-xl font-display font-bold mt-1 tabular-nums leading-tight text-center">{filteredDocs.length.toLocaleString("pt-BR")}</p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
                 <div className="relative flex items-center justify-center">
                   <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Processados</span>
                   <Search className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
-                  {filteredDocs.filter((d) => d.status === "processed").length}
+                <p className="text-xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
+                  {filteredDocs.filter((d) => d.status === "processed").length.toLocaleString("pt-BR")}
                 </p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
@@ -434,8 +434,8 @@ function DocumentsPage() {
                   <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Pendentes</span>
                   <Loader2 className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
-                  {filteredDocs.filter((d) => d.status === "pending" || d.status === "processing").length}
+                <p className="text-xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
+                  {filteredDocs.filter((d) => d.status === "pending" || d.status === "processing").length.toLocaleString("pt-BR")}
                 </p>
               </Card>
               <Card className="p-2.5 border-0 bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/20">
@@ -443,8 +443,8 @@ function DocumentsPage() {
                   <span className="text-[11px] font-medium text-white/85 uppercase tracking-wider">Falhas</span>
                   <X className="absolute right-0 h-3.5 w-3.5 text-white/90" />
                 </div>
-                <p className="text-2xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
-                  {filteredDocs.filter((d) => d.status === "failed").length}
+                <p className="text-xl font-display font-bold mt-1 tabular-nums leading-tight text-center">
+                  {filteredDocs.filter((d) => d.status === "failed").length.toLocaleString("pt-BR")}
                 </p>
               </Card>
 
