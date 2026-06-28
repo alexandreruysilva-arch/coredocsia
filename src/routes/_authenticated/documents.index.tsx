@@ -261,7 +261,7 @@ function DocumentsPage() {
         _company_id: companyId,
         _document_type_id: typeId,
         _search: searchTerm,
-        _allowed_type_ids: allowedTypeIds && allowedTypeIds.length > 0 ? allowedTypeIds : null,
+        _allowed_type_ids: allowedTypeIds && allowedTypeIds.length > 0 ? allowedTypeIds : undefined,
         _field_filters: fieldFilterObject,
       });
 
