@@ -606,6 +606,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
+        sourcePath: item.sourcePath ?? null,
       });
       const err = validateFile(item.file);
       if (err) {
