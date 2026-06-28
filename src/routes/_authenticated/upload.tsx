@@ -725,7 +725,7 @@ function UploadPage() {
                   {" · "}
                   {batchProgress.current} de {batchProgress.total}
                 </span>
-                <span className="truncate text-[11px] font-medium normal-case tracking-normal text-white/90" title={batchProgress.fileName}>
+                <span className="truncate text-xs font-semibold normal-case tracking-normal text-white/90" title={batchProgress.fileName}>
                   · {batchProgress.fileName}
                 </span>
                 <span className="ml-auto tabular-nums shrink-0">
