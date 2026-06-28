@@ -662,6 +662,7 @@ function UploadPage() {
     }
 
     setIsUploading(false);
+    setBatchProgress(null);
     queryClient.invalidateQueries({ queryKey: ["documents"] });
     queryClient.invalidateQueries({ queryKey: ["ai-usage-logs"] });
     toast.success("Upload finalizado");
