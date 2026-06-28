@@ -836,45 +836,48 @@ function UploadPage() {
 
         <div
           {...getRootProps()}
-          className={`relative overflow-hidden border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+          className={`relative overflow-hidden border-2 border-dashed rounded-xl px-4 py-3 cursor-pointer transition-all ${
             isDragActive
               ? "border-blue-800 bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 scale-[1.01]"
               : "border-blue-700/40 hover:border-blue-800/60 hover:bg-gradient-to-br hover:from-slate-900/5 hover:via-blue-900/5 hover:to-sky-700/5"
           } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <input {...getInputProps()} />
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-500 grid place-items-center shadow-lg shadow-blue-800/30 mb-3">
-            <Upload className="h-7 w-7 text-white" />
-          </div>
-          <p className="font-semibold text-sm">
-            {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            PDF, JPG, PNG
-          </p>
-          <div className="mt-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isUploading || companyId === "none" || docTypeId === "none"}
-              title={
-                companyId === "none" || docTypeId === "none"
-                  ? "Selecione a empresa e o tipo de documento primeiro"
-                  : undefined
-              }
-              onClick={(e) => {
-                e.stopPropagation();
-                if (companyId === "none" || docTypeId === "none") {
-                  toast.error("Selecione a empresa e o tipo de documento primeiro");
-                  return;
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-br from-teal-500 via-cyan-500 to-sky-500 grid place-items-center shadow-md shadow-blue-800/30">
+              <Upload className="h-5 w-5 text-white" />
+            </div>
+            <div className="min-w-0 flex-1 text-left">
+              <p className="font-semibold text-sm truncate">
+                {isDragActive ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
+              </p>
+              <p className="text-xs text-muted-foreground">PDF, JPG, PNG</p>
+            </div>
+            <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isUploading || companyId === "none" || docTypeId === "none"}
+                title={
+                  companyId === "none" || docTypeId === "none"
+                    ? "Selecione a empresa e o tipo de documento primeiro"
+                    : undefined
                 }
-                folderInputRef.current?.click();
-              }}
-            >
-              <Upload className="h-4 w-4 mr-1" />
-              Selecionar pasta
-            </Button>
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (companyId === "none" || docTypeId === "none") {
+                    toast.error("Selecione a empresa e o tipo de documento primeiro");
+                    return;
+                  }
+                  folderInputRef.current?.click();
+                }}
+              >
+                <Upload className="h-4 w-4 mr-1" />
+                Selecionar pasta
+              </Button>
+            </div>
+
 
             <input
               ref={folderInputRef}
