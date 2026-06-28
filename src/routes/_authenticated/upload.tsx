@@ -551,6 +551,7 @@ function UploadPage() {
       }
     }
     setIsExtracting(null);
+    setBatchProgress(null);
     if (ok > 0 || fail > 0) {
       const parts: string[] = [];
       if (ok > 0) parts.push(`${ok} ok`);
