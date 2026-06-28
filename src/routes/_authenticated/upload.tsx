@@ -710,7 +710,16 @@ function UploadPage() {
           <div className="flex items-center gap-3">
             <Loader2 className="h-5 w-5 animate-spin shrink-0" />
             <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider">
+              <p
+                className="text-base sm:text-lg font-semibold truncate flex items-center gap-2"
+                title={batchProgress.sourcePath ?? "Sem diretório (arquivo solto)"}
+              >
+                <FolderOpen className="h-5 w-5 shrink-0" />
+                <span className="truncate">
+                  {batchProgress.sourcePath ?? "— sem diretório —"}
+                </span>
+              </p>
+              <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wider mt-1">
                 <span>
                   {batchProgress.action === "extract" ? "Processando IA" : "Enviando arquivo"}
                   {" · "}
@@ -720,18 +729,10 @@ function UploadPage() {
                   {Math.round((batchProgress.current / batchProgress.total) * 100)}%
                 </span>
               </div>
-              <p className="text-sm font-medium truncate mt-0.5" title={batchProgress.fileName}>
+              <p className="text-sm font-medium truncate mt-0.5 text-white/90" title={batchProgress.fileName}>
                 {batchProgress.fileName}
               </p>
-              <p
-                className="text-[11px] text-white/80 truncate mt-0.5 flex items-center gap-1"
-                title={batchProgress.sourcePath ?? "Sem diretório (arquivo solto)"}
-              >
-                <FolderOpen className="h-3 w-3 shrink-0" />
-                <span className="truncate">
-                  {batchProgress.sourcePath ?? "— sem diretório —"}
-                </span>
-              </p>
+
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
 
                 <div
