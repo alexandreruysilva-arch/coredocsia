@@ -487,6 +487,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
+        sourcePath: item.sourcePath ?? null,
       });
       try {
         const form = new FormData();
