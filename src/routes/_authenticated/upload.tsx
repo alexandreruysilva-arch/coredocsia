@@ -596,7 +596,15 @@ function UploadPage() {
 
     setIsUploading(true);
 
-    for (const item of queued) {
+    for (let idx = 0; idx < queued.length; idx++) {
+      const item = queued[idx];
+      setBatchProgress({
+        action: "upload",
+        current: idx + 1,
+        total: queued.length,
+        fileName: item.file.name,
+        itemId: item.id,
+      });
       const err = validateFile(item.file);
       if (err) {
         updateItem(item.id, { status: "error", error: err });
