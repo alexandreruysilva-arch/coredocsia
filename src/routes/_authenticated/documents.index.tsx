@@ -298,7 +298,8 @@ function DocumentsPage() {
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(filteredDocs.length / PAGE_SIZE));
+  const displayTotal = filtersSelected ? documentStats.total : 0;
+  const totalPages = Math.max(1, Math.ceil(displayTotal / PAGE_SIZE));
 
   useEffect(() => {
     setPage(1);
@@ -911,11 +912,11 @@ function DocumentsPage() {
           </Card>
 
 
-          {filtersSelected && filteredDocs.length > 0 && (
+          {filtersSelected && displayTotal > 0 && (
             <div className="flex items-center justify-between text-sm">
               <p className="text-muted-foreground">
                 Mostrando {(page - 1) * PAGE_SIZE + 1}
-                –{Math.min(page * PAGE_SIZE, filteredDocs.length)} de {filteredDocs.length}
+                –{Math.min(page * PAGE_SIZE, displayTotal)} de {displayTotal.toLocaleString("pt-BR")}
               </p>
               <div className="flex items-center gap-2">
                 <Button
