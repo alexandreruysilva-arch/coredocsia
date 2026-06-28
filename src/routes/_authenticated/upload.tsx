@@ -722,7 +722,17 @@ function UploadPage() {
               <p className="text-sm font-medium truncate mt-0.5" title={batchProgress.fileName}>
                 {batchProgress.fileName}
               </p>
+              <p
+                className="text-[11px] text-white/80 truncate mt-0.5 flex items-center gap-1"
+                title={batchProgress.sourcePath ?? "Sem diretório (arquivo solto)"}
+              >
+                <FolderOpen className="h-3 w-3 shrink-0" />
+                <span className="truncate">
+                  {batchProgress.sourcePath ?? "— sem diretório —"}
+                </span>
+              </p>
               <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+
                 <div
                   className="h-full rounded-full bg-white transition-all"
                   style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
