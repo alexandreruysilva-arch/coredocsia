@@ -665,7 +665,35 @@ function DocumentsPage() {
               </Select>
             </div>
 
-            <div className="ml-auto flex items-center self-stretch">
+            <div className="ml-auto flex items-center self-stretch gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                disabled={importing}
+                className="gap-2"
+                title="Re-importar XLSX para atualizar registros pelo ID"
+              >
+                <label className="cursor-pointer">
+                  {importing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  Importar XLSX
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    disabled={importing}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) handleImportXlsx(f);
+                    }}
+                  />
+                </label>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -677,6 +705,7 @@ function DocumentsPage() {
                 <Download className="h-4 w-4" /> Exportar XLSX
               </Button>
             </div>
+
 
           </Card>
 
