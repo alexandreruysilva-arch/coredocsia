@@ -140,8 +140,17 @@ function TipoDocumentoPage() {
           .eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("document_types").insert(row);
+        const { data: created, error } = await supabase
+          .from("document_types")
+          .insert(row)
+          .select("id")
+          .single();
         if (error) throw error;
+        // Cria tabela física dedicada para o novo tipo
+        if (created?.id) {
+          const { error: rpcErr } = await supabase.rpc("create_doc_type_table", { _type_id: created.id });
+          if (rpcErr) throw rpcErr;
+        }
       }
     },
     onSuccess: () => {
@@ -547,6 +556,12 @@ function FieldsDialog({
           position,
         });
         if (error) throw error;
+        // Adiciona coluna correspondente na tabela física do tipo (no-op se tipo antigo)
+        await supabase.rpc("add_doc_type_column", {
+          _type_id: docType.id,
+          _field_key: key,
+          _field_type: fieldType,
+        });
       }
 
     },
@@ -569,8 +584,15 @@ function FieldsDialog({
 
   const removeField = useMutation({
     mutationFn: async (id: string) => {
+      const target = (fields.data ?? []).find((f) => f.id === id);
       const { error } = await supabase.from("document_type_fields").delete().eq("id", id);
       if (error) throw error;
+      if (target && docType) {
+        await supabase.rpc("drop_doc_type_column", {
+          _type_id: docType.id,
+          _field_key: target.field_key,
+        });
+      }
     },
     onSuccess: () => {
       toast.success("Campo removido");
