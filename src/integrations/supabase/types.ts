@@ -736,15 +736,29 @@ export type Database = {
           total: number
         }[]
       }
-      get_org_document_stats: {
-        Args: { _allowed_type_ids?: string[]; _org_id: string }
-        Returns: {
-          failed: number
-          pending: number
-          processed: number
-          total: number
-        }[]
-      }
+      get_org_document_stats:
+        | {
+            Args: { _allowed_type_ids?: string[]; _org_id: string }
+            Returns: {
+              failed: number
+              pending: number
+              processed: number
+              total: number
+            }[]
+          }
+        | {
+            Args: {
+              _allowed_type_ids?: string[]
+              _company_id?: string
+              _org_id: string
+            }
+            Returns: {
+              failed: number
+              pending: number
+              processed: number
+              total: number
+            }[]
+          }
       has_role: {
         Args: {
           _org_id: string
