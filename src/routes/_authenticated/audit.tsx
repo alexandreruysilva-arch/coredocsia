@@ -201,7 +201,7 @@ function AuditPage() {
     const q = search.trim().toLowerCase();
     return logs.filter((l) => {
       if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) return false;
-      if (docTypeFilter !== "__all__" && (l.document_type_name ?? "") !== docTypeFilter) return false;
+      if (docTypeFilter !== "__all__" && docTypeOptions.includes(docTypeFilter) && (l.document_type_name ?? "") !== docTypeFilter) return false;
       if (!q) return true;
       return (
         l.file_name.toLowerCase().includes(q) ||
