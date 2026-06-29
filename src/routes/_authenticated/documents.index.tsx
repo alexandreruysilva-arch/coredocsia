@@ -131,6 +131,8 @@ function DocumentsPage() {
 
   const queryClient = useQueryClient();
   const deleteFn = useServerFn(deleteDocumentFromDrive);
+  const importFn = useServerFn(updateDocumentsFromImport);
+  const [importing, setImporting] = useState(false);
 
   const isViewer =
     !!profile &&
