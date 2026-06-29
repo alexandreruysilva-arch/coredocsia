@@ -351,6 +351,12 @@ function UploadPage() {
     docTypeId !== "none" ? docTypeId : null,
   );
 
+  const [manualSourcePath, setManualSourcePath] = useState<string>("");
+  const manualSourcePathRef = useRef<string>("");
+  useEffect(() => {
+    manualSourcePathRef.current = manualSourcePath;
+  }, [manualSourcePath]);
+
   const onDrop = useCallback((accepted: File[], rejected: any[]) => {
     rejected.forEach((r) => {
       toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
@@ -361,9 +367,18 @@ function UploadPage() {
         toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
         return prev;
       }
+      const manual = manualSourcePathRef.current.trim();
       const toAdd = accepted.slice(0, room).map<QueueItem>((file) => {
-        const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
-        const sourcePath = rel && rel.includes("/") ? rel.slice(0, rel.lastIndexOf("/")) : null;
+        const rel =
+          (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+          (file as File & { path?: string }).path ||
+          "";
+        const normalized = rel.startsWith("/") ? rel.slice(1) : rel;
+        const fromBrowser =
+          normalized && normalized.includes("/")
+            ? normalized.slice(0, normalized.lastIndexOf("/"))
+            : null;
+        const sourcePath = fromBrowser ?? (manual ? manual : null);
         return {
           id: crypto.randomUUID(),
           file,
@@ -878,6 +893,32 @@ function UploadPage() {
             </Select>
           </div>
         </div>
+
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">
+            Diretório (opcional — aplicado a arquivos soltos ou selecionados)
+          </label>
+          <input
+            type="text"
+            value={manualSourcePath}
+            onChange={(e) => {
+              const next = e.target.value;
+              setManualSourcePath(next);
+              const trimmed = next.trim();
+              setItems((prev) =>
+                prev.map((it) =>
+                  it.status === "queued" && (!it.sourcePath || it.sourcePath === manualSourcePathRef.current.trim())
+                    ? { ...it, sourcePath: trimmed || null }
+                    : it,
+                ),
+              );
+            }}
+            placeholder="ex.: Financeiro/2026/Notas"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            disabled={isUploading}
+          />
+        </div>
+
 
         <div
           {...getRootProps()}
