@@ -666,34 +666,49 @@ function DocumentsPage() {
             </div>
 
             <div className="ml-auto flex items-center self-stretch gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                disabled={importing}
-                className="gap-2"
-                title="Re-importar XLSX para atualizar registros pelo ID"
-              >
-                <label className="cursor-pointer">
-                  {importing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                  Importar XLSX
-                  <input
-                    type="file"
-                    accept=".xlsx,.xls"
-                    className="hidden"
-                    disabled={importing}
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      e.target.value = "";
-                      if (f) handleImportXlsx(f);
-                    }}
-                  />
-                </label>
-              </Button>
+              {(() => {
+                const importDisabled = importing || typeId === "all";
+                return (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild={!importDisabled}
+                    disabled={importDisabled}
+                    className="gap-2"
+                    title={
+                      typeId === "all"
+                        ? "Selecione um tipo de documento para habilitar"
+                        : "Re-importar XLSX para atualizar registros pelo ID"
+                    }
+                  >
+                    {importDisabled ? (
+                      <span className="inline-flex items-center gap-2">
+                        {importing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="h-4 w-4" />
+                        )}
+                        Importar XLSX
+                      </span>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <Upload className="h-4 w-4" />
+                        Importar XLSX
+                        <input
+                          type="file"
+                          accept=".xlsx,.xls"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            e.target.value = "";
+                            if (f) handleImportXlsx(f);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </Button>
+                );
+              })()}
               <Button
                 variant="outline"
                 size="sm"
