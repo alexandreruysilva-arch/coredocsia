@@ -222,6 +222,12 @@ function AuditPage() {
   }, [search, companyFilter, docTypeFilter]);
 
   useEffect(() => {
+    if (docTypeFilter !== "__all__" && !docTypeOptions.includes(docTypeFilter)) {
+      setDocTypeFilter("__all__");
+    }
+  }, [docTypeOptions, docTypeFilter]);
+
+  useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
