@@ -142,6 +142,11 @@ function DocumentDetailPage() {
         last_edited_by: userId ?? doc!.uploaded_by,
       })
       .eq("id", doc!.id);
+    if (error) {
+      setSaving(false);
+      toast.error(error.message);
+      return;
+    }
     // Replica em tabela física do tipo (no-op para tipos antigos)
     if (doc!.document_type_id) {
       await supabase.rpc("upsert_doc_type_row", {
@@ -149,11 +154,6 @@ function DocumentDetailPage() {
         _document_id: doc!.id,
         _values: normalized as never,
       });
-    }
-    if (error) {
-      setSaving(false);
-      toast.error(error.message);
-      return;
     }
 
     if (correctedChars > 0) {
