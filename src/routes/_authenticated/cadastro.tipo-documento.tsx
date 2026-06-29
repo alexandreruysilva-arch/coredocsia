@@ -140,8 +140,17 @@ function TipoDocumentoPage() {
           .eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("document_types").insert(row);
+        const { data: created, error } = await supabase
+          .from("document_types")
+          .insert(row)
+          .select("id")
+          .single();
         if (error) throw error;
+        // Cria tabela física dedicada para o novo tipo
+        if (created?.id) {
+          const { error: rpcErr } = await supabase.rpc("create_doc_type_table", { _type_id: created.id });
+          if (rpcErr) throw rpcErr;
+        }
       }
     },
     onSuccess: () => {
