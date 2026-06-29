@@ -55,6 +55,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
 import { deleteDocumentFromDrive } from "@/lib/drive.functions";
+import { updateDocumentsFromImport } from "@/lib/documents.functions";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
