@@ -478,6 +478,74 @@ function DocumentsPage() {
     toast.success(`Exportado ${rows.length} registro(s)`);
   }
 
+  async function handleImportXlsx(file: File) {
+    setImporting(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      if (!ws) throw new Error("Planilha vazia");
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+      if (rows.length === 0) throw new Error("Nenhuma linha encontrada");
+
+      // Mapa label -> field_key/field_type para o tipo atual (se houver).
+      const labelMap = new Map(typeFields.map((f) => [f.label, f]));
+
+      const updates: { id: string; field_values: Record<string, unknown>; name?: string }[] = [];
+      const skipped: string[] = [];
+
+      for (const row of rows) {
+        const id = String(row["ID"] ?? row["id"] ?? "").trim();
+        if (!id) {
+          skipped.push("(linha sem ID)");
+          continue;
+        }
+        const field_values: Record<string, unknown> = {};
+        for (const [col, rawVal] of Object.entries(row)) {
+          if (col === "ID" || col === "id") continue;
+          const f = labelMap.get(col);
+          if (!f) continue; // colunas fixas (Nome, Empresa, etc.) são ignoradas
+          let val: unknown = rawVal;
+          if (typeof val === "string") val = val.trim();
+          if (val === "") continue;
+          if (f.field_type === "date" && typeof val === "string") {
+            const m = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (m) val = `${m[3]}-${m[2]}-${m[1]}`;
+          } else if (f.field_type === "number") {
+            const n = Number(String(val).replace(",", "."));
+            if (!Number.isNaN(n)) val = n;
+          } else if (f.field_type === "boolean") {
+            val = String(val).toLowerCase().startsWith("s") || val === true;
+          }
+          field_values[f.field_key] = val;
+        }
+        const nameRaw = row["Nome do arquivo"];
+        const update: { id: string; field_values: Record<string, unknown>; name?: string } = {
+          id,
+          field_values,
+        };
+        if (typeof nameRaw === "string" && nameRaw.trim()) update.name = nameRaw.trim();
+        updates.push(update);
+      }
+
+      if (updates.length === 0) throw new Error("Nenhum ID válido na planilha");
+
+      const res = await importFn({ data: { updates } });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      const errCount = res.errors?.length ?? 0;
+      if (errCount > 0) {
+        toast.warning(`Atualizados ${res.updated} de ${updates.length}. ${errCount} com erro.`);
+        console.error("import errors", res.errors);
+      } else {
+        toast.success(`Atualizados ${res.updated} registro(s)`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao importar XLSX");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="flex h-full">
 
