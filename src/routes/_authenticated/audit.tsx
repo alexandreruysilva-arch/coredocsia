@@ -12,6 +12,7 @@ import {
   Timer,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -451,6 +452,19 @@ function AuditPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 max-w-[220px] text-xs"
             />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 h-8"
+              disabled={companyFilter === "__all__" && docTypeFilter === "__all__" && search === ""}
+              onClick={() => {
+                setCompanyFilter("__all__");
+                setDocTypeFilter("__all__");
+                setSearch("");
+              }}
+            >
+              <X className="h-4 w-4" /> Limpar
+            </Button>
             <Button
               variant="outline"
               size="sm"
