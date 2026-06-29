@@ -63,7 +63,7 @@ function Dashboard() {
         1,
       ).toISOString();
 
-      const [recentRes, aiRes, companiesRes, typesRes] = await Promise.all([
+      const [recentRes, companiesRes, typesRes] = await Promise.all([
         supabase
           .from("documents")
           .select("*")
@@ -71,14 +71,30 @@ function Dashboard() {
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
           .limit(8),
-        supabase
-          .from("ai_usage_logs")
-          .select("cost_brl, document_type_name, company_name, created_at")
-          .eq("org_id", orgId)
-          .gte("created_at", sinceMonth),
         supabase.from("companies").select("id, name").eq("org_id", orgId),
         supabase.from("document_types").select("id, name").eq("org_id", orgId),
       ]);
+
+      // Pagina ai_usage_logs por cursor — sem isso, PostgREST limita a 1000 linhas.
+      const AI_PAGE = 1000;
+      const aiLogs: Array<{ cost_brl: number | null; created_at: string }> = [];
+      let aiCursor: string | null = null;
+      while (true) {
+        let aiQuery = supabase
+          .from("ai_usage_logs")
+          .select("cost_brl, created_at")
+          .eq("org_id", orgId)
+          .gte("created_at", sinceMonth)
+          .order("created_at", { ascending: false })
+          .limit(AI_PAGE);
+        if (aiCursor) aiQuery = aiQuery.lt("created_at", aiCursor);
+        const { data: aiData, error: aiErr } = await aiQuery;
+        if (aiErr) throw aiErr;
+        const aiRows = (aiData ?? []) as Array<{ cost_brl: number | null; created_at: string }>;
+        aiLogs.push(...aiRows);
+        if (aiRows.length < AI_PAGE) break;
+        aiCursor = aiRows[aiRows.length - 1].created_at;
+      }
 
       // Pagina por cursor para evitar o teto visual de 9.999 registros em consultas por range.
       const PAGE = 1000;
