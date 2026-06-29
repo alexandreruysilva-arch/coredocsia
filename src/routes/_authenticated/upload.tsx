@@ -127,6 +127,33 @@ interface QueueItem {
   expanded: boolean;
 }
 
+function normalizeManualSourcePath(path: string): string | null {
+  const normalized = path
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/^\.\/+/, "")
+    .replace(/\/+$/, "")
+    .trim();
+
+  if (!normalized || normalized === ".") return null;
+  return normalized;
+}
+
+function getFileSourcePath(file: File): string | null {
+  const rawPath =
+    (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+    (file as File & { path?: string }).path ||
+    "";
+  const normalizedFilePath = rawPath
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/^\.\/+/, "")
+    .trim();
+
+  if (!normalizedFilePath.includes("/")) return null;
+  return normalizeManualSourcePath(normalizedFilePath.slice(0, normalizedFilePath.lastIndexOf("/")));
+}
+
 
 
 interface FieldEditorProps {
@@ -367,17 +394,9 @@ function UploadPage() {
         toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
         return prev;
       }
-      const manual = manualSourcePathRef.current.trim();
+      const manual = normalizeManualSourcePath(manualSourcePathRef.current);
       const toAdd = accepted.slice(0, room).map<QueueItem>((file) => {
-        const rel =
-          (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
-          (file as File & { path?: string }).path ||
-          "";
-        const normalized = rel.startsWith("/") ? rel.slice(1) : rel;
-        const fromBrowser =
-          normalized && normalized.includes("/")
-            ? normalized.slice(0, normalized.lastIndexOf("/"))
-            : null;
+        const fromBrowser = getFileSourcePath(file);
         const sourcePath = fromBrowser ?? (manual ? manual : null);
         return {
           id: crypto.randomUUID(),
@@ -503,7 +522,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
-        sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
+        sourcePath: item.sourcePath ?? normalizeManualSourcePath(manualSourcePathRef.current),
       });
       try {
         const form = new FormData();
@@ -624,7 +643,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
-        sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
+        sourcePath: item.sourcePath ?? normalizeManualSourcePath(manualSourcePathRef.current),
       });
       const err = validateFile(item.file);
       if (err) {
@@ -641,7 +660,7 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
-          sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
+          sourcePath: item.sourcePath ?? normalizeManualSourcePath(manualSourcePathRef.current),
           aiUsage: item.aiUsage ?? undefined,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
@@ -904,10 +923,11 @@ function UploadPage() {
             onChange={(e) => {
               const next = e.target.value;
               setManualSourcePath(next);
-              const trimmed = next.trim();
+              const previousManual = normalizeManualSourcePath(manualSourcePathRef.current);
+              const trimmed = normalizeManualSourcePath(next);
               setItems((prev) =>
                 prev.map((it) =>
-                  it.status === "queued" && (!it.sourcePath || it.sourcePath === manualSourcePathRef.current.trim())
+                  it.status === "queued" && (!it.sourcePath || it.sourcePath === "." || it.sourcePath === previousManual)
                     ? { ...it, sourcePath: trimmed || null }
                     : it,
                 ),
