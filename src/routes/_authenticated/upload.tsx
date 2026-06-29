@@ -747,6 +747,49 @@ function UploadPage() {
         </div>
       )}
 
+      {!batchProgress && items.length > 0 && (() => {
+        const total = items.length;
+        const done = doneCount;
+        const errors = errorCount;
+        const queued = queuedCount;
+        const processed = done + errors;
+        const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+        const folders = Array.from(
+          new Set(items.map((i) => i.sourcePath).filter((p): p is string => !!p)),
+        );
+        const folderLabel =
+          folders.length === 0
+            ? "— sem diretório —"
+            : folders.length === 1
+              ? folders[0]
+              : `${folders.length} pastas selecionadas`;
+        return (
+          <div className="sticky top-2 z-30 rounded-xl border border-blue-300/60 bg-gradient-to-r from-indigo-600/90 via-blue-600/90 to-sky-600/90 p-3 shadow-lg shadow-blue-500/30 text-white">
+            <div className="flex items-center gap-3">
+              <FolderOpen className="h-5 w-5 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-base sm:text-lg font-semibold truncate" title={folderLabel}>
+                  {folderLabel}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold uppercase tracking-wider mt-1">
+                  <span>Total: {total}</span>
+                  <span>Na fila: {queued}</span>
+                  <span>Finalizados: {done}</span>
+                  {errors > 0 && <span>Erros: {errors}</span>}
+                  <span className="ml-auto tabular-nums">{pct}%</span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/25">
+                  <div
+                    className="h-full rounded-full bg-white transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
 
 
       {items.length > 0 && (
