@@ -351,6 +351,12 @@ function UploadPage() {
     docTypeId !== "none" ? docTypeId : null,
   );
 
+  const [manualSourcePath, setManualSourcePath] = useState<string>("");
+  const manualSourcePathRef = useRef<string>("");
+  useEffect(() => {
+    manualSourcePathRef.current = manualSourcePath;
+  }, [manualSourcePath]);
+
   const onDrop = useCallback((accepted: File[], rejected: any[]) => {
     rejected.forEach((r) => {
       toast.error(`${r.file.name}: ${r.errors[0]?.message ?? "rejeitado"}`);
@@ -361,9 +367,18 @@ function UploadPage() {
         toast.error(`Máximo de ${MAX_FILES_PER_BATCH} arquivos por lote`);
         return prev;
       }
+      const manual = manualSourcePathRef.current.trim();
       const toAdd = accepted.slice(0, room).map<QueueItem>((file) => {
-        const rel = (file as File & { webkitRelativePath?: string }).webkitRelativePath;
-        const sourcePath = rel && rel.includes("/") ? rel.slice(0, rel.lastIndexOf("/")) : null;
+        const rel =
+          (file as File & { webkitRelativePath?: string }).webkitRelativePath ||
+          (file as File & { path?: string }).path ||
+          "";
+        const normalized = rel.startsWith("/") ? rel.slice(1) : rel;
+        const fromBrowser =
+          normalized && normalized.includes("/")
+            ? normalized.slice(0, normalized.lastIndexOf("/"))
+            : null;
+        const sourcePath = fromBrowser ?? (manual ? manual : null);
         return {
           id: crypto.randomUUID(),
           file,
