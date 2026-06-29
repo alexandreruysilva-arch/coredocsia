@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info, Download, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
+import { FolderOpen, Search, Pencil, X, Trash2, Loader2, Plus, Info, Download, Upload, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
@@ -55,6 +55,7 @@ import { useCompanies } from "@/hooks/use-companies";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { Label } from "@/components/ui/label";
 import { deleteDocumentFromDrive } from "@/lib/drive.functions";
+import { updateDocumentsFromImport } from "@/lib/documents.functions";
 
 import { formatBytes, type DocumentRow } from "@/lib/documents";
 
@@ -130,6 +131,8 @@ function DocumentsPage() {
 
   const queryClient = useQueryClient();
   const deleteFn = useServerFn(deleteDocumentFromDrive);
+  const importFn = useServerFn(updateDocumentsFromImport);
+  const [importing, setImporting] = useState(false);
 
   const isViewer =
     !!profile &&
@@ -475,6 +478,74 @@ function DocumentsPage() {
     toast.success(`Exportado ${rows.length} registro(s)`);
   }
 
+  async function handleImportXlsx(file: File) {
+    setImporting(true);
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      if (!ws) throw new Error("Planilha vazia");
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+      if (rows.length === 0) throw new Error("Nenhuma linha encontrada");
+
+      // Mapa label -> field_key/field_type para o tipo atual (se houver).
+      const labelMap = new Map(typeFields.map((f) => [f.label, f]));
+
+      const updates: { id: string; field_values: Record<string, unknown>; name?: string }[] = [];
+      const skipped: string[] = [];
+
+      for (const row of rows) {
+        const id = String(row["ID"] ?? row["id"] ?? "").trim();
+        if (!id) {
+          skipped.push("(linha sem ID)");
+          continue;
+        }
+        const field_values: Record<string, unknown> = {};
+        for (const [col, rawVal] of Object.entries(row)) {
+          if (col === "ID" || col === "id") continue;
+          const f = labelMap.get(col);
+          if (!f) continue; // colunas fixas (Nome, Empresa, etc.) são ignoradas
+          let val: unknown = rawVal;
+          if (typeof val === "string") val = val.trim();
+          if (val === "") continue;
+          if (f.field_type === "date" && typeof val === "string") {
+            const m = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (m) val = `${m[3]}-${m[2]}-${m[1]}`;
+          } else if (f.field_type === "number") {
+            const n = Number(String(val).replace(",", "."));
+            if (!Number.isNaN(n)) val = n;
+          } else if (f.field_type === "boolean") {
+            val = String(val).toLowerCase().startsWith("s") || val === true;
+          }
+          field_values[f.field_key] = val;
+        }
+        const nameRaw = row["Nome do arquivo"];
+        const update: { id: string; field_values: Record<string, unknown>; name?: string } = {
+          id,
+          field_values,
+        };
+        if (typeof nameRaw === "string" && nameRaw.trim()) update.name = nameRaw.trim();
+        updates.push(update);
+      }
+
+      if (updates.length === 0) throw new Error("Nenhum ID válido na planilha");
+
+      const res = await importFn({ data: { updates } });
+      queryClient.invalidateQueries({ queryKey: ["documents"] });
+      const errCount = res.errors?.length ?? 0;
+      if (errCount > 0) {
+        toast.warning(`Atualizados ${res.updated} de ${updates.length}. ${errCount} com erro.`);
+        console.error("import errors", res.errors);
+      } else {
+        toast.success(`Atualizados ${res.updated} registro(s)`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao importar XLSX");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   return (
     <div className="flex h-full">
 
@@ -594,7 +665,35 @@ function DocumentsPage() {
               </Select>
             </div>
 
-            <div className="ml-auto flex items-center self-stretch">
+            <div className="ml-auto flex items-center self-stretch gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                disabled={importing}
+                className="gap-2"
+                title="Re-importar XLSX para atualizar registros pelo ID"
+              >
+                <label className="cursor-pointer">
+                  {importing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
+                  Importar XLSX
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    className="hidden"
+                    disabled={importing}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (f) handleImportXlsx(f);
+                    }}
+                  />
+                </label>
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -606,6 +705,7 @@ function DocumentsPage() {
                 <Download className="h-4 w-4" /> Exportar XLSX
               </Button>
             </div>
+
 
           </Card>
 
