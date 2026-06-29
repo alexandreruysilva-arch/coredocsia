@@ -189,9 +189,13 @@ function AuditPage() {
 
   const docTypeOptions = useMemo(() => {
     const set = new Set<string>();
-    for (const l of logs) if (l.document_type_name) set.add(l.document_type_name);
+    for (const l of logs) {
+      if (!l.document_type_name) continue;
+      if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) continue;
+      set.add(l.document_type_name);
+    }
     return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [logs]);
+  }, [logs, companyFilter]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
