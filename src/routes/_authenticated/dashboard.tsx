@@ -142,9 +142,8 @@ function Dashboard() {
         companyAgg.set(cName, (companyAgg.get(cName) ?? 0) + 1);
       }
 
-      const aiLogs = aiRes.data ?? [];
       const aiCostMonth = aiLogs.reduce(
-        (s: number, l: any) => s + Number(l.cost_brl ?? 0),
+        (s: number, l) => s + Number(l.cost_brl ?? 0),
         0,
       );
 
