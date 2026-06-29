@@ -389,6 +389,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          storage_table: string | null
           store_files: boolean
           updated_at: string
         }
@@ -400,6 +401,7 @@ export type Database = {
           name: string
           org_id: string
           slug: string
+          storage_table?: string | null
           store_files?: boolean
           updated_at?: string
         }
@@ -411,6 +413,7 @@ export type Database = {
           name?: string
           org_id?: string
           slug?: string
+          storage_table?: string | null
           store_files?: boolean
           updated_at?: string
         }
@@ -720,6 +723,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _dt_safe_ident: { Args: { _raw: string }; Returns: string }
+      _dt_sql_type: { Args: { _field_type: string }; Returns: string }
+      add_doc_type_column: {
+        Args: { _field_key: string; _field_type: string; _type_id: string }
+        Returns: undefined
+      }
+      create_doc_type_table: { Args: { _type_id: string }; Returns: string }
+      drop_doc_type_column: {
+        Args: { _field_key: string; _type_id: string }
+        Returns: undefined
+      }
       get_document_stats: {
         Args: {
           _allowed_type_ids?: string[]
@@ -772,6 +786,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      upsert_doc_type_row: {
+        Args: { _document_id: string; _type_id: string; _values: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "platform_admin" | "org_admin" | "operator" | "viewer"
