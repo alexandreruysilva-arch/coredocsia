@@ -503,7 +503,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
-        sourcePath: item.sourcePath ?? null,
+        sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
       });
       try {
         const form = new FormData();
@@ -624,7 +624,7 @@ function UploadPage() {
         total: queued.length,
         fileName: item.file.name,
         itemId: item.id,
-        sourcePath: item.sourcePath ?? null,
+        sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
       });
       const err = validateFile(item.file);
       if (err) {
@@ -641,7 +641,7 @@ function UploadPage() {
           documentTypeId: docTypeId,
           companyId,
           fieldValues: item.fieldValues,
-          sourcePath: item.sourcePath ?? null,
+          sourcePath: item.sourcePath ?? (manualSourcePathRef.current.trim() || null),
           aiUsage: item.aiUsage ?? undefined,
           onProgress: (pct) => updateItem(item.id, { progress: pct }),
         });
