@@ -894,6 +894,32 @@ function UploadPage() {
           </div>
         </div>
 
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground">
+            Diretório (opcional — aplicado a arquivos soltos ou selecionados)
+          </label>
+          <input
+            type="text"
+            value={manualSourcePath}
+            onChange={(e) => {
+              const next = e.target.value;
+              setManualSourcePath(next);
+              const trimmed = next.trim();
+              setItems((prev) =>
+                prev.map((it) =>
+                  it.status === "queued" && (!it.sourcePath || it.sourcePath === manualSourcePathRef.current.trim())
+                    ? { ...it, sourcePath: trimmed || null }
+                    : it,
+                ),
+              );
+            }}
+            placeholder="ex.: Financeiro/2026/Notas"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            disabled={isUploading}
+          />
+        </div>
+
+
         <div
           {...getRootProps()}
           className={`relative overflow-hidden border-2 border-dashed rounded-xl px-4 py-3 cursor-pointer transition-all ${
