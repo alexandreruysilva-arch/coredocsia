@@ -278,12 +278,13 @@ function DocumentsPage() {
   });
 
   const { data: orgDocumentStats = EMPTY_DOCUMENT_STATS } = useQuery({
-    queryKey: ["org-documents-stats", orgId, allowedTypeIds],
+    queryKey: ["org-documents-stats", orgId, allowedTypeIds, companyId],
     enabled: !!orgId && (allowedTypeIds === null || allowedTypeIds.length > 0),
     queryFn: async (): Promise<DocumentStats> => {
       const { data, error } = await supabase.rpc("get_org_document_stats", {
         _org_id: orgId!,
         _allowed_type_ids: allowedTypeIds && allowedTypeIds.length > 0 ? allowedTypeIds : undefined,
+        _company_id: companyId && companyId !== "all" ? companyId : undefined,
       });
 
       if (error) throw error;
