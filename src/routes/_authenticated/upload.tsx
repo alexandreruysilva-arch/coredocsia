@@ -579,6 +579,8 @@ function UploadPage() {
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return;
 
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     for (const item of queued) {
       if (item.aiStatus === "failed") {
         toast.error(
