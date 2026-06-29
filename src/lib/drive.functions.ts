@@ -164,6 +164,15 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
       throw insertErr ?? new Error("Falha ao criar documento");
     }
 
+    // 6.1 Replica os valores indexados na tabela física do tipo (no-op se tipo antigo sem storage_table)
+    await supabase.rpc("upsert_doc_type_row", {
+      _type_id: docType.id,
+      _document_id: row.id,
+      _values: (fieldValues ?? {}) as never,
+    });
+
+
+
     // 7. Vincula log de uso de IA ao documento criado.
     // Se a extração já gravou o log (com log_id), apenas atualiza o document_id.
     // Caso contrário (ex.: upload sem extração prévia), insere o log agora.
