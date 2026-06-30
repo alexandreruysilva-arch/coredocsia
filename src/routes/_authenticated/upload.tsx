@@ -1179,6 +1179,21 @@ function UploadPage() {
                   )}
                   <span className="relative">Preencher com Claude</span>
                 </Button>
+                {isExtracting !== null && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      cancelExtractRef.current = true;
+                      toast.info("Cancelando após o arquivo atual...");
+                    }}
+                    disabled={cancelExtractRef.current}
+                    title="Interrompe o preenchimento por IA após o arquivo atual"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar IA
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   onClick={handleUploadAll}
