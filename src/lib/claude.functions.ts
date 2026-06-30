@@ -143,7 +143,7 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
           desc += `, deve conter EXATAMENTE ${f.expected_length} caracteres (sem espaços em branco); se não encontrar com esse tamanho, retorne ""`;
         }
         if (f.location_hint && f.location_hint.trim()) {
-          desc += `, LOCALIZAÇÃO NO DOCUMENTO: ${f.location_hint.trim()}`;
+          desc += `\n    >>> DICA DE LOCALIZAÇÃO (SIGA OBRIGATORIAMENTE): procure o valor deste campo EXATAMENTE em: "${f.location_hint.trim()}". Use esta dica como instrução primária para localizar o dado no documento. Se não encontrar nessa localização, retorne "".`;
         }
         return desc;
       })
