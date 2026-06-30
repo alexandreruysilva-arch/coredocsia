@@ -139,7 +139,7 @@ export const extractFieldsWithGemini = createServerFn({ method: "POST" })
           desc += `, deve conter EXATAMENTE ${f.expected_length} caracteres (sem espaços em branco); se não encontrar com esse tamanho, retorne ""`;
         }
         if (f.location_hint && f.location_hint.trim()) {
-          desc += `, LOCALIZAÇÃO NO DOCUMENTO: ${f.location_hint.trim()}`;
+          desc += `\n    >>> DICA DE LOCALIZAÇÃO (SIGA OBRIGATORIAMENTE): procure o valor deste campo EXATAMENTE em: "${f.location_hint.trim()}". Use esta dica como instrução primária para localizar o dado no documento. Se não encontrar nessa localização, retorne "".`;
         }
         return desc;
       })
@@ -160,6 +160,7 @@ Regras de saída (siga RIGOROSAMENTE):
 - Campos do tipo "select": retorne EXATAMENTE um dos valores listados em "opções permitidas".
 - Demais campos (text/textarea): retorne em LETRAS MAIÚSCULAS, sem acentos extras.
 - Se um campo definir tamanho exato (caracteres), o valor extraído NÃO pode conter espaços em branco e deve ter exatamente esse número de caracteres; caso contrário, retorne "".
+- Se um campo possuir "DICA DE LOCALIZAÇÃO", é OBRIGATÓRIO procurar o valor exatamente na região/contexto indicado pela dica (ex.: "abaixo do título X", "no cabeçalho", "ao lado de Y"). NÃO use valores de outras regiões mesmo que pareçam plausíveis.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
 
 
