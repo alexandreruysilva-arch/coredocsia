@@ -455,6 +455,7 @@ function UploadPage() {
   } | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
+  const cancelExtractRef = useRef(false);
 
   const types = useMemo(() => {
     let list = allTypes;
@@ -587,6 +588,7 @@ function UploadPage() {
 
 
     setIsExtracting(provider);
+    cancelExtractRef.current = false;
     const fieldDefs = fields.map((f) => ({
       label: f.label,
       field_key: f.field_key,
@@ -603,7 +605,12 @@ function UploadPage() {
     let ok = 0;
     let fail = 0;
     let incomplete = 0;
+    let canceled = false;
     for (let idx = 0; idx < queued.length; idx++) {
+      if (cancelExtractRef.current) {
+        canceled = true;
+        break;
+      }
       const item = queued[idx];
       setBatchProgress({
         action: "extract",
@@ -678,6 +685,11 @@ function UploadPage() {
     }
     setIsExtracting(null);
     setBatchProgress(null);
+    cancelExtractRef.current = false;
+    if (canceled) {
+      toast.info(`Processamento ${providerLabel} cancelado. ${ok} ok, ${incomplete} incompleto(s), ${fail} falha(s).`);
+      return;
+    }
     if (ok > 0 || fail > 0) {
       const parts: string[] = [];
       if (ok > 0) parts.push(`${ok} ok`);
@@ -1167,6 +1179,21 @@ function UploadPage() {
                   )}
                   <span className="relative">Preencher com Claude</span>
                 </Button>
+                {isExtracting !== null && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      cancelExtractRef.current = true;
+                      toast.info("Cancelando após o arquivo atual...");
+                    }}
+                    disabled={cancelExtractRef.current}
+                    title="Interrompe o preenchimento por IA após o arquivo atual"
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar IA
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   onClick={handleUploadAll}
