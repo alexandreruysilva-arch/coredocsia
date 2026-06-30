@@ -292,8 +292,11 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, original
                   <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
                 <Button
-
+                  type="button"
+                  size="icon"
+                  variant="ghost"
                   className="h-6 w-6"
+
                   onClick={moveDown}
                   disabled={!val || !next}
                   title={next ? `Mover para "${next.label}"` : "Sem campo abaixo"}
