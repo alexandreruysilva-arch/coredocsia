@@ -19,6 +19,7 @@ import {
   FolderOpen,
   Eraser,
   ArrowDown,
+  ArrowUp,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -209,6 +210,7 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         const handleBlur = () => onFieldBlur?.(f.field_key, val);
         const next = fields[idx + 1];
+        const prev = fields[idx - 1];
         const clearField = () => {
           onChange(f.field_key, "");
           onFieldBlur?.(f.field_key, "");
@@ -218,6 +220,14 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
           const transferred = sanitizeFieldValue(next, val);
           onChange(next.field_key, transferred);
           onFieldBlur?.(next.field_key, transferred);
+          onChange(f.field_key, "");
+          onFieldBlur?.(f.field_key, "");
+        };
+        const moveUp = () => {
+          if (!prev) return;
+          const transferred = sanitizeFieldValue(prev, val);
+          onChange(prev.field_key, transferred);
+          onFieldBlur?.(prev.field_key, transferred);
           onChange(f.field_key, "");
           onFieldBlur?.(f.field_key, "");
         };
@@ -243,6 +253,17 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
                   title="Limpar campo"
                 >
                   <Eraser className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={moveUp}
+                  disabled={!val || !prev}
+                  title={prev ? `Mover para "${prev.label}"` : "Sem campo acima"}
+                >
+                  <ArrowUp className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   type="button"
