@@ -588,6 +588,7 @@ function UploadPage() {
 
 
     setIsExtracting(provider);
+    cancelExtractRef.current = false;
     const fieldDefs = fields.map((f) => ({
       label: f.label,
       field_key: f.field_key,
