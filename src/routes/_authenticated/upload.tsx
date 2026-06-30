@@ -203,7 +203,7 @@ function handleCaretPreservingChange(
   });
 }
 
-function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldEditorProps) {
+function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, originals }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f, idx) => {
@@ -213,9 +213,17 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
         const handleBlur = () => onFieldBlur?.(f.field_key, val);
         const next = fields[idx + 1];
         const prev = fields[idx - 1];
+        const originalRaw = originals?.[f.field_key];
+        const originalSanitized =
+          originalRaw != null ? sanitizeFieldValue(f, originalRaw) : undefined;
         const clearField = () => {
           onChange(f.field_key, "");
           onFieldBlur?.(f.field_key, "");
+        };
+        const restoreOriginal = () => {
+          if (originalSanitized == null) return;
+          onChange(f.field_key, originalSanitized);
+          onFieldBlur?.(f.field_key, originalSanitized);
         };
         const moveDown = () => {
           if (!next) return;
@@ -233,6 +241,7 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldE
           onChange(f.field_key, "");
           onFieldBlur?.(f.field_key, "");
         };
+
         return (
           <div key={f.id} className="space-y-0.5">
             <div className="flex items-center justify-between gap-2">
