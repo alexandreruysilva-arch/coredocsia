@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save, X, ArrowDown } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -190,22 +190,6 @@ function DocumentDetailPage() {
   const set = (f: (typeof fields)[number], raw: string) =>
     setValues((prev) => ({ ...prev, [f.field_key]: sanitize(f, raw) }));
 
-  const clearField = (f: (typeof fields)[number]) =>
-    setValues((prev) => ({ ...prev, [f.field_key]: "" }));
-
-  const transferToNext = (index: number) => {
-    const current = fields[index];
-    const next = fields[index + 1];
-    if (!current || !next) return;
-    const value = values[current.field_key];
-    const raw = value == null ? "" : String(value);
-    setValues((prev) => ({
-      ...prev,
-      [current.field_key]: "",
-      [next.field_key]: sanitize(next, raw),
-    }));
-  };
-
   return (
     <div className="flex h-full">
       <div className="flex-1 overflow-auto">
@@ -231,45 +215,16 @@ function DocumentDetailPage() {
                 Este documento não possui campos de indexação configurados.
               </p>
             )}
-            {fields.map((f, idx) => {
+            {fields.map((f) => {
               const v = values[f.field_key];
               const strVal = v === null || v === undefined ? "" : String(v);
               const isMatricula = f.field_key.toLowerCase().includes("matricula");
-              const hasNext = idx < fields.length - 1;
               return (
                 <div key={f.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <Label htmlFor={`f-${f.id}`}>
-                      {f.label}
-                      {f.required && <span className="text-destructive ml-1">*</span>}
-                    </Label>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => clearField(f)}
-                        disabled={!strVal}
-                        title="Limpar campo"
-                      >
-                        <X className="h-3.5 w-3.5 mr-1" /> Limpar
-                      </Button>
-                      {hasNext && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-xs"
-                          onClick={() => transferToNext(idx)}
-                          disabled={!strVal}
-                          title={`Transferir para "${fields[idx + 1].label}"`}
-                        >
-                          <ArrowDown className="h-3.5 w-3.5 mr-1" /> Transferir
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  <Label htmlFor={`f-${f.id}`}>
+                    {f.label}
+                    {f.required && <span className="text-destructive ml-1">*</span>}
+                  </Label>
                   {f.field_type === "select" && Array.isArray(f.options) ? (
                     <Select
                       value={strVal || "none"}
