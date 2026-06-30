@@ -14,7 +14,7 @@ export const ALLOWED_MIME = [
   "image/webp",
 ];
 export const MAX_FILE_BYTES = 50 * 1024 * 1024;
-export const MAX_FILES_PER_BATCH = 100;
+export const MAX_FILES_PER_BATCH = 500;
 
 export function validateFile(file: File): string | null {
   if (file.size > MAX_FILE_BYTES) return "Arquivo excede 50 MB";
