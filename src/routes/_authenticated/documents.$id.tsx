@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, X, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -189,6 +189,22 @@ function DocumentDetailPage() {
 
   const set = (f: (typeof fields)[number], raw: string) =>
     setValues((prev) => ({ ...prev, [f.field_key]: sanitize(f, raw) }));
+
+  const clearField = (f: (typeof fields)[number]) =>
+    setValues((prev) => ({ ...prev, [f.field_key]: "" }));
+
+  const transferToNext = (index: number) => {
+    const current = fields[index];
+    const next = fields[index + 1];
+    if (!current || !next) return;
+    const value = values[current.field_key];
+    const raw = value == null ? "" : String(value);
+    setValues((prev) => ({
+      ...prev,
+      [current.field_key]: "",
+      [next.field_key]: sanitize(next, raw),
+    }));
+  };
 
   return (
     <div className="flex h-full">
