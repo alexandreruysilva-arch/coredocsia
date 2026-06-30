@@ -455,6 +455,7 @@ function UploadPage() {
   } | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
+  const cancelExtractRef = useRef(false);
 
   const types = useMemo(() => {
     let list = allTypes;
