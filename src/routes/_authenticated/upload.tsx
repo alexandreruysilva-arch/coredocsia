@@ -685,6 +685,11 @@ function UploadPage() {
     }
     setIsExtracting(null);
     setBatchProgress(null);
+    cancelExtractRef.current = false;
+    if (canceled) {
+      toast.info(`Processamento ${providerLabel} cancelado. ${ok} ok, ${incomplete} incompleto(s), ${fail} falha(s).`);
+      return;
+    }
     if (ok > 0 || fail > 0) {
       const parts: string[] = [];
       if (ok > 0) parts.push(`${ok} ok`);
