@@ -605,7 +605,12 @@ function UploadPage() {
     let ok = 0;
     let fail = 0;
     let incomplete = 0;
+    let canceled = false;
     for (let idx = 0; idx < queued.length; idx++) {
+      if (cancelExtractRef.current) {
+        canceled = true;
+        break;
+      }
       const item = queued[idx];
       setBatchProgress({
         action: "extract",
