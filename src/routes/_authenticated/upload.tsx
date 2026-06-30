@@ -17,6 +17,8 @@ import {
   Sparkles,
   Loader2,
   FolderOpen,
+  Eraser,
+  ArrowDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -201,21 +203,60 @@ function handleCaretPreservingChange(
 function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
-      {fields.map((f) => {
+      {fields.map((f, idx) => {
         const val = values[f.field_key] ?? "";
         const id = `${idPrefix}-${f.id}`;
         const isMatricula = f.field_key.toLowerCase().includes("matricula");
         const handleBlur = () => onFieldBlur?.(f.field_key, val);
+        const next = fields[idx + 1];
+        const clearField = () => {
+          onChange(f.field_key, "");
+          onFieldBlur?.(f.field_key, "");
+        };
+        const moveDown = () => {
+          if (!next) return;
+          const transferred = sanitizeFieldValue(next, val);
+          onChange(next.field_key, transferred);
+          onFieldBlur?.(next.field_key, transferred);
+          onChange(f.field_key, "");
+          onFieldBlur?.(f.field_key, "");
+        };
         return (
           <div key={f.id} className="space-y-0.5">
-            <Label htmlFor={id} className="text-xs flex items-center gap-1">
-              {f.label} {f.required && <span className="text-destructive">*</span>}
-              {f.is_lookup_key && (
-                <span className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-primary">
-                  chave
-                </span>
-              )}
-            </Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor={id} className="text-xs flex items-center gap-1">
+                {f.label} {f.required && <span className="text-destructive">*</span>}
+                {f.is_lookup_key && (
+                  <span className="ml-1 inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-primary">
+                    chave
+                  </span>
+                )}
+              </Label>
+              <div className="flex items-center gap-0.5">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={clearField}
+                  disabled={!val}
+                  title="Limpar campo"
+                >
+                  <Eraser className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={moveDown}
+                  disabled={!val || !next}
+                  title={next ? `Mover para "${next.label}"` : "Sem campo abaixo"}
+                >
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
             {f.field_type === "textarea" ? (
               <Textarea
                 id={id}
