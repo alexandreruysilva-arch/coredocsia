@@ -1288,7 +1288,9 @@ function UploadPage() {
                               onChange={(k, v) => setItemFieldValue(item.id, k, v)}
                               onFieldBlur={(k, v) => handleKeyFieldBlur(item.id, k, v)}
                               idPrefix={item.id}
+                              originals={item.aiOriginalValues}
                             />
+
 
                           ) : (
                             <p className="text-xs text-muted-foreground">
