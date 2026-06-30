@@ -165,7 +165,9 @@ interface FieldEditorProps {
   onChange: (key: string, value: string) => void;
   onFieldBlur?: (key: string, value: string) => void;
   idPrefix: string;
+  originals?: Record<string, string>;
 }
+
 
 
 function sanitizeFieldValue(field: DocTypeField, raw: string): string {
