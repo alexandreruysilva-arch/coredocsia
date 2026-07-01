@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Database, FileType, KeyRound, ListChecks, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Copy, Database, FileType, KeyRound, ListChecks, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { LookupImportDialog } from "@/components/lookup-import-dialog";
