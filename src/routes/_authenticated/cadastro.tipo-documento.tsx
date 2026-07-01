@@ -187,6 +187,72 @@ function TipoDocumentoPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const duplicate = useMutation({
+    mutationFn: async (source: DocTypeRow) => {
+      if (!orgId) throw new Error("Organização não selecionada");
+      // Gera nome/slug únicos com sufixo incremental
+      const existing = (list.data ?? []).map((r) => r.name.toLowerCase());
+      let n = 1;
+      let newName = `${source.name} (cópia)`;
+      while (existing.includes(newName.toLowerCase())) {
+        n += 1;
+        newName = `${source.name} (cópia ${n})`;
+      }
+      const newSlug = slugify(newName);
+
+      const { data: created, error: insErr } = await supabase
+        .from("document_types")
+        .insert({
+          org_id: orgId,
+          company_id: source.company_id,
+          name: newName,
+          slug: newSlug,
+          store_files: source.store_files ?? true,
+        })
+        .select("id")
+        .single();
+      if (insErr) throw insErr;
+      const newId = created!.id as string;
+
+      // Copia campos de indexação
+      const { data: srcFields, error: fErr } = await supabase
+        .from("document_type_fields")
+        .select("label, field_key, field_type, required, position, options, is_lookup_key, expected_length, location_hint")
+        .eq("document_type_id", source.id)
+        .order("position");
+      if (fErr) throw fErr;
+
+      if (srcFields && srcFields.length > 0) {
+        const rows = srcFields.map((f) => ({
+          ...f,
+          org_id: orgId,
+          document_type_id: newId,
+        }));
+        const { error: bulkErr } = await supabase
+          .from("document_type_fields")
+          .insert(rows as never);
+        if (bulkErr) throw bulkErr;
+      }
+
+      // Cria tabela física e colunas
+      try {
+        await createDocTypeTable({ data: { typeId: newId } });
+        for (const f of srcFields ?? []) {
+          await addDocTypeColumn({
+            data: { typeId: newId, fieldKey: f.field_key, fieldType: f.field_type },
+          });
+        }
+      } catch (e) {
+        console.error("Falha ao criar tabela física do tipo duplicado", e);
+      }
+    },
+    onSuccess: () => {
+      toast.success("Tipo duplicado com sucesso");
+      queryClient.invalidateQueries({ queryKey: ["doc-types"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erro ao duplicar tipo."),
+  });
+
   const companyName = useMemo(
     () => companies.data?.find((c) => c.id === selectedCompany)?.name ?? "",
     [companies.data, selectedCompany],
