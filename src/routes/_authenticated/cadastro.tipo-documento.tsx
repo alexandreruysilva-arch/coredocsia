@@ -40,6 +40,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
+import {
+  createDocTypeTable,
+  addDocTypeColumn,
+  dropDocTypeColumn,
+} from "@/lib/doc-type-storage.functions";
+
 
 export const Route = createFileRoute("/_authenticated/cadastro/tipo-documento")({
   component: TipoDocumentoPage,
