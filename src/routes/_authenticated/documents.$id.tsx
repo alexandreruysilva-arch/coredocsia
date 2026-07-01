@@ -17,6 +17,8 @@ import { DocumentViewer } from "@/components/document-viewer";
 import { useDocument } from "@/hooks/use-documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { supabase } from "@/integrations/supabase/client";
+import { upsertDocTypeRow } from "@/lib/doc-type-storage.functions";
+
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/documents/$id")({
