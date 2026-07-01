@@ -75,7 +75,7 @@ export async function ensureDocTypeFolder(parentFolderId: string, scopeKey: stri
   // scopeKey is unique per (company, docType) pair, e.g. `${companyId}:${docTypeId}`.
   const existing = await findFolderByAppProperty("lovableDocTypeScope", scopeKey);
   if (existing) return existing;
-  return createFolder(docTypeName, parentFolderId, { lovableDocTypeScope: scopeKey });
+  return createFolder(`AP - ${docTypeName}`, parentFolderId, { lovableDocTypeScope: scopeKey });
 }
 
 export interface DriveUploadResult {
