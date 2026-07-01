@@ -531,44 +531,6 @@ export type Database = {
           },
         ]
       }
-      dt_investimentos_bfff4924: {
-        Row: {
-          company_id: string | null
-          created_at: string
-          document_id: string
-          id: string
-          matricula: string | null
-          org_id: string
-          updated_at: string
-        }
-        Insert: {
-          company_id?: string | null
-          created_at?: string
-          document_id: string
-          id?: string
-          matricula?: string | null
-          org_id: string
-          updated_at?: string
-        }
-        Update: {
-          company_id?: string | null
-          created_at?: string
-          document_id?: string
-          id?: string
-          matricula?: string | null
-          org_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dt_investimentos_bfff4924_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: true
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       organization_members: {
         Row: {
           created_at: string
