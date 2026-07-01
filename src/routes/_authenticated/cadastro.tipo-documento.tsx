@@ -40,6 +40,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfileBundle } from "@/hooks/use-profile";
+import {
+  createDocTypeTable,
+  addDocTypeColumn,
+  dropDocTypeColumn,
+} from "@/lib/doc-type-storage.functions";
+
 
 export const Route = createFileRoute("/_authenticated/cadastro/tipo-documento")({
   component: TipoDocumentoPage,
@@ -148,9 +154,9 @@ function TipoDocumentoPage() {
         if (error) throw error;
         // Cria tabela física dedicada para o novo tipo
         if (created?.id) {
-          const { error: rpcErr } = await supabase.rpc("create_doc_type_table", { _type_id: created.id });
-          if (rpcErr) throw rpcErr;
+          await createDocTypeTable({ data: { typeId: created.id } });
         }
+
       }
     },
     onSuccess: () => {
@@ -557,11 +563,10 @@ function FieldsDialog({
         });
         if (error) throw error;
         // Adiciona coluna correspondente na tabela física do tipo (no-op se tipo antigo)
-        await supabase.rpc("add_doc_type_column", {
-          _type_id: docType.id,
-          _field_key: key,
-          _field_type: fieldType,
+        await addDocTypeColumn({
+          data: { typeId: docType.id, fieldKey: key, fieldType },
         });
+
       }
 
     },
@@ -588,11 +593,11 @@ function FieldsDialog({
       const { error } = await supabase.from("document_type_fields").delete().eq("id", id);
       if (error) throw error;
       if (target && docType) {
-        await supabase.rpc("drop_doc_type_column", {
-          _type_id: docType.id,
-          _field_key: target.field_key,
+        await dropDocTypeColumn({
+          data: { typeId: docType.id, fieldKey: target.field_key },
         });
       }
+
     },
     onSuccess: () => {
       toast.success("Campo removido");

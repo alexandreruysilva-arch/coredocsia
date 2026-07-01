@@ -17,6 +17,8 @@ import { DocumentViewer } from "@/components/document-viewer";
 import { useDocument } from "@/hooks/use-documents";
 import { useDocumentTypeFields } from "@/hooks/use-document-type-fields";
 import { supabase } from "@/integrations/supabase/client";
+import { upsertDocTypeRow } from "@/lib/doc-type-storage.functions";
+
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated/documents/$id")({
@@ -149,12 +151,20 @@ function DocumentDetailPage() {
     }
     // Replica em tabela física do tipo (no-op para tipos antigos)
     if (doc!.document_type_id) {
-      await supabase.rpc("upsert_doc_type_row", {
-        _type_id: doc!.document_type_id,
-        _document_id: doc!.id,
-        _values: normalized as never,
-      });
+      try {
+        await upsertDocTypeRow({
+          data: {
+            typeId: doc!.document_type_id,
+            documentId: doc!.id,
+            values: normalized,
+          },
+        });
+      } catch (e) {
+        console.error("upsertDocTypeRow falhou", e);
+      }
     }
+
+
 
     if (correctedChars > 0) {
       const { data: logRow } = await supabase
