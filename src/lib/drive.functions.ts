@@ -165,11 +165,15 @@ export const uploadDocumentToDrive = createServerFn({ method: "POST" })
     }
 
     // 6.1 Replica os valores indexados na tabela física do tipo (no-op se tipo antigo sem storage_table)
-    await supabase.rpc("upsert_doc_type_row", {
-      _type_id: docType.id,
-      _document_id: row.id,
-      _values: (fieldValues ?? {}) as never,
-    });
+    {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.rpc("upsert_doc_type_row", {
+        _type_id: docType.id,
+        _document_id: row.id,
+        _values: (fieldValues ?? {}) as never,
+      });
+    }
+
 
 
 
