@@ -593,11 +593,11 @@ function FieldsDialog({
       const { error } = await supabase.from("document_type_fields").delete().eq("id", id);
       if (error) throw error;
       if (target && docType) {
-        await supabase.rpc("drop_doc_type_column", {
-          _type_id: docType.id,
-          _field_key: target.field_key,
+        await dropDocTypeColumn({
+          data: { typeId: docType.id, fieldKey: target.field_key },
         });
       }
+
     },
     onSuccess: () => {
       toast.success("Campo removido");
