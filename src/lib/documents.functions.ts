@@ -62,12 +62,14 @@ export const updateDocumentsFromImport = createServerFn({ method: "POST" })
 
       // Replica na tabela física do tipo (no-op para tipos sem storage_table).
       if (doc.document_type_id) {
-        await supabase.rpc("upsert_doc_type_row", {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.rpc("upsert_doc_type_row", {
           _type_id: doc.document_type_id,
           _document_id: u.id,
           _values: merged as never,
         });
       }
+
 
       updated += 1;
     }
