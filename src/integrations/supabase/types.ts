@@ -531,50 +531,6 @@ export type Database = {
           },
         ]
       }
-      dt_alexandreruy_fd2cc3ad: {
-        Row: {
-          company_id: string | null
-          created_at: string
-          document_id: string
-          id: string
-          mae: string | null
-          matricula: string | null
-          nome: string | null
-          org_id: string
-          updated_at: string
-        }
-        Insert: {
-          company_id?: string | null
-          created_at?: string
-          document_id: string
-          id?: string
-          mae?: string | null
-          matricula?: string | null
-          nome?: string | null
-          org_id: string
-          updated_at?: string
-        }
-        Update: {
-          company_id?: string | null
-          created_at?: string
-          document_id?: string
-          id?: string
-          mae?: string | null
-          matricula?: string | null
-          nome?: string | null
-          org_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dt_alexandreruy_fd2cc3ad_document_id_fkey"
-            columns: ["document_id"]
-            isOneToOne: true
-            referencedRelation: "documents"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       dt_investimentos_bfff4924: {
         Row: {
           company_id: string | null
