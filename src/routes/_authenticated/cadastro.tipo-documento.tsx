@@ -394,6 +394,20 @@ function TipoDocumentoPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => {
+                          if (confirm(`Duplicar "${r.name}" com todos os campos de indexação?`)) {
+                            duplicate.mutate(r);
+                          }
+                        }}
+                        disabled={duplicate.isPending}
+                        aria-label="Duplicar"
+                        title="Duplicar tipo e campos"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
                           if (confirm(`Remover "${r.name}"?`)) remove.mutate(r.id);
                         }}
                         aria-label="Remover"
