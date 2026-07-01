@@ -79,3 +79,22 @@ export const dropDocTypeColumn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const upsertDocTypeRow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => {
+    const d = data as { typeId?: string; documentId?: string; values?: Record<string, unknown> };
+    if (!d?.typeId || !d?.documentId) throw new Error("parâmetros inválidos");
+    return { typeId: d.typeId, documentId: d.documentId, values: d.values ?? {} };
+  })
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await assertMemberOfType(data.typeId, context.userId!);
+    const { error } = await supabaseAdmin.rpc("upsert_doc_type_row", {
+      _type_id: data.typeId,
+      _document_id: data.documentId,
+      _values: data.values as never,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
