@@ -154,9 +154,9 @@ function TipoDocumentoPage() {
         if (error) throw error;
         // Cria tabela física dedicada para o novo tipo
         if (created?.id) {
-          const { error: rpcErr } = await supabase.rpc("create_doc_type_table", { _type_id: created.id });
-          if (rpcErr) throw rpcErr;
+          await createDocTypeTable({ data: { typeId: created.id } });
         }
+
       }
     },
     onSuccess: () => {
