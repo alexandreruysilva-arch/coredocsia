@@ -341,7 +341,7 @@ function TipoDocumentoPage() {
             <TableRow>
               <TableHead>Nome</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead className="w-24 text-right">Ações</TableHead>
+              <TableHead className="w-36 text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
