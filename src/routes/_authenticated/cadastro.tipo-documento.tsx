@@ -563,11 +563,10 @@ function FieldsDialog({
         });
         if (error) throw error;
         // Adiciona coluna correspondente na tabela física do tipo (no-op se tipo antigo)
-        await supabase.rpc("add_doc_type_column", {
-          _type_id: docType.id,
-          _field_key: key,
-          _field_type: fieldType,
+        await addDocTypeColumn({
+          data: { typeId: docType.id, fieldKey: key, fieldType },
         });
+
       }
 
     },
