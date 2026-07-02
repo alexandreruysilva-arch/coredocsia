@@ -1343,6 +1343,8 @@ function UploadPage() {
                               onFieldBlur={(k, v) => handleKeyFieldBlur(item.id, k, v)}
                               idPrefix={item.id}
                               originals={item.aiOriginalValues}
+                              aiRan={!!item.aiStatus}
+
                             />
 
 
