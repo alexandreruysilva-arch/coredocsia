@@ -725,6 +725,10 @@ function UploadPage() {
     const queued = items.filter((i) => i.status === "queued");
     if (queued.length === 0) return;
 
+    // Rola até o topo para acompanhar a barra de progresso.
+    // O container de scroll é o <main> do app-shell, não a window.
+    const mainEl = document.querySelector("main");
+    if (mainEl) mainEl.scrollTo({ top: 0, behavior: "smooth" });
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     for (const item of queued) {
