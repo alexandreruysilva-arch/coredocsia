@@ -20,6 +20,7 @@ import {
   Eraser,
   ArrowDown,
   ArrowUp,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
