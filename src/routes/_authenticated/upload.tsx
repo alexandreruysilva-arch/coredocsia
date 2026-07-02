@@ -471,6 +471,8 @@ function UploadPage() {
     itemId: string;
     sourcePath: string | null;
   } | null>(null);
+  const [extractStartedAt, setExtractStartedAt] = useState<Date | null>(null);
+  const [uploadStartedAt, setUploadStartedAt] = useState<Date | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
   const cancelExtractRef = useRef(false);
