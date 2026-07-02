@@ -847,6 +847,7 @@ function UploadPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div ref={topAnchorRef} aria-hidden className="scroll-mt-4" />
       <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-4 md:p-5">
         <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
