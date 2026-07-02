@@ -43,8 +43,14 @@ export async function getFileUrl(
   documentId: string,
   opts: { download?: boolean } = {},
 ): Promise<string | null> {
-  const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData.session?.access_token;
+  let { data: sessionData } = await supabase.auth.getSession();
+  let token = sessionData.session?.access_token;
+  const exp = sessionData.session?.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!token || exp - nowSec < 120) {
+    const { data: refreshed } = await supabase.auth.refreshSession();
+    token = refreshed.session?.access_token ?? token;
+  }
   if (!token) return null;
   const qs = new URLSearchParams({ token });
   if (opts.download) qs.set("download", "1");
@@ -70,6 +76,14 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   const { file, name, documentTypeId, companyId, fieldValues, tags = [], aiUsage, sourcePath } = opts;
 
   opts.onProgress?.(10);
+
+  // Garante um token válido antes do envio (processamento longo pode expirar o JWT).
+  const { data: sessionData } = await supabase.auth.getSession();
+  const exp = sessionData.session?.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!sessionData.session || exp - nowSec < 120) {
+    await supabase.auth.refreshSession();
+  }
 
   const { uploadDocumentToDrive } = await import("./drive.functions");
 
