@@ -71,6 +71,14 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
 
   opts.onProgress?.(10);
 
+  // Garante um token válido antes do envio (processamento longo pode expirar o JWT).
+  const { data: sessionData } = await supabase.auth.getSession();
+  const exp = sessionData.session?.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!sessionData.session || exp - nowSec < 120) {
+    await supabase.auth.refreshSession();
+  }
+
   const { uploadDocumentToDrive } = await import("./drive.functions");
 
   const form = new FormData();
