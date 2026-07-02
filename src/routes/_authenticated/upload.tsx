@@ -166,7 +166,9 @@ interface FieldEditorProps {
   onFieldBlur?: (key: string, value: string) => void;
   idPrefix: string;
   originals?: Record<string, string>;
+  aiRan?: boolean;
 }
+
 
 
 
