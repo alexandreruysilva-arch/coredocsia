@@ -720,8 +720,106 @@ function UploadPage() {
         toast.warning(`${summary} Itens marcados precisam de preenchimento manual antes do envio.`);
       } else {
         toast.success(`${summary} Revise antes de enviar.`);
+  }
+
+  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude") {
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
+    if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
+    if (isExtracting !== null || isUploading) return;
+
+    const provider = providerOverride ?? item.aiProvider ?? "gemini";
+    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
+
+    const fieldDefs = fields.map((f) => ({
+      label: f.label,
+      field_key: f.field_key,
+      field_type: f.field_type,
+      options: f.options,
+      expected_length: f.expected_length ?? null,
+      location_hint: f.location_hint ?? null,
+    }));
+    const fieldsJson = JSON.stringify(fieldDefs);
+
+    setIsExtracting(provider);
+    setBatchProgress({
+      action: "extract",
+      current: 1,
+      total: 1,
+      fileName: item.file.name,
+      itemId: item.id,
+      sourcePath: item.sourcePath ?? normalizeManualSourcePath(manualSourcePathRef.current),
+    });
+
+    try {
+      const form = new FormData();
+      form.append("file", item.file);
+      form.append("fields", fieldsJson);
+      if (companyId !== "none") form.append("companyId", companyId);
+      if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
+      const res = (await extractFn({ data: form })) as {
+        values: Record<string, string>;
+        usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
+      };
+      const sanitizedAi: Record<string, string> = {};
+      for (const f of fields) {
+        const v = res.values?.[f.field_key];
+        if (v != null) sanitizedAi[f.field_key] = sanitizeFieldValue(f, String(v));
       }
+      const mergedValues = { ...item.fieldValues, ...sanitizedAi };
+      const missingRequired = fields.filter(
+        (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
+      );
+      const isIncomplete = missingRequired.length > 0;
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                fieldValues: mergedValues,
+                aiOriginalValues: { ...sanitizedAi },
+                aiUsage: res.usage,
+                aiStatus: isIncomplete ? "incomplete" : "success",
+                aiProvider: provider,
+                aiMessage: isIncomplete
+                  ? `Processamento incompleto — preencha manualmente: ${missingRequired
+                      .map((f) => f.label)
+                      .join(", ")}.`
+                  : undefined,
+                expanded: true,
+              }
+            : i,
+        ),
+      );
+      if (isIncomplete) {
+        toast.warning(`${providerLabel}: reprocessado com pendências.`);
+      } else {
+        toast.success(`${providerLabel}: reprocessado com sucesso.`);
+      }
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha na extração";
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                aiStatus: "failed",
+                aiProvider: provider,
+                aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
+                expanded: true,
+              }
+            : i,
+        ),
+      );
+      toast.error(`${item.file.name}: ${msg}`);
+    } finally {
+      setIsExtracting(null);
+      setBatchProgress(null);
     }
+  }
+
   }
 
 
