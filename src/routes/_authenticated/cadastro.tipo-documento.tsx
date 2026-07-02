@@ -686,6 +686,38 @@ function FieldsDialog({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const moveField = useMutation({
+    mutationFn: async ({ id, dir }: { id: string; dir: -1 | 1 }) => {
+      const list = [...(fields.data ?? [])].sort((a, b) => a.position - b.position);
+      const idx = list.findIndex((f) => f.id === id);
+      const swapIdx = idx + dir;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= list.length) return;
+      const a = list[idx];
+      const b = list[swapIdx];
+      // Two-step swap to avoid unique constraint collisions if any exist
+      const { error: e1 } = await supabase
+        .from("document_type_fields")
+        .update({ position: -1 })
+        .eq("id", a.id);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase
+        .from("document_type_fields")
+        .update({ position: a.position })
+        .eq("id", b.id);
+      if (e2) throw e2;
+      const { error: e3 } = await supabase
+        .from("document_type_fields")
+        .update({ position: b.position })
+        .eq("id", a.id);
+      if (e3) throw e3;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+      queryClient.invalidateQueries({ queryKey: ["document-type-fields", docType?.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Dialog open={!!docType} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-[1100px] w-[95vw]">
