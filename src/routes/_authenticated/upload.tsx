@@ -205,7 +205,7 @@ function handleCaretPreservingChange(
   });
 }
 
-function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, originals }: FieldEditorProps) {
+function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, originals, aiRan }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f, idx) => {
