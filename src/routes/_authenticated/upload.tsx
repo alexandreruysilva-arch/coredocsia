@@ -488,7 +488,7 @@ function UploadPage() {
 
   const runExtractWithFreshAuth = useCallback(
     async (
-      extractFn: ReturnType<typeof useServerFn<typeof extractFieldsWithGemini>>,
+      extractFn: (options: { data: FormData }) => Promise<unknown>,
       form: FormData,
     ) => {
       await refreshAuthSessionIfNeeded();
