@@ -305,18 +305,25 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, original
                 </Button>
               </div>
             </div>
-            {f.field_type === "textarea" ? (
+            {(() => {
+              const expLen = f.expected_length ?? 0;
+              const lengthMismatch = expLen > 0 && val.length > 0 && val.length !== expLen;
+              const mismatchClass = lengthMismatch
+                ? "bg-pink-100 border-pink-400 focus-visible:ring-pink-400 dark:bg-pink-950/40"
+                : "";
+              return f.field_type === "textarea" ? (
               <Textarea
                 id={id}
                 value={val}
                 onChange={(e) => handleCaretPreservingChange(e, f, (v) => onChange(f.field_key, v))}
                 onBlur={handleBlur}
                 rows={2}
-                className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase")}
+                className={cn("min-h-[48px] py-1 text-sm", isMatricula ? undefined : "uppercase", mismatchClass)}
+                title={lengthMismatch ? `Esperado ${expLen} caracteres, atual ${val.length}` : undefined}
               />
             ) : f.field_type === "select" && Array.isArray(f.options) ? (
               <Select value={val} onValueChange={(v) => { onChange(f.field_key, sanitizeFieldValue(f, v)); onFieldBlur?.(f.field_key, v); }}>
-                <SelectTrigger className={cn("h-8 px-2 text-sm", isMatricula ? undefined : "uppercase")}>
+                <SelectTrigger className={cn("h-8 px-2 text-sm", isMatricula ? undefined : "uppercase", mismatchClass)}>
                   <SelectValue placeholder="Selecionar" />
                 </SelectTrigger>
                 <SelectContent>
@@ -339,10 +346,14 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, original
                 className={cn(
                   "h-8 px-2 text-sm",
                   isMatricula ? undefined : f.field_type !== "number" && f.field_type !== "date" ? "uppercase" : undefined,
+                  mismatchClass,
                 )}
+                title={lengthMismatch ? `Esperado ${expLen} caracteres, atual ${val.length}` : undefined}
                 type={f.field_type === "number" ? "number" : "text"}
               />
-            )}
+              );
+            })()}
+
           </div>
         );
       })}
