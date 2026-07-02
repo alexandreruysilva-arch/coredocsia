@@ -751,6 +751,7 @@ function UploadPage() {
     const fieldsJson = JSON.stringify(fieldDefs);
 
     setIsExtracting(provider);
+    setExtractStartedAt(new Date());
     setBatchProgress({
       action: "extract",
       current: 1,
