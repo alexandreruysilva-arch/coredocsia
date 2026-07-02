@@ -720,7 +720,11 @@ function UploadPage() {
         toast.warning(`${summary} Itens marcados precisam de preenchimento manual antes do envio.`);
       } else {
         toast.success(`${summary} Revise antes de enviar.`);
+      }
+    }
   }
+
+
 
   async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude") {
     const item = items.find((i) => i.id === itemId);
