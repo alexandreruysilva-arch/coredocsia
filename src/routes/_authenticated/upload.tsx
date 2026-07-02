@@ -450,6 +450,7 @@ function UploadPage() {
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
   const queryClient = useQueryClient();
 
+  const topAnchorRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<QueueItem[]>([]);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [companyId, setCompanyId] = useState<string>("none");
@@ -726,10 +727,16 @@ function UploadPage() {
     if (queued.length === 0) return;
 
     // Rola até o topo para acompanhar a barra de progresso.
-    // O container de scroll é o <main> do app-shell, não a window.
-    const mainEl = document.querySelector("main");
-    if (mainEl) mainEl.scrollTo({ top: 0, behavior: "smooth" });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Sobe por todos os ancestrais scrolláveis (window + <main> do app-shell).
+    topAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    requestAnimationFrame(() => {
+      let el: HTMLElement | null = topAnchorRef.current;
+      while (el) {
+        if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: "smooth" });
+        el = el.parentElement;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     for (const item of queued) {
       if (item.aiStatus === "failed") {
@@ -840,6 +847,7 @@ function UploadPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      <div ref={topAnchorRef} aria-hidden className="scroll-mt-4" />
       <header className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-slate-900/10 via-blue-900/10 to-sky-700/10 p-4 md:p-5">
         <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-blue-800/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-slate-700/20 blur-3xl pointer-events-none" />
