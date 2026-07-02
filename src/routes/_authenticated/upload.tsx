@@ -871,6 +871,9 @@ function UploadPage() {
 
 
     setIsUploading(true);
+    setUploadStartedAt(new Date());
+
+
 
     for (let idx = 0; idx < queued.length; idx++) {
       const item = queued[idx];
