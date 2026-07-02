@@ -726,10 +726,16 @@ function UploadPage() {
     if (queued.length === 0) return;
 
     // Rola até o topo para acompanhar a barra de progresso.
-    // O container de scroll é o <main> do app-shell, não a window.
-    const mainEl = document.querySelector("main");
-    if (mainEl) mainEl.scrollTo({ top: 0, behavior: "smooth" });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Sobe por todos os ancestrais scrolláveis (window + <main> do app-shell).
+    topAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    requestAnimationFrame(() => {
+      let el: HTMLElement | null = topAnchorRef.current;
+      while (el) {
+        if (el.scrollTop > 0) el.scrollTo({ top: 0, behavior: "smooth" });
+        el = el.parentElement;
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
 
     for (const item of queued) {
       if (item.aiStatus === "failed") {
