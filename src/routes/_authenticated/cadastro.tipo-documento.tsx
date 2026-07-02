@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { Copy, Database, FileType, KeyRound, ListChecks, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Database, FileType, KeyRound, ListChecks, Pencil, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { LookupImportDialog } from "@/components/lookup-import-dialog";
@@ -686,6 +686,38 @@ function FieldsDialog({
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const moveField = useMutation({
+    mutationFn: async ({ id, dir }: { id: string; dir: -1 | 1 }) => {
+      const list = [...(fields.data ?? [])].sort((a, b) => a.position - b.position);
+      const idx = list.findIndex((f) => f.id === id);
+      const swapIdx = idx + dir;
+      if (idx < 0 || swapIdx < 0 || swapIdx >= list.length) return;
+      const a = list[idx];
+      const b = list[swapIdx];
+      // Two-step swap to avoid unique constraint collisions if any exist
+      const { error: e1 } = await supabase
+        .from("document_type_fields")
+        .update({ position: -1 })
+        .eq("id", a.id);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase
+        .from("document_type_fields")
+        .update({ position: a.position })
+        .eq("id", b.id);
+      if (e2) throw e2;
+      const { error: e3 } = await supabase
+        .from("document_type_fields")
+        .update({ position: b.position })
+        .eq("id", a.id);
+      if (e3) throw e3;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doc-type-fields", docType?.id] });
+      queryClient.invalidateQueries({ queryKey: ["document-type-fields", docType?.id] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <Dialog open={!!docType} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-[1100px] w-[95vw]">
@@ -736,7 +768,7 @@ function FieldsDialog({
                   </TableCell>
                 </TableRow>
               ) : (
-                (fields.data ?? []).map((f) => (
+                (fields.data ?? []).map((f, idx, arr) => (
                   <TableRow key={f.id}>
                     <TableCell className="font-medium">{f.label}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
@@ -755,6 +787,24 @@ function FieldsDialog({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => moveField.mutate({ id: f.id, dir: -1 })}
+                          disabled={idx === 0 || moveField.isPending}
+                          aria-label="Mover para cima"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => moveField.mutate({ id: f.id, dir: 1 })}
+                          disabled={idx === arr.length - 1 || moveField.isPending}
+                          aria-label="Mover para baixo"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
                         <Button
                           size="icon"
                           variant="ghost"
