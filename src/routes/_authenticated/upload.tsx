@@ -20,6 +20,7 @@ import {
   Eraser,
   ArrowDown,
   ArrowUp,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -126,6 +127,7 @@ interface QueueItem {
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
+  aiProvider?: "gemini" | "claude";
   aiMessage?: string;
   expanded: boolean;
 }
@@ -670,6 +672,7 @@ function UploadPage() {
 
                   aiUsage: res.usage,
                   aiStatus: isIncomplete ? "incomplete" : "success",
+                  aiProvider: provider,
                   aiMessage: isIncomplete
                     ? `Processamento incompleto — preencha manualmente: ${missingRequired
                         .map((f) => f.label)
@@ -690,6 +693,7 @@ function UploadPage() {
               ? {
                   ...i,
                   aiStatus: "failed",
+                  aiProvider: provider,
                   aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
                   expanded: true,
                 }
@@ -719,6 +723,108 @@ function UploadPage() {
       }
     }
   }
+
+
+
+  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude") {
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
+    if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
+    if (isExtracting !== null || isUploading) return;
+
+    const provider = providerOverride ?? item.aiProvider ?? "gemini";
+    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
+
+    const fieldDefs = fields.map((f) => ({
+      label: f.label,
+      field_key: f.field_key,
+      field_type: f.field_type,
+      options: f.options,
+      expected_length: f.expected_length ?? null,
+      location_hint: f.location_hint ?? null,
+    }));
+    const fieldsJson = JSON.stringify(fieldDefs);
+
+    setIsExtracting(provider);
+    setBatchProgress({
+      action: "extract",
+      current: 1,
+      total: 1,
+      fileName: item.file.name,
+      itemId: item.id,
+      sourcePath: item.sourcePath ?? normalizeManualSourcePath(manualSourcePathRef.current),
+    });
+
+    try {
+      const form = new FormData();
+      form.append("file", item.file);
+      form.append("fields", fieldsJson);
+      if (companyId !== "none") form.append("companyId", companyId);
+      if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
+      const res = (await extractFn({ data: form })) as {
+        values: Record<string, string>;
+        usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
+      };
+      const sanitizedAi: Record<string, string> = {};
+      for (const f of fields) {
+        const v = res.values?.[f.field_key];
+        if (v != null) sanitizedAi[f.field_key] = sanitizeFieldValue(f, String(v));
+      }
+      const mergedValues = { ...item.fieldValues, ...sanitizedAi };
+      const missingRequired = fields.filter(
+        (f) => f.required && !String(mergedValues[f.field_key] ?? "").trim(),
+      );
+      const isIncomplete = missingRequired.length > 0;
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                fieldValues: mergedValues,
+                aiOriginalValues: { ...sanitizedAi },
+                aiUsage: res.usage,
+                aiStatus: isIncomplete ? "incomplete" : "success",
+                aiProvider: provider,
+                aiMessage: isIncomplete
+                  ? `Processamento incompleto — preencha manualmente: ${missingRequired
+                      .map((f) => f.label)
+                      .join(", ")}.`
+                  : undefined,
+                expanded: true,
+              }
+            : i,
+        ),
+      );
+      if (isIncomplete) {
+        toast.warning(`${providerLabel}: reprocessado com pendências.`);
+      } else {
+        toast.success(`${providerLabel}: reprocessado com sucesso.`);
+      }
+    } catch (e: any) {
+      const msg = e?.message ?? "Falha na extração";
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? {
+                ...i,
+                aiStatus: "failed",
+                aiProvider: provider,
+                aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
+                expanded: true,
+              }
+            : i,
+        ),
+      );
+      toast.error(`${item.file.name}: ${msg}`);
+    } finally {
+      setIsExtracting(null);
+      setBatchProgress(null);
+    }
+  }
+
+
 
 
 
@@ -1273,14 +1379,50 @@ function UploadPage() {
                         </p>
                       )}
                       {item.status !== "error" && item.aiStatus === "failed" && (
-                        <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
-                        </p>
+                        <div className="mt-1 flex items-start justify-between gap-2">
+                          <p className="text-xs text-destructive flex items-center gap-1 min-w-0">
+                            <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 shrink-0"
+                            onClick={() => reprocessItem(item.id)}
+                            disabled={isExtracting !== null || isUploading}
+                            title={`Reprocessar com ${item.aiProvider === "claude" ? "Claude" : "Gemini"}`}
+                          >
+                            {isExtracting !== null && batchProgress?.itemId === item.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Reprocessar
+                          </Button>
+                        </div>
                       )}
                       {item.status !== "error" && item.aiStatus === "incomplete" && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
-                        </p>
+                        <div className="mt-1 flex items-start justify-between gap-2">
+                          <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 min-w-0">
+                            <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 shrink-0"
+                            onClick={() => reprocessItem(item.id)}
+                            disabled={isExtracting !== null || isUploading}
+                            title={`Reprocessar com ${item.aiProvider === "claude" ? "Claude" : "Gemini"}`}
+                          >
+                            {isExtracting !== null && batchProgress?.itemId === item.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Reprocessar
+                          </Button>
+                        </div>
                       )}
 
                     </div>
@@ -1378,3 +1520,4 @@ function UploadPage() {
     </div>
   );
 }
+
