@@ -450,6 +450,7 @@ function UploadPage() {
   const { data: allowedTypeIds = null } = useAllowedDocumentTypeIds();
   const queryClient = useQueryClient();
 
+  const topAnchorRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<QueueItem[]>([]);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [companyId, setCompanyId] = useState<string>("none");
