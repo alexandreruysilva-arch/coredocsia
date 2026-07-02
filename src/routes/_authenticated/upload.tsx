@@ -1379,14 +1379,50 @@ function UploadPage() {
                         </p>
                       )}
                       {item.status !== "error" && item.aiStatus === "failed" && (
-                        <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
-                        </p>
+                        <div className="mt-1 flex items-start justify-between gap-2">
+                          <p className="text-xs text-destructive flex items-center gap-1 min-w-0">
+                            <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 shrink-0"
+                            onClick={() => reprocessItem(item.id)}
+                            disabled={isExtracting !== null || isUploading}
+                            title={`Reprocessar com ${item.aiProvider === "claude" ? "Claude" : "Gemini"}`}
+                          >
+                            {isExtracting !== null && batchProgress?.itemId === item.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Reprocessar
+                          </Button>
+                        </div>
                       )}
                       {item.status !== "error" && item.aiStatus === "incomplete" && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
-                        </p>
+                        <div className="mt-1 flex items-start justify-between gap-2">
+                          <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 min-w-0">
+                            <AlertCircle className="h-3 w-3 shrink-0" /> {item.aiMessage}
+                          </p>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 shrink-0"
+                            onClick={() => reprocessItem(item.id)}
+                            disabled={isExtracting !== null || isUploading}
+                            title={`Reprocessar com ${item.aiProvider === "claude" ? "Claude" : "Gemini"}`}
+                          >
+                            {isExtracting !== null && batchProgress?.itemId === item.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Reprocessar
+                          </Button>
+                        </div>
                       )}
 
                     </div>
