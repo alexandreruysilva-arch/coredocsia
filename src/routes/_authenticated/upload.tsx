@@ -984,6 +984,22 @@ function UploadPage() {
 
       {batchProgress && (
         <div className="sticky top-2 z-30 rounded-xl border border-blue-300/60 bg-gradient-to-r from-indigo-600 via-blue-600 to-sky-600 p-3 shadow-lg shadow-blue-500/30 text-white">
+          {(extractStartedAt || uploadStartedAt) && (
+            <div className="mb-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] font-medium tabular-nums text-white/90">
+              {extractStartedAt && (
+                <span>
+                  Início processamento:{" "}
+                  {extractStartedAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" })}
+                </span>
+              )}
+              {uploadStartedAt && (
+                <span>
+                  Início envio:{" "}
+                  {uploadStartedAt.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" })}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex items-center gap-3">
             <Loader2 className="h-5 w-5 animate-spin shrink-0" />
             <div className="min-w-0 flex-1">
