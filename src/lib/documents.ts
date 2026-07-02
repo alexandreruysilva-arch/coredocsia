@@ -57,6 +57,20 @@ export async function getFileUrl(
   return `/api/public/files/${documentId}?${qs.toString()}`;
 }
 
+async function refreshAuthSessionIfNeeded(): Promise<void> {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const exp = sessionData.session?.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!sessionData.session || exp - nowSec < 300) {
+    await supabase.auth.refreshSession();
+  }
+}
+
+function isInvalidAuthTokenError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /Unauthorized:\s*Invalid token/i.test(message);
+}
+
 export interface UploadOptions {
   file: File;
   orgId: string;
@@ -78,12 +92,7 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   opts.onProgress?.(10);
 
   // Garante um token válido antes do envio (processamento longo pode expirar o JWT).
-  const { data: sessionData } = await supabase.auth.getSession();
-  const exp = sessionData.session?.expires_at ?? 0;
-  const nowSec = Math.floor(Date.now() / 1000);
-  if (!sessionData.session || exp - nowSec < 120) {
-    await supabase.auth.refreshSession();
-  }
+  await refreshAuthSessionIfNeeded();
 
   const { uploadDocumentToDrive } = await import("./drive.functions");
 
@@ -100,7 +109,14 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   }
 
   opts.onProgress?.(40);
-  const row = await uploadDocumentToDrive({ data: form });
+  let row: unknown;
+  try {
+    row = await uploadDocumentToDrive({ data: form });
+  } catch (error) {
+    if (!isInvalidAuthTokenError(error)) throw error;
+    await supabase.auth.refreshSession();
+    row = await uploadDocumentToDrive({ data: form });
+  }
   opts.onProgress?.(100);
   return row as DocumentRow;
 }

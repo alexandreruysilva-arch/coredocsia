@@ -477,6 +477,33 @@ function UploadPage() {
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
   const cancelExtractRef = useRef(false);
 
+  const refreshAuthSessionIfNeeded = useCallback(async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const exp = sessionData.session?.expires_at ?? 0;
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (!sessionData.session || exp - nowSec < 300) {
+      await supabase.auth.refreshSession();
+    }
+  }, []);
+
+  const runExtractWithFreshAuth = useCallback(
+    async (
+      extractFn: (options: { data: FormData }) => Promise<unknown>,
+      form: FormData,
+    ) => {
+      await refreshAuthSessionIfNeeded();
+      try {
+        return await extractFn({ data: form });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error ?? "");
+        if (!/Unauthorized:\s*Invalid token/i.test(message)) throw error;
+        await supabase.auth.refreshSession();
+        return extractFn({ data: form });
+      }
+    },
+    [refreshAuthSessionIfNeeded],
+  );
+
   const types = useMemo(() => {
     let list = allTypes;
     if (companyId !== "none") list = list.filter((t: any) => t.company_id === companyId);
@@ -647,7 +674,7 @@ function UploadPage() {
         form.append("fields", fieldsJson);
         if (companyId !== "none") form.append("companyId", companyId);
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
-        const res = (await extractFn({ data: form })) as {
+        const res = (await runExtractWithFreshAuth(extractFn, form)) as {
           values: Record<string, string>;
           usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
         };
@@ -767,7 +794,7 @@ function UploadPage() {
       form.append("fields", fieldsJson);
       if (companyId !== "none") form.append("companyId", companyId);
       if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
-      const res = (await extractFn({ data: form })) as {
+      const res = (await runExtractWithFreshAuth(extractFn, form)) as {
         values: Record<string, string>;
         usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null };
       };
