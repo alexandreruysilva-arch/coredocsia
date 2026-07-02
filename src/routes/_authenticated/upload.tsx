@@ -166,7 +166,9 @@ interface FieldEditorProps {
   onFieldBlur?: (key: string, value: string) => void;
   idPrefix: string;
   originals?: Record<string, string>;
+  aiRan?: boolean;
 }
+
 
 
 
@@ -203,7 +205,7 @@ function handleCaretPreservingChange(
   });
 }
 
-function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, originals }: FieldEditorProps) {
+function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, originals, aiRan }: FieldEditorProps) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {fields.map((f, idx) => {
@@ -308,9 +310,11 @@ function FieldEditor({ fields, values, onChange, onFieldBlur, idPrefix, original
             {(() => {
               const expLen = f.expected_length ?? 0;
               const lengthMismatch = expLen > 0 && val.length > 0 && val.length !== expLen;
-              const mismatchClass = lengthMismatch
+              const emptyAfterAi = expLen > 0 && val.length === 0 && !!aiRan;
+              const mismatchClass = (lengthMismatch || emptyAfterAi)
                 ? "bg-pink-100 border-pink-400 focus-visible:ring-pink-400 dark:bg-pink-950/40"
                 : "";
+
               return f.field_type === "textarea" ? (
               <Textarea
                 id={id}
@@ -1339,6 +1343,8 @@ function UploadPage() {
                               onFieldBlur={(k, v) => handleKeyFieldBlur(item.id, k, v)}
                               idPrefix={item.id}
                               originals={item.aiOriginalValues}
+                              aiRan={!!item.aiStatus}
+
                             />
 
 
