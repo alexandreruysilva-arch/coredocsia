@@ -672,6 +672,7 @@ function UploadPage() {
 
                   aiUsage: res.usage,
                   aiStatus: isIncomplete ? "incomplete" : "success",
+                  aiProvider: provider,
                   aiMessage: isIncomplete
                     ? `Processamento incompleto — preencha manualmente: ${missingRequired
                         .map((f) => f.label)
@@ -692,6 +693,7 @@ function UploadPage() {
               ? {
                   ...i,
                   aiStatus: "failed",
+                  aiProvider: provider,
                   aiMessage: `Falha no processamento: ${msg}. Preencha os campos manualmente para enviar.`,
                   expanded: true,
                 }
