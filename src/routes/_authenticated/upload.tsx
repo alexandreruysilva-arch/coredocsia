@@ -608,6 +608,7 @@ function UploadPage() {
 
 
     setIsExtracting(provider);
+    setExtractStartedAt(new Date());
     cancelExtractRef.current = false;
     const fieldDefs = fields.map((f) => ({
       label: f.label,
