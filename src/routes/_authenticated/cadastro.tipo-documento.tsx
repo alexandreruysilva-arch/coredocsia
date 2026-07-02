@@ -768,7 +768,7 @@ function FieldsDialog({
                   </TableCell>
                 </TableRow>
               ) : (
-                (fields.data ?? []).map((f) => (
+                (fields.data ?? []).map((f, idx, arr) => (
                   <TableRow key={f.id}>
                     <TableCell className="font-medium">{f.label}</TableCell>
                     <TableCell className="text-muted-foreground">{f.field_key}</TableCell>
@@ -787,6 +787,24 @@ function FieldsDialog({
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => moveField.mutate({ id: f.id, dir: -1 })}
+                          disabled={idx === 0 || moveField.isPending}
+                          aria-label="Mover para cima"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => moveField.mutate({ id: f.id, dir: 1 })}
+                          disabled={idx === arr.length - 1 || moveField.isPending}
+                          aria-label="Mover para baixo"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
                         <Button
                           size="icon"
                           variant="ghost"
