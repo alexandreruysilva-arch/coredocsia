@@ -4,7 +4,7 @@
  * PDFs e formatos não suportados passam sem alteração.
  */
 const RESIZABLE_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
-const DEFAULT_MAX_EDGE = 1280; // >768 preserva 1 tile extra de qualidade
+const DEFAULT_MAX_EDGE = 1024; // ~2 tiles de 768px, reduz custo mantendo legibilidade
 const JPEG_QUALITY = 0.82;
 
 export interface ResizeOptions {
