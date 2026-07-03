@@ -9,7 +9,10 @@
  * - Se o resultado ficar MAIOR que o original, mantém o original.
  */
 
-const MAX_DIMENSION = 1600;
+// Gemini fatura por tile de 768px. 1024 mantém 2x2 tiles (~1.100 tokens)
+// contra 3x3 (~2.100) quando usávamos 1600. OCR de campos de indexação
+// permanece legível nesse tamanho.
+const MAX_DIMENSION = 1024;
 const JPEG_QUALITY = 0.82;
 const COMPRESSIBLE_TYPES = /^image\/(jpeg|jpg|png|webp|heic|heif)$/i;
 
