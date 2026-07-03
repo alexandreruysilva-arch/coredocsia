@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { extractFieldsWithGemini } from "@/lib/gemini.functions";
+import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
@@ -670,7 +671,7 @@ function UploadPage() {
       });
       try {
         const form = new FormData();
-        form.append("file", item.file);
+        form.append("file", await compressImageIfNeeded(item.file));
         form.append("fields", fieldsJson);
         if (companyId !== "none") form.append("companyId", companyId);
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
@@ -790,7 +791,7 @@ function UploadPage() {
 
     try {
       const form = new FormData();
-      form.append("file", item.file);
+      form.append("file", await compressImageIfNeeded(item.file));
       form.append("fields", fieldsJson);
       if (companyId !== "none") form.append("companyId", companyId);
       if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
