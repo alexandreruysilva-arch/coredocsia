@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { extractFieldsWithGemini } from "@/lib/gemini.functions";
+import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
