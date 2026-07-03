@@ -671,7 +671,8 @@ function UploadPage() {
       });
       try {
         const form = new FormData();
-        form.append("file", item.file);
+        const aiFile = await resizeImageForAI(item.file);
+        form.append("file", aiFile);
         form.append("fields", fieldsJson);
         if (companyId !== "none") form.append("companyId", companyId);
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
