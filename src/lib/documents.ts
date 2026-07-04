@@ -71,6 +71,20 @@ function isInvalidAuthTokenError(error: unknown): boolean {
   return /Unauthorized:\s*Invalid token/i.test(message);
 }
 
+function isTransientNetworkError(error: unknown): boolean {
+  // TypeError: Failed to fetch / Load failed / NetworkError when attempting to fetch resource
+  if (error instanceof TypeError) return true;
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /Failed to fetch|Load failed|NetworkError|network error|ERR_NETWORK|ECONNRESET|socket hang up/i.test(
+    message,
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
 export interface UploadOptions {
   file: File;
   orgId: string;
