@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PainelMigracaoRouteImport } from './routes/painel-migracao'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -34,6 +35,11 @@ import { Route as ApiPublicFilesIdRouteImport } from './routes/api/public/files/
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelMigracaoRoute = PainelMigracaoRouteImport.update({
+  id: '/painel-migracao',
+  path: '/painel-migracao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -145,6 +151,7 @@ const ApiPublicFilesIdRoute = ApiPublicFilesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/painel-migracao': typeof PainelMigracaoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/alterar-senha': typeof AuthenticatedAlterarSenhaRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/painel-migracao': typeof PainelMigracaoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/alterar-senha': typeof AuthenticatedAlterarSenhaRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/painel-migracao': typeof PainelMigracaoRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/alterar-senha': typeof AuthenticatedAlterarSenhaRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/painel-migracao'
     | '/reset-password'
     | '/admin'
     | '/alterar-senha'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/painel-migracao'
     | '/reset-password'
     | '/admin'
     | '/alterar-senha'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/painel-migracao'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/alterar-senha'
@@ -284,6 +296,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PainelMigracaoRoute: typeof PainelMigracaoRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicFilesIdRoute: typeof ApiPublicFilesIdRoute
 }
@@ -295,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-migracao': {
+      id: '/painel-migracao'
+      path: '/painel-migracao'
+      fullPath: '/painel-migracao'
+      preLoaderRoute: typeof PainelMigracaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -486,6 +506,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PainelMigracaoRoute: PainelMigracaoRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicFilesIdRoute: ApiPublicFilesIdRoute,
 }
