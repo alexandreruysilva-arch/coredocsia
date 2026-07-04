@@ -123,17 +123,32 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   }
 
   opts.onProgress?.(40);
+  const MAX_ATTEMPTS = 3;
   let row: unknown;
-  try {
-    row = await uploadDocumentToDrive({ data: form });
-  } catch (error) {
-    if (!isInvalidAuthTokenError(error)) throw error;
-    await supabase.auth.refreshSession();
-    row = await uploadDocumentToDrive({ data: form });
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      row = await uploadDocumentToDrive({ data: form });
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (isInvalidAuthTokenError(error)) {
+        await supabase.auth.refreshSession();
+        continue;
+      }
+      if (isTransientNetworkError(error) && attempt < MAX_ATTEMPTS) {
+        await sleep(500 * attempt);
+        continue;
+      }
+      throw error;
+    }
   }
+  if (lastError) throw lastError;
   opts.onProgress?.(100);
   return row as DocumentRow;
 }
+
 
 
 
