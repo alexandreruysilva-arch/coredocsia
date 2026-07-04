@@ -71,6 +71,20 @@ function isInvalidAuthTokenError(error: unknown): boolean {
   return /Unauthorized:\s*Invalid token/i.test(message);
 }
 
+function isTransientNetworkError(error: unknown): boolean {
+  // TypeError: Failed to fetch / Load failed / NetworkError when attempting to fetch resource
+  if (error instanceof TypeError) return true;
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /Failed to fetch|Load failed|NetworkError|network error|ERR_NETWORK|ECONNRESET|socket hang up/i.test(
+    message,
+  );
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
 export interface UploadOptions {
   file: File;
   orgId: string;
@@ -109,17 +123,32 @@ export async function uploadDocument(opts: UploadOptions): Promise<DocumentRow> 
   }
 
   opts.onProgress?.(40);
+  const MAX_ATTEMPTS = 3;
   let row: unknown;
-  try {
-    row = await uploadDocumentToDrive({ data: form });
-  } catch (error) {
-    if (!isInvalidAuthTokenError(error)) throw error;
-    await supabase.auth.refreshSession();
-    row = await uploadDocumentToDrive({ data: form });
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      row = await uploadDocumentToDrive({ data: form });
+      lastError = null;
+      break;
+    } catch (error) {
+      lastError = error;
+      if (isInvalidAuthTokenError(error)) {
+        await supabase.auth.refreshSession();
+        continue;
+      }
+      if (isTransientNetworkError(error) && attempt < MAX_ATTEMPTS) {
+        await sleep(500 * attempt);
+        continue;
+      }
+      throw error;
+    }
   }
+  if (lastError) throw lastError;
   opts.onProgress?.(100);
   return row as DocumentRow;
 }
+
 
 
 
