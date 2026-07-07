@@ -17,7 +17,7 @@ function normalizeCompanyName(name: string | null | undefined) {
     .toLowerCase();
 }
 
-function isHiddenCompanyName(name: string | null | undefined) {
+export function isHiddenCompanyName(name: string | null | undefined) {
   return normalizeCompanyName(name).includes("tempo solucoes");
 }
 
