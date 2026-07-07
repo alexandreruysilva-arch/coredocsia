@@ -122,17 +122,27 @@ function Dashboard() {
 
       const types = typesRes.data ?? [];
 
-      const companies = companiesRes.data ?? [];
+      const companies = (companiesRes.data ?? []).filter(
+        (c: any) => !isHiddenCompanyName(c.name),
+      );
+      const hiddenCompanyIds = new Set(
+        (companiesRes.data ?? [])
+          .filter((c: any) => isHiddenCompanyName(c.name))
+          .map((c: any) => c.id),
+      );
       const typeMap = new Map(types.map((t: any) => [t.id, t.name]));
       const companyMap = new Map(companies.map((c: any) => [c.id, c.name]));
 
       const counts = { pending: 0, processing: 0, processed: 0, failed: 0 };
       let last30 = 0;
       let last7 = 0;
+      let total = 0;
       const typeAgg = new Map<string, number>();
       const companyAgg = new Map<string, number>();
 
       for (const d of all as any[]) {
+        if (d.company_id && hiddenCompanyIds.has(d.company_id)) continue;
+        total++;
         counts[d.status as keyof typeof counts] =
           (counts[d.status as keyof typeof counts] ?? 0) + 1;
         if (d.created_at >= since30) last30++;
