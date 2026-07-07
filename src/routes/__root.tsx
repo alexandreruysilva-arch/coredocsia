@@ -79,23 +79,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CoreDocsIA — Plataforma Documental Inteligente" },
+      { title: "AP - CoreDocs IA — Plataforma Documental Inteligente" },
       {
         name: "description",
         content:
-          "SaaS multi-tenant para processamento documental, OCR, IA e GED com auditoria, retenção e créditos.",
+          "Digitalize, processe e gerencie documentos com OCR, IA e GED em uma plataforma SaaS multi-tenant.",
       },
       { name: "author", content: "AP - CoreDocs IA" },
-      { property: "og:title", content: "CoreDocsIA — Plataforma Documental Inteligente" },
+      { property: "og:title", content: "AP - CoreDocs IA — Plataforma Documental Inteligente" },
       {
         property: "og:description",
         content:
-          "Processamento documental, OCR, IA, GED e auditoria em uma plataforma SaaS multi-tenant.",
+          "Digitalize, processe e gerencie documentos com OCR, IA e GED em uma plataforma SaaS multi-tenant.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "CoreDocsIA — Plataforma Documental Inteligente" },
-      { name: "twitter:description", content: "Processamento documental, OCR, IA, GED e auditoria em uma plataforma SaaS multi-tenant." },
+      { name: "twitter:title", content: "AP - CoreDocs IA — Plataforma Documental Inteligente" },
+      { name: "twitter:description", content: "Digitalize, processe e gerencie documentos com OCR, IA e GED em uma plataforma SaaS multi-tenant." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/30fda04e-a15b-4c89-9420-d1e0af548633/id-preview-a1f85073--e7a199cb-3725-42b4-ae6e-8ce0e38c34c2.lovable.app-1783208331435.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/30fda04e-a15b-4c89-9420-d1e0af548633/id-preview-a1f85073--e7a199cb-3725-42b4-ae6e-8ce0e38c34c2.lovable.app-1783208331435.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
