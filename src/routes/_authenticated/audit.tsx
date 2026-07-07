@@ -164,9 +164,7 @@ function AuditPage() {
         all.push(...rows);
         if (rows.length < PAGE) break;
       }
-      // Ocultar temporariamente empresas específicas (ex.: durante apresentações).
-      const HIDDEN = new Set(["tempo soluções", "tempo solucoes"]);
-      return all.filter((l) => !HIDDEN.has((l.company_name ?? "").trim().toLowerCase()));
+      return all;
     },
   });
 

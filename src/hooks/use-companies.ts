@@ -7,25 +7,9 @@ export interface CompanyRow {
   cnpj: string | null;
 }
 
-// Empresas ocultas temporariamente (ex.: durante apresentações).
-function normalizeCompanyName(name: string | null | undefined) {
-  return (name ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
-
-export function isHiddenCompanyName(name: string | null | undefined) {
-  return normalizeCompanyName(name).includes("tempo solucoes");
-}
-
-const HIDDEN_COMPANIES_FILTER_VERSION = "hide-tempo-solucoes-v2";
-
 export function useCompanies(orgId: string | null | undefined) {
   return useQuery({
-    queryKey: ["companies", orgId, HIDDEN_COMPANIES_FILTER_VERSION],
+    queryKey: ["companies", orgId],
     enabled: !!orgId,
     queryFn: async (): Promise<CompanyRow[]> => {
       const { data, error } = await supabase
@@ -35,7 +19,7 @@ export function useCompanies(orgId: string | null | undefined) {
         .is("deleted_at", null)
         .order("name");
       if (error) throw error;
-      return (data ?? []).filter((c) => !isHiddenCompanyName(c.name));
+      return data ?? [];
     },
   });
 }

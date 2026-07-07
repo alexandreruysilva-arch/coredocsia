@@ -872,7 +872,6 @@ export type Database = {
         Args: { _field_key: string; _type_id: string }
         Returns: undefined
       }
-      exec_sql: { Args: { sql_query: string }; Returns: Json }
       get_document_stats: {
         Args: {
           _allowed_type_ids?: string[]
