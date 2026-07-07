@@ -91,7 +91,10 @@ function EmpresaPage() {
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as CompanyRow[];
+      const HIDDEN = new Set(["tempo soluções", "tempo solucoes"]);
+      return ((data ?? []) as CompanyRow[]).filter(
+        (c) => !HIDDEN.has((c.name ?? "").trim().toLowerCase()),
+      );
     },
   });
 
