@@ -7,6 +7,11 @@ export interface CompanyRow {
   cnpj: string | null;
 }
 
+// Empresas ocultas temporariamente (ex.: durante apresentações).
+const HIDDEN_COMPANY_NAMES = new Set(
+  ["Tempo Soluções", "Tempo Solucoes"].map((n) => n.toLowerCase()),
+);
+
 export function useCompanies(orgId: string | null | undefined) {
   return useQuery({
     queryKey: ["companies", orgId],
@@ -19,7 +24,9 @@ export function useCompanies(orgId: string | null | undefined) {
         .is("deleted_at", null)
         .order("name");
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).filter(
+        (c) => !HIDDEN_COMPANY_NAMES.has((c.name ?? "").trim().toLowerCase()),
+      );
     },
   });
 }
