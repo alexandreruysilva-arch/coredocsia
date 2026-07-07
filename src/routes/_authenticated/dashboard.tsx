@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
 import { supabase } from "@/integrations/supabase/client";
 import type { DocumentRow } from "@/lib/documents";
+import { isHiddenCompanyName } from "@/hooks/use-companies";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
