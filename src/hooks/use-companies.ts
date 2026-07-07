@@ -8,9 +8,17 @@ export interface CompanyRow {
 }
 
 // Empresas ocultas temporariamente (ex.: durante apresentações).
-const HIDDEN_COMPANY_NAMES = new Set(
-  ["Tempo Soluções", "Tempo Solucoes"].map((n) => n.toLowerCase()),
-);
+function normalizeCompanyName(name: string | null | undefined) {
+  return (name ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function isHiddenCompanyName(name: string | null | undefined) {
+  return normalizeCompanyName(name).includes("tempo solucoes");
+}
 
 export function useCompanies(orgId: string | null | undefined) {
   return useQuery({
@@ -24,9 +32,7 @@ export function useCompanies(orgId: string | null | undefined) {
         .is("deleted_at", null)
         .order("name");
       if (error) throw error;
-      return (data ?? []).filter(
-        (c) => !HIDDEN_COMPANY_NAMES.has((c.name ?? "").trim().toLowerCase()),
-      );
+      return (data ?? []).filter((c) => !isHiddenCompanyName(c.name));
     },
   });
 }
