@@ -159,7 +159,7 @@ function Dashboard() {
       );
 
       return {
-        total: all.length,
+        total,
         pending: counts.pending,
         processing: counts.processing,
         processed: counts.processed,
@@ -168,12 +168,15 @@ function Dashboard() {
         last7,
         aiCostMonth,
         aiCallsMonth: aiLogs.length,
-        recent: (recentRes.data ?? []) as DocumentRow[],
+        recent: ((recentRes.data ?? []) as DocumentRow[]).filter(
+          (d: any) => !d.company_id || !hiddenCompanyIds.has(d.company_id),
+        ),
         byType: Array.from(typeAgg.entries())
           .map(([name, count]) => ({ name, count }))
           .sort((a, b) => b.count - a.count)
           .slice(0, 6),
         byCompany: Array.from(companyAgg.entries())
+          .filter(([name]) => !isHiddenCompanyName(name))
           .map(([name, count]) => ({ name, count }))
           .sort((a, b) => b.count - a.count)
           .slice(0, 6),
