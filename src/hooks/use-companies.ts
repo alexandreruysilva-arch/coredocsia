@@ -20,9 +20,11 @@ function isHiddenCompanyName(name: string | null | undefined) {
   return normalizeCompanyName(name).includes("tempo solucoes");
 }
 
+const HIDDEN_COMPANIES_FILTER_VERSION = "hide-tempo-solucoes-v2";
+
 export function useCompanies(orgId: string | null | undefined) {
   return useQuery({
-    queryKey: ["companies", orgId],
+    queryKey: ["companies", orgId, HIDDEN_COMPANIES_FILTER_VERSION],
     enabled: !!orgId,
     queryFn: async (): Promise<CompanyRow[]> => {
       const { data, error } = await supabase
