@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS ai_grok_model text NOT NULL DEFAULT 'grok-build-0.1';
