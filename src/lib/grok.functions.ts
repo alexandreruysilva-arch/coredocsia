@@ -65,14 +65,12 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
 
     let MODEL = DEFAULT_MODEL;
     if (orgId) {
-      const { data: orgModel } = await supabase
+      const { data: orgModel } = await (supabase
         .from("organizations")
-        .select("ai_grok_model")
+        .select("ai_grok_model" as never)
         .eq("id", orgId)
-        .maybeSingle();
-      if ((orgModel as { ai_grok_model?: string } | null)?.ai_grok_model) {
-        MODEL = (orgModel as { ai_grok_model: string }).ai_grok_model;
-      }
+        .maybeSingle() as unknown as Promise<{ data: { ai_grok_model?: string } | null }>);
+      if (orgModel?.ai_grok_model) MODEL = orgModel.ai_grok_model;
     }
 
     async function writeFailureLog(args: {
