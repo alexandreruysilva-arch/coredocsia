@@ -28,6 +28,7 @@ import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { extractFieldsWithGrok } from "@/lib/grok.functions";
+import { pdfFirstPageToPng } from "@/lib/pdf-to-image";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
 
