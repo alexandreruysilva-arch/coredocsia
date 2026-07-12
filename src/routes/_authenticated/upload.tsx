@@ -28,6 +28,7 @@ import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { extractFieldsWithGrok } from "@/lib/grok.functions";
+import { pdfFirstPageToPng } from "@/lib/pdf-to-image";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
 
@@ -673,7 +674,11 @@ function UploadPage() {
       });
       try {
         const form = new FormData();
-        form.append("file", await compressImageIfNeeded(item.file));
+        const fileForAi =
+          provider === "grok" && item.file.type === "application/pdf"
+            ? await pdfFirstPageToPng(item.file)
+            : await compressImageIfNeeded(item.file);
+        form.append("file", fileForAi);
         form.append("fields", fieldsJson);
         if (companyId !== "none") form.append("companyId", companyId);
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
@@ -793,7 +798,11 @@ function UploadPage() {
 
     try {
       const form = new FormData();
-      form.append("file", await compressImageIfNeeded(item.file));
+      const fileForAi =
+        provider === "grok" && item.file.type === "application/pdf"
+          ? await pdfFirstPageToPng(item.file)
+          : await compressImageIfNeeded(item.file);
+      form.append("file", fileForAi);
       form.append("fields", fieldsJson);
       if (companyId !== "none") form.append("companyId", companyId);
       if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
