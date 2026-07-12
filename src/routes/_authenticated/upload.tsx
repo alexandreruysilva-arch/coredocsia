@@ -1365,6 +1365,28 @@ function UploadPage() {
                   )}
                   <span className="relative">Preencher com Claude</span>
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAutoFillAll("grok")}
+                  disabled={
+                    isExtracting !== null ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê a 1ª página (imagem) de cada arquivo e preenche os campos via Grok (xAI)"
+                  className="group relative overflow-hidden bg-gradient-to-r from-zinc-900 via-slate-800 to-zinc-900 hover:from-zinc-800 hover:via-slate-700 hover:to-zinc-800 text-white border-0 shadow-md shadow-zinc-800/40 hover:shadow-lg hover:shadow-zinc-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  {isExtracting === "grok" ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
+                  )}
+                  <span className="relative">Preencher com Grok</span>
+                </Button>
                 {isExtracting !== null && (
                   <Button
                     size="sm"
