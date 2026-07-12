@@ -477,6 +477,7 @@ function UploadPage() {
   const [uploadStartedAt, setUploadStartedAt] = useState<Date | null>(null);
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
+  const extractGrokFn = useServerFn(extractFieldsWithGrok);
   const cancelExtractRef = useRef(false);
 
   const refreshAuthSessionIfNeeded = useCallback(async () => {
