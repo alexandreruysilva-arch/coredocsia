@@ -155,6 +155,11 @@ function SettingsPage() {
           <NotificationSettings />
         </TabsContent>
 
+        <TabsContent value="privacy" className="space-y-6">
+          <PrivacySettings />
+        </TabsContent>
+
+
         {isAdmin && (
           <TabsContent value="billing" className="space-y-6">
             <AiModelsSettings organizationId={profileBundle?.currentOrg?.id} />
