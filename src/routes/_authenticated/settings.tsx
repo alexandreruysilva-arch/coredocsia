@@ -117,6 +117,12 @@ function SettingsPage() {
           >
             <Bell className="h-4 w-4" /> Notificações
           </TabsTrigger>
+          <TabsTrigger
+            value="privacy"
+            className="gap-2 rounded-xl px-3 py-1.5 text-sm data-[state=active]:bg-gradient-to-br data-[state=active]:from-slate-800 data-[state=active]:via-blue-800 data-[state=active]:to-sky-700 data-[state=active]:text-white data-[state=active]:shadow-md"
+          >
+            <Shield className="h-4 w-4" /> Privacidade
+          </TabsTrigger>
           {isAdmin && (
             <TabsTrigger
               value="billing"
@@ -126,6 +132,7 @@ function SettingsPage() {
             </TabsTrigger>
           )}
         </TabsList>
+
 
         <TabsContent value="profile" className="space-y-6">
           <ProfileSettings profile={profileBundle?.profile} />
