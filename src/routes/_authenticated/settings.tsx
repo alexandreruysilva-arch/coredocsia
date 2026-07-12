@@ -767,3 +767,133 @@ function NotificationSettings() {
     </Card>
   );
 }
+
+function PrivacySettings() {
+  const providers = [
+    {
+      name: "xAI (Grok)",
+      model: "grok-build-0.1",
+      training:
+        "Não usa dados enviados via API para treinar modelos por padrão.",
+      retention:
+        "Payloads podem ser retidos por até ~30 dias para monitoramento de abuso e depois excluídos.",
+      zdr: "Zero Data Retention (ZDR) disponível para contas Enterprise sob solicitação.",
+      link: "https://x.ai/legal/privacy-policy",
+    },
+    {
+      name: "Anthropic (Claude)",
+      model: "claude-sonnet / claude-haiku",
+      training:
+        "Não treina modelos com dados enviados via API comercial (Console/SDK).",
+      retention:
+        "Retenção máxima de 30 dias para detecção de abuso; excluído automaticamente após esse período.",
+      zdr: "Zero Data Retention disponível em contratos Enterprise (retenção reduzida a ~0).",
+      link: "https://www.anthropic.com/legal/privacy",
+    },
+    {
+      name: "Google (Gemini)",
+      model: "gemini-2.5-flash / pro",
+      training:
+        "API paga (chave Google AI Studio paga ou Vertex AI): não usa dados para treinar modelos. Free tier do AI Studio pode usar prompts para melhoria do serviço.",
+      retention:
+        "Vertex AI / API paga: retenção mínima apenas para logs operacionais. Free tier: até 55 dias.",
+      zdr: "Vertex AI oferece controles CMEK e regionalização de dados em planos corporativos.",
+      link: "https://ai.google.dev/gemini-api/terms",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            Privacidade e tratamento de dados por IA
+          </CardTitle>
+          <CardDescription>
+            Como os provedores de IA usados neste sistema tratam retenção,
+            treino e exclusão dos arquivos enviados para extração de campos.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg border border-border bg-muted/40 p-4 text-sm space-y-2">
+            <p className="font-medium">O que este app faz:</p>
+            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+              <li>
+                Os arquivos são enviados diretamente ao provedor de IA
+                escolhido apenas para extração dos campos de indexação.
+              </li>
+              <li>
+                <strong>Não armazenamos cópias dos arquivos</strong> nos
+                nossos servidores de IA — apenas os valores extraídos e
+                metadados de uso (tokens, custo, duração) ficam registrados
+                em auditoria.
+              </li>
+              <li>
+                O PDF/imagem original permanece somente no Storage privado
+                da sua organização, protegido por controle de acesso (RLS).
+              </li>
+            </ul>
+          </div>
+
+          {providers.map((p) => (
+            <div
+              key={p.name}
+              className="rounded-lg border border-border p-4 space-y-3"
+            >
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="font-semibold text-base">{p.name}</h3>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {p.model}
+                  </p>
+                </div>
+                <a
+                  href={p.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Política oficial →
+                </a>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3 text-sm">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Treino de modelo
+                  </p>
+                  <p className="text-foreground">{p.training}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Retenção
+                  </p>
+                  <p className="text-foreground">{p.retention}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Zero Data Retention
+                  </p>
+                  <p className="text-foreground">{p.zdr}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm space-y-1">
+            <p className="font-medium text-amber-700 dark:text-amber-400">
+              Observação importante
+            </p>
+            <p className="text-muted-foreground">
+              A exclusão imediata dos dados nos servidores do provedor
+              (Zero Data Retention) exige acordo comercial direto com xAI,
+              Anthropic ou Google. As políticas acima refletem o
+              comportamento padrão das APIs públicas na data desta
+              publicação e podem mudar — consulte sempre o link oficial.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
