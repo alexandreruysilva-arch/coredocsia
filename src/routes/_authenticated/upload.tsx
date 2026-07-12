@@ -128,7 +128,7 @@ interface QueueItem {
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
-  aiProvider?: "gemini" | "claude";
+  aiProvider?: "gemini" | "claude" | "grok";
   aiMessage?: string;
   expanded: boolean;
 }
@@ -463,7 +463,7 @@ function UploadPage() {
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
-  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude">(null);
+  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude" | "grok">(null);
   const [batchProgress, setBatchProgress] = useState<{
     action: "extract" | "upload";
     current: number;
@@ -627,7 +627,7 @@ function UploadPage() {
     }
   }
 
-  async function handleAutoFillAll(provider: "gemini" | "claude") {
+  async function handleAutoFillAll(provider: "gemini" | "claude" | "grok") {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
@@ -648,8 +648,8 @@ function UploadPage() {
     }));
 
     const fieldsJson = JSON.stringify(fieldDefs);
-    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
-    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : "Gemini";
 
     let ok = 0;
     let fail = 0;
@@ -757,7 +757,7 @@ function UploadPage() {
 
 
 
-  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude") {
+  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude" | "grok") {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
@@ -765,8 +765,8 @@ function UploadPage() {
     if (isExtracting !== null || isUploading) return;
 
     const provider = providerOverride ?? item.aiProvider ?? "gemini";
-    const providerLabel = provider === "claude" ? "Claude" : "Gemini";
-    const extractFn = provider === "claude" ? extractClaudeFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : extractGeminiFn;
 
     const fieldDefs = fields.map((f) => ({
       label: f.label,
