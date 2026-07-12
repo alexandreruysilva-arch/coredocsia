@@ -31,6 +31,6 @@ export async function pdfFirstPageToPng(file: File, scale = 2): Promise<File> {
     const baseName = file.name.replace(/\.pdf$/i, "") || "documento";
     return new File([blob], `${baseName}-p1.png`, { type: "image/png" });
   } finally {
-    pdf.destroy?.();
+    (pdf as unknown as { destroy?: () => void }).destroy?.();
   }
 }
