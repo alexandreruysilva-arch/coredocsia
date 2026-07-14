@@ -28,7 +28,7 @@ import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { extractFieldsWithGrok } from "@/lib/grok.functions";
-import { pdfFirstPageToPng } from "@/lib/pdf-to-image";
+import { pdfPagesToPngs } from "@/lib/pdf-to-image";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
 
@@ -466,6 +466,7 @@ function UploadPage() {
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude" | "grok">(null);
+  const [aiPages, setAiPages] = useState<number>(1);
   const [batchProgress, setBatchProgress] = useState<{
     action: "extract" | "upload";
     current: number;
@@ -674,12 +675,16 @@ function UploadPage() {
       });
       try {
         const form = new FormData();
-        const fileForAi =
-          provider === "grok" && item.file.type === "application/pdf"
-            ? await pdfFirstPageToPng(item.file)
-            : await compressImageIfNeeded(item.file);
-        form.append("file", fileForAi);
+        if (provider === "grok" && item.file.type === "application/pdf") {
+          const pngs = await pdfPagesToPngs(item.file, aiPages);
+          for (const png of pngs) form.append("files", png);
+        } else if (provider === "grok") {
+          form.append("files", await compressImageIfNeeded(item.file));
+        } else {
+          form.append("file", await compressImageIfNeeded(item.file));
+        }
         form.append("fields", fieldsJson);
+        form.append("maxPages", String(aiPages));
         if (companyId !== "none") form.append("companyId", companyId);
         if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
         const res = (await runExtractWithFreshAuth(extractFn, form)) as {
@@ -798,12 +803,16 @@ function UploadPage() {
 
     try {
       const form = new FormData();
-      const fileForAi =
-        provider === "grok" && item.file.type === "application/pdf"
-          ? await pdfFirstPageToPng(item.file)
-          : await compressImageIfNeeded(item.file);
-      form.append("file", fileForAi);
+      if (provider === "grok" && item.file.type === "application/pdf") {
+        const pngs = await pdfPagesToPngs(item.file, aiPages);
+        for (const png of pngs) form.append("files", png);
+      } else if (provider === "grok") {
+        form.append("files", await compressImageIfNeeded(item.file));
+      } else {
+        form.append("file", await compressImageIfNeeded(item.file));
+      }
       form.append("fields", fieldsJson);
+      form.append("maxPages", String(aiPages));
       if (companyId !== "none") form.append("companyId", companyId);
       if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
       const res = (await runExtractWithFreshAuth(extractFn, form)) as {
@@ -1330,6 +1339,25 @@ function UploadPage() {
                   <X className="h-4 w-4 mr-1" />
                   Limpar fila
                 </Button>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>Páginas:</span>
+                  <Select
+                    value={String(aiPages)}
+                    onValueChange={(v) => setAiPages(Number(v) || 1)}
+                    disabled={isExtracting !== null || isUploading}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]" title="Quantidade de páginas do documento que a IA irá analisar">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 5, 10, 20].map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {n}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   size="sm"
                   variant="outline"

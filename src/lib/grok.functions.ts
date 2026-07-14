@@ -29,13 +29,16 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) throw new Error("XAI_API_KEY não configurado no servidor");
 
-    const file = data.get("file");
+    // Aceita múltiplas imagens (uma por página) via `files`, ou uma única via `file` (compat).
+    const multi = data.getAll("files").filter((v): v is File => v instanceof File);
+    const single = data.get("file");
+    const uploadFiles: File[] =
+      multi.length > 0 ? multi : single instanceof File ? [single] : [];
+    if (uploadFiles.length === 0) throw new Error("Arquivo ausente ou inválido");
+    const uploadFile: File = uploadFiles[0];
     const fieldsJson = String(data.get("fields") ?? "[]");
     const companyId = (data.get("companyId") as string) || null;
     const documentTypeId = (data.get("documentTypeId") as string) || null;
-
-    if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
-    const uploadFile: File = file;
 
     let fields: FieldDef[] = [];
     try {
@@ -97,23 +100,29 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
       });
     }
 
-    const mimeType = uploadFile.type || "application/octet-stream";
-    const isImage = /^image\/(jpeg|png|gif|webp)$/.test(mimeType);
-    if (!isImage) {
-      await writeFailureLog({
-        prompt: 0,
-        completion: 0,
-        total: 0,
-        error: `Tipo não suportado pelo Grok: ${mimeType}`,
-      });
-      throw new Error(
-        "Grok aceita apenas imagens (JPG, PNG, GIF ou WEBP). Para PDF use Gemini ou Claude.",
-      );
+    // Todos os arquivos devem ser imagens suportadas.
+    for (const f of uploadFiles) {
+      const mt = f.type || "application/octet-stream";
+      if (!/^image\/(jpeg|png|gif|webp)$/.test(mt)) {
+        await writeFailureLog({
+          prompt: 0,
+          completion: 0,
+          total: 0,
+          error: `Tipo não suportado pelo Grok: ${mt}`,
+        });
+        throw new Error(
+          "Grok aceita apenas imagens (JPG, PNG, GIF ou WEBP). Para PDF use Gemini ou Claude.",
+        );
+      }
     }
 
-    const buf = await uploadFile.arrayBuffer();
-    const base64 = Buffer.from(buf).toString("base64");
-    const dataUrl = `data:${mimeType};base64,${base64}`;
+    // Converte todas as imagens em data URLs (uma por página).
+    const dataUrls: string[] = [];
+    for (const f of uploadFiles) {
+      const buf = await f.arrayBuffer();
+      const b64 = Buffer.from(buf).toString("base64");
+      dataUrls.push(`data:${f.type || "image/png"};base64,${b64}`);
+    }
 
     const schemaDesc = fields
       .map((f) => {
@@ -133,8 +142,13 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
       })
       .join("\n");
 
+    const pagesInstr =
+      dataUrls.length <= 1
+        ? "Analise SOMENTE A PRIMEIRA PÁGINA (imagem anexada) e extraia os campos de indexação abaixo."
+        : `Analise as ${dataUrls.length} imagens anexadas (uma por página, na ordem enviada) e extraia os campos de indexação abaixo, considerando o conjunto como um único documento.`;
+
     const prompt = `Você é um extrator de dados de documentos digitalizados.
-Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado e extraia os campos de indexação abaixo.
+${pagesInstr}
 
 Campos:
 ${schemaDesc}
@@ -151,6 +165,11 @@ Regras de saída (siga RIGOROSAMENTE):
 - Se um campo possuir "DICA DE LOCALIZAÇÃO", é OBRIGATÓRIO procurar o valor exatamente na região indicada.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
 
+    const contentBlocks: Array<Record<string, unknown>> = [
+      ...dataUrls.map((url) => ({ type: "image_url", image_url: { url } })),
+      { type: "text", text: prompt },
+    ];
+
     const requestBody = JSON.stringify({
       model: MODEL,
       temperature: 0,
@@ -159,10 +178,7 @@ Regras de saída (siga RIGOROSAMENTE):
       messages: [
         {
           role: "user",
-          content: [
-            { type: "image_url", image_url: { url: dataUrl } },
-            { type: "text", text: prompt },
-          ],
+          content: contentBlocks,
         },
       ],
     });

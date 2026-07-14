@@ -40,6 +40,8 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
     const fieldsJson = String(data.get("fields") ?? "[]");
     const companyId = (data.get("companyId") as string) || null;
     const documentTypeId = (data.get("documentTypeId") as string) || null;
+    const maxPagesRaw = Number(data.get("maxPages") ?? 1);
+    const maxPages = Number.isFinite(maxPagesRaw) && maxPagesRaw > 0 ? Math.min(50, Math.floor(maxPagesRaw)) : 1;
 
     if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
     const uploadFile: File = file;
@@ -149,8 +151,12 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
       })
       .join("\n");
 
+    const pagesInstr =
+      maxPages <= 1
+        ? "Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado"
+        : `Analise as PRIMEIRAS ${maxPages} PÁGINAS do documento anexado (se houver menos páginas, analise todas as disponíveis)`;
     const prompt = `Você é um extrator de dados de documentos digitalizados.
-Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado e extraia os campos de indexação abaixo.
+${pagesInstr} e extraia os campos de indexação abaixo.
 
 Campos:
 ${schemaDesc}
