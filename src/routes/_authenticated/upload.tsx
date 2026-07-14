@@ -803,12 +803,16 @@ function UploadPage() {
 
     try {
       const form = new FormData();
-      const fileForAi =
-        provider === "grok" && item.file.type === "application/pdf"
-          ? await pdfFirstPageToPng(item.file)
-          : await compressImageIfNeeded(item.file);
-      form.append("file", fileForAi);
+      if (provider === "grok" && item.file.type === "application/pdf") {
+        const pngs = await pdfPagesToPngs(item.file, aiPages);
+        for (const png of pngs) form.append("files", png);
+      } else if (provider === "grok") {
+        form.append("files", await compressImageIfNeeded(item.file));
+      } else {
+        form.append("file", await compressImageIfNeeded(item.file));
+      }
       form.append("fields", fieldsJson);
+      form.append("maxPages", String(aiPages));
       if (companyId !== "none") form.append("companyId", companyId);
       if (docTypeId !== "none") form.append("documentTypeId", docTypeId);
       const res = (await runExtractWithFreshAuth(extractFn, form)) as {
