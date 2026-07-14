@@ -1339,6 +1339,25 @@ function UploadPage() {
                   <X className="h-4 w-4 mr-1" />
                   Limpar fila
                 </Button>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>Páginas:</span>
+                  <Select
+                    value={String(aiPages)}
+                    onValueChange={(v) => setAiPages(Number(v) || 1)}
+                    disabled={isExtracting !== null || isUploading}
+                  >
+                    <SelectTrigger className="h-8 w-[70px]" title="Quantidade de páginas do documento que a IA irá analisar">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 5, 10, 20].map((n) => (
+                        <SelectItem key={n} value={String(n)}>
+                          {n}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   size="sm"
                   variant="outline"
