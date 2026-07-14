@@ -29,13 +29,16 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
     const apiKey = process.env.XAI_API_KEY;
     if (!apiKey) throw new Error("XAI_API_KEY não configurado no servidor");
 
-    const file = data.get("file");
+    // Aceita múltiplas imagens (uma por página) via `files`, ou uma única via `file` (compat).
+    const multi = data.getAll("files").filter((v): v is File => v instanceof File);
+    const single = data.get("file");
+    const uploadFiles: File[] =
+      multi.length > 0 ? multi : single instanceof File ? [single] : [];
+    if (uploadFiles.length === 0) throw new Error("Arquivo ausente ou inválido");
+    const uploadFile: File = uploadFiles[0];
     const fieldsJson = String(data.get("fields") ?? "[]");
     const companyId = (data.get("companyId") as string) || null;
     const documentTypeId = (data.get("documentTypeId") as string) || null;
-
-    if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
-    const uploadFile: File = file;
 
     let fields: FieldDef[] = [];
     try {
