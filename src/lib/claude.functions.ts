@@ -40,6 +40,8 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
     const fieldsJson = String(data.get("fields") ?? "[]");
     const companyId = (data.get("companyId") as string) || null;
     const documentTypeId = (data.get("documentTypeId") as string) || null;
+    const maxPagesRaw = Number(data.get("maxPages") ?? 1);
+    const maxPages = Number.isFinite(maxPagesRaw) && maxPagesRaw > 0 ? Math.min(50, Math.floor(maxPagesRaw)) : 1;
 
     if (!(file instanceof File)) throw new Error("Arquivo ausente ou inválido");
     const uploadFile: File = file;
