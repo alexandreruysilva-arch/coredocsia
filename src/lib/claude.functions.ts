@@ -151,8 +151,12 @@ export const extractFieldsWithClaude = createServerFn({ method: "POST" })
       })
       .join("\n");
 
+    const pagesInstr =
+      maxPages <= 1
+        ? "Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado"
+        : `Analise as PRIMEIRAS ${maxPages} PÁGINAS do documento anexado (se houver menos páginas, analise todas as disponíveis)`;
     const prompt = `Você é um extrator de dados de documentos digitalizados.
-Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado e extraia os campos de indexação abaixo.
+${pagesInstr} e extraia os campos de indexação abaixo.
 
 Campos:
 ${schemaDesc}
