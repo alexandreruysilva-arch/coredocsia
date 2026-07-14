@@ -466,6 +466,7 @@ function UploadPage() {
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude" | "grok">(null);
+  const [aiPages, setAiPages] = useState<number>(1);
   const [batchProgress, setBatchProgress] = useState<{
     action: "extract" | "upload";
     current: number;
