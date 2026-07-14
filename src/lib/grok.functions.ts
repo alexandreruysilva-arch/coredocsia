@@ -100,23 +100,29 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
       });
     }
 
-    const mimeType = uploadFile.type || "application/octet-stream";
-    const isImage = /^image\/(jpeg|png|gif|webp)$/.test(mimeType);
-    if (!isImage) {
-      await writeFailureLog({
-        prompt: 0,
-        completion: 0,
-        total: 0,
-        error: `Tipo não suportado pelo Grok: ${mimeType}`,
-      });
-      throw new Error(
-        "Grok aceita apenas imagens (JPG, PNG, GIF ou WEBP). Para PDF use Gemini ou Claude.",
-      );
+    // Todos os arquivos devem ser imagens suportadas.
+    for (const f of uploadFiles) {
+      const mt = f.type || "application/octet-stream";
+      if (!/^image\/(jpeg|png|gif|webp)$/.test(mt)) {
+        await writeFailureLog({
+          prompt: 0,
+          completion: 0,
+          total: 0,
+          error: `Tipo não suportado pelo Grok: ${mt}`,
+        });
+        throw new Error(
+          "Grok aceita apenas imagens (JPG, PNG, GIF ou WEBP). Para PDF use Gemini ou Claude.",
+        );
+      }
     }
 
-    const buf = await uploadFile.arrayBuffer();
-    const base64 = Buffer.from(buf).toString("base64");
-    const dataUrl = `data:${mimeType};base64,${base64}`;
+    // Converte todas as imagens em data URLs (uma por página).
+    const dataUrls: string[] = [];
+    for (const f of uploadFiles) {
+      const buf = await f.arrayBuffer();
+      const b64 = Buffer.from(buf).toString("base64");
+      dataUrls.push(`data:${f.type || "image/png"};base64,${b64}`);
+    }
 
     const schemaDesc = fields
       .map((f) => {
@@ -136,8 +142,13 @@ export const extractFieldsWithGrok = createServerFn({ method: "POST" })
       })
       .join("\n");
 
+    const pagesInstr =
+      dataUrls.length <= 1
+        ? "Analise SOMENTE A PRIMEIRA PÁGINA (imagem anexada) e extraia os campos de indexação abaixo."
+        : `Analise as ${dataUrls.length} imagens anexadas (uma por página, na ordem enviada) e extraia os campos de indexação abaixo, considerando o conjunto como um único documento.`;
+
     const prompt = `Você é um extrator de dados de documentos digitalizados.
-Analise SOMENTE A PRIMEIRA PÁGINA do documento anexado e extraia os campos de indexação abaixo.
+${pagesInstr}
 
 Campos:
 ${schemaDesc}
@@ -153,6 +164,11 @@ Regras de saída (siga RIGOROSAMENTE):
 - Se um campo definir tamanho exato, o valor NÃO pode conter espaços em branco e deve ter exatamente esse número de caracteres; caso contrário, retorne "".
 - Se um campo possuir "DICA DE LOCALIZAÇÃO", é OBRIGATÓRIO procurar o valor exatamente na região indicada.
 - Se a informação não for encontrada com confiança, retorne string vazia "".`;
+
+    const contentBlocks: Array<Record<string, unknown>> = [
+      ...dataUrls.map((url) => ({ type: "image_url", image_url: { url } })),
+      { type: "text", text: prompt },
+    ];
 
     const requestBody = JSON.stringify({
       model: MODEL,
