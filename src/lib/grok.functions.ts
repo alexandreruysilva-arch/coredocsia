@@ -178,10 +178,7 @@ Regras de saída (siga RIGOROSAMENTE):
       messages: [
         {
           role: "user",
-          content: [
-            { type: "image_url", image_url: { url: dataUrl } },
-            { type: "text", text: prompt },
-          ],
+          content: contentBlocks,
         },
       ],
     });
