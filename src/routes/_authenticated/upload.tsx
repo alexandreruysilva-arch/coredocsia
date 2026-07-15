@@ -1426,6 +1426,28 @@ function UploadPage() {
                   )}
                   <span className="relative">Preencher com Grok</span>
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAutoFillAll("openai")}
+                  disabled={
+                    isExtracting !== null ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê as páginas (imagem) de cada arquivo e preenche os campos via OpenAI (GPT)"
+                  className="group relative overflow-hidden bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white border-0 shadow-md shadow-teal-700/30 hover:shadow-lg hover:shadow-teal-500/50 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  {isExtracting === "openai" ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
+                  )}
+                  <span className="relative">Preencher com OpenAI</span>
+                </Button>
                 {isExtracting !== null && (
                   <Button
                     size="sm"
