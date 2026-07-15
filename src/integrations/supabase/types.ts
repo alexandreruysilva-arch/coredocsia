@@ -669,6 +669,77 @@ export type Database = {
           },
         ]
       }
+      dt_relatorio_de_acao_executada_6bd7dd37: {
+        Row: {
+          ano: string | null
+          company_id: string | null
+          created_at: string
+          data_inicio: string | null
+          data_termino: string | null
+          document_id: string
+          houve_parceria: string | null
+          id: string
+          municipio: string | null
+          n_de_atletas: string | null
+          n_de_municipios_participantes: string | null
+          n_de_pessoas_no_apoio: string | null
+          n_de_tecnicos: string | null
+          natureza_da_parceria: string | null
+          nome_do_evento: string | null
+          org_id: string
+          recurso_utilizado: string | null
+          updated_at: string
+        }
+        Insert: {
+          ano?: string | null
+          company_id?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_termino?: string | null
+          document_id: string
+          houve_parceria?: string | null
+          id?: string
+          municipio?: string | null
+          n_de_atletas?: string | null
+          n_de_municipios_participantes?: string | null
+          n_de_pessoas_no_apoio?: string | null
+          n_de_tecnicos?: string | null
+          natureza_da_parceria?: string | null
+          nome_do_evento?: string | null
+          org_id: string
+          recurso_utilizado?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ano?: string | null
+          company_id?: string | null
+          created_at?: string
+          data_inicio?: string | null
+          data_termino?: string | null
+          document_id?: string
+          houve_parceria?: string | null
+          id?: string
+          municipio?: string | null
+          n_de_atletas?: string | null
+          n_de_municipios_participantes?: string | null
+          n_de_pessoas_no_apoio?: string | null
+          n_de_tecnicos?: string | null
+          natureza_da_parceria?: string | null
+          nome_do_evento?: string | null
+          org_id?: string
+          recurso_utilizado?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dt_relatorio_de_acao_executada_6bd7dd37_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: true
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
