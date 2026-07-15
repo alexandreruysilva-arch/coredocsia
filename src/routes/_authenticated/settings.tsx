@@ -190,6 +190,12 @@ const GROK_MODELS = [
   { value: "grok-vision-beta", label: "Grok Vision Beta" },
 ];
 
+const OPENAI_MODELS = [
+  { value: "gpt-5.4", label: "GPT-5.4 — máxima qualidade" },
+  { value: "gpt-5.4-mini", label: "GPT-5.4 Mini — equilíbrio (recomendado)" },
+  { value: "gpt-5.4-nano", label: "GPT-5.4 Nano — mais rápido/barato" },
+];
+
 function AiModelsSettings({ organizationId }: { organizationId: string | undefined }) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
