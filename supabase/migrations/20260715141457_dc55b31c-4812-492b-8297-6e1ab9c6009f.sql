@@ -1,0 +1,1 @@
+ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS ai_openai_model TEXT DEFAULT 'gpt-5.4-mini';
