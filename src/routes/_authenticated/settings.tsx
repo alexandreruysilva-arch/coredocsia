@@ -204,7 +204,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("ai_gemini_model, ai_claude_model, ai_grok_model")
+        .select("ai_gemini_model, ai_claude_model, ai_grok_model, ai_openai_model")
         .eq("id", organizationId as string)
         .maybeSingle();
       if (error) throw error;
@@ -215,6 +215,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
   const [geminiModel, setGeminiModel] = useState<string>("gemini-2.5-flash");
   const [claudeModel, setClaudeModel] = useState<string>("claude-haiku-4-5-20251001");
   const [grokModel, setGrokModel] = useState<string>("grok-build-0.1");
+  const [openaiModel, setOpenaiModel] = useState<string>("gpt-5.4-mini");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -222,6 +223,9 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     if (data.ai_gemini_model) setGeminiModel(data.ai_gemini_model);
     if (data.ai_claude_model) setClaudeModel(data.ai_claude_model);
     if (data.ai_grok_model) setGrokModel(data.ai_grok_model);
+    if ((data as { ai_openai_model?: string | null }).ai_openai_model) {
+      setOpenaiModel((data as { ai_openai_model: string }).ai_openai_model);
+    }
   }, [data]);
 
   async function handleSave() {
@@ -230,7 +234,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     try {
       const { error } = await supabase
         .from("organizations")
-        .update({ ai_gemini_model: geminiModel, ai_claude_model: claudeModel, ai_grok_model: grokModel })
+        .update({ ai_gemini_model: geminiModel, ai_claude_model: claudeModel, ai_grok_model: grokModel, ai_openai_model: openaiModel })
         .eq("id", organizationId);
       if (error) throw error;
       toast.success("Modelos de IA atualizados!");
