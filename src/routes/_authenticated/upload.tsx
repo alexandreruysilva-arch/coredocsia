@@ -28,6 +28,7 @@ import { extractFieldsWithGemini } from "@/lib/gemini.functions";
 import { compressImageIfNeeded } from "@/lib/image-compress";
 import { extractFieldsWithClaude } from "@/lib/claude.functions";
 import { extractFieldsWithGrok } from "@/lib/grok.functions";
+import { extractFieldsWithOpenAI } from "@/lib/openai.functions";
 import { pdfPagesToPngs } from "@/lib/pdf-to-image";
 import { lookupByKey } from "@/lib/lookup";
 import { cn } from "@/lib/utils";
@@ -130,7 +131,7 @@ interface QueueItem {
   aiUsage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number; model: string; log_id?: string | null } | null;
   aiOriginalValues?: Record<string, string>;
   aiStatus?: "success" | "failed" | "incomplete";
-  aiProvider?: "gemini" | "claude" | "grok";
+  aiProvider?: "gemini" | "claude" | "grok" | "openai";
   aiMessage?: string;
   expanded: boolean;
 }
@@ -465,7 +466,7 @@ function UploadPage() {
   const [companyId, setCompanyId] = useState<string>("none");
   const [docTypeId, setDocTypeId] = useState<string>("none");
   const [isUploading, setIsUploading] = useState(false);
-  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude" | "grok">(null);
+  const [isExtracting, setIsExtracting] = useState<null | "gemini" | "claude" | "grok" | "openai">(null);
   const [aiPages, setAiPages] = useState<number>(1);
   const [batchProgress, setBatchProgress] = useState<{
     action: "extract" | "upload";
@@ -480,6 +481,7 @@ function UploadPage() {
   const extractGeminiFn = useServerFn(extractFieldsWithGemini);
   const extractClaudeFn = useServerFn(extractFieldsWithClaude);
   const extractGrokFn = useServerFn(extractFieldsWithGrok);
+  const extractOpenAIFn = useServerFn(extractFieldsWithOpenAI);
   const cancelExtractRef = useRef(false);
 
   const refreshAuthSessionIfNeeded = useCallback(async () => {
@@ -631,7 +633,7 @@ function UploadPage() {
     }
   }
 
-  async function handleAutoFillAll(provider: "gemini" | "claude" | "grok") {
+  async function handleAutoFillAll(provider: "gemini" | "claude" | "grok" | "openai") {
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
     if (fields.length === 0) return toast.error("Este tipo não tem campos de indexação");
 
@@ -652,8 +654,8 @@ function UploadPage() {
     }));
 
     const fieldsJson = JSON.stringify(fieldDefs);
-    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : extractGeminiFn;
-    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : provider === "openai" ? extractOpenAIFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : provider === "openai" ? "OpenAI" : "Gemini";
 
     let ok = 0;
     let fail = 0;
@@ -675,10 +677,10 @@ function UploadPage() {
       });
       try {
         const form = new FormData();
-        if (provider === "grok" && item.file.type === "application/pdf") {
+        if ((provider === "grok" || provider === "openai") && item.file.type === "application/pdf") {
           const pngs = await pdfPagesToPngs(item.file, aiPages);
           for (const png of pngs) form.append("files", png);
-        } else if (provider === "grok") {
+        } else if (provider === "grok" || provider === "openai") {
           form.append("files", await compressImageIfNeeded(item.file));
         } else {
           form.append("file", await compressImageIfNeeded(item.file));
@@ -769,7 +771,7 @@ function UploadPage() {
 
 
 
-  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude" | "grok") {
+  async function reprocessItem(itemId: string, providerOverride?: "gemini" | "claude" | "grok" | "openai") {
     const item = items.find((i) => i.id === itemId);
     if (!item) return;
     if (docTypeId === "none") return toast.error("Selecione o tipo de documento");
@@ -777,8 +779,8 @@ function UploadPage() {
     if (isExtracting !== null || isUploading) return;
 
     const provider = providerOverride ?? item.aiProvider ?? "gemini";
-    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : "Gemini";
-    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : extractGeminiFn;
+    const providerLabel = provider === "claude" ? "Claude" : provider === "grok" ? "Grok" : provider === "openai" ? "OpenAI" : "Gemini";
+    const extractFn = provider === "claude" ? extractClaudeFn : provider === "grok" ? extractGrokFn : provider === "openai" ? extractOpenAIFn : extractGeminiFn;
 
     const fieldDefs = fields.map((f) => ({
       label: f.label,
@@ -803,10 +805,10 @@ function UploadPage() {
 
     try {
       const form = new FormData();
-      if (provider === "grok" && item.file.type === "application/pdf") {
+      if ((provider === "grok" || provider === "openai") && item.file.type === "application/pdf") {
         const pngs = await pdfPagesToPngs(item.file, aiPages);
         for (const png of pngs) form.append("files", png);
-      } else if (provider === "grok") {
+      } else if (provider === "grok" || provider === "openai") {
         form.append("files", await compressImageIfNeeded(item.file));
       } else {
         form.append("file", await compressImageIfNeeded(item.file));
@@ -1423,6 +1425,28 @@ function UploadPage() {
                     <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
                   )}
                   <span className="relative">Preencher com Grok</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAutoFillAll("openai")}
+                  disabled={
+                    isExtracting !== null ||
+                    isUploading ||
+                    docTypeId === "none" ||
+                    fields.length === 0 ||
+                    !items.some((i) => i.status === "queued")
+                  }
+                  title="Lê as páginas (imagem) de cada arquivo e preenche os campos via OpenAI (GPT)"
+                  className="group relative overflow-hidden bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white border-0 shadow-md shadow-teal-700/30 hover:shadow-lg hover:shadow-teal-500/50 hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                  {isExtracting === "openai" ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-1 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" />
+                  )}
+                  <span className="relative">Preencher com OpenAI</span>
                 </Button>
                 {isExtracting !== null && (
                   <Button

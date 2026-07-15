@@ -190,6 +190,12 @@ const GROK_MODELS = [
   { value: "grok-vision-beta", label: "Grok Vision Beta" },
 ];
 
+const OPENAI_MODELS = [
+  { value: "gpt-5.4", label: "GPT-5.4 — máxima qualidade" },
+  { value: "gpt-5.4-mini", label: "GPT-5.4 Mini — equilíbrio (recomendado)" },
+  { value: "gpt-5.4-nano", label: "GPT-5.4 Nano — mais rápido/barato" },
+];
+
 function AiModelsSettings({ organizationId }: { organizationId: string | undefined }) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
@@ -198,7 +204,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     queryFn: async () => {
       const { data, error } = await supabase
         .from("organizations")
-        .select("ai_gemini_model, ai_claude_model, ai_grok_model")
+        .select("ai_gemini_model, ai_claude_model, ai_grok_model, ai_openai_model")
         .eq("id", organizationId as string)
         .maybeSingle();
       if (error) throw error;
@@ -209,6 +215,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
   const [geminiModel, setGeminiModel] = useState<string>("gemini-2.5-flash");
   const [claudeModel, setClaudeModel] = useState<string>("claude-haiku-4-5-20251001");
   const [grokModel, setGrokModel] = useState<string>("grok-build-0.1");
+  const [openaiModel, setOpenaiModel] = useState<string>("gpt-5.4-mini");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -216,6 +223,9 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     if (data.ai_gemini_model) setGeminiModel(data.ai_gemini_model);
     if (data.ai_claude_model) setClaudeModel(data.ai_claude_model);
     if (data.ai_grok_model) setGrokModel(data.ai_grok_model);
+    if ((data as { ai_openai_model?: string | null }).ai_openai_model) {
+      setOpenaiModel((data as { ai_openai_model: string }).ai_openai_model);
+    }
   }, [data]);
 
   async function handleSave() {
@@ -224,7 +234,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
     try {
       const { error } = await supabase
         .from("organizations")
-        .update({ ai_gemini_model: geminiModel, ai_claude_model: claudeModel, ai_grok_model: grokModel })
+        .update({ ai_gemini_model: geminiModel, ai_claude_model: claudeModel, ai_grok_model: grokModel, ai_openai_model: openaiModel })
         .eq("id", organizationId);
       if (error) throw error;
       toast.success("Modelos de IA atualizados!");
@@ -249,7 +259,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label>Motor Gemini</Label>
                 <Select value={geminiModel} onValueChange={setGeminiModel}>
@@ -285,6 +295,18 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">Modelo atual: <code>{grokModel}</code></p>
+              </div>
+              <div className="space-y-2">
+                <Label>Motor OpenAI (GPT)</Label>
+                <Select value={openaiModel} onValueChange={setOpenaiModel}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {OPENAI_MODELS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Modelo atual: <code>{openaiModel}</code></p>
               </div>
             </div>
             <Button onClick={handleSave} disabled={isSaving}>
