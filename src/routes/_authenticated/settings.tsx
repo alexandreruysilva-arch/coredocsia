@@ -259,7 +259,7 @@ function AiModelsSettings({ organizationId }: { organizationId: string | undefin
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label>Motor Gemini</Label>
                 <Select value={geminiModel} onValueChange={setGeminiModel}>
