@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Upload,
@@ -53,17 +53,11 @@ function Dashboard() {
   const { data, isLoading } = useQuery<DashboardData | null>({
     queryKey: ["dashboard", orgId],
     enabled: !!orgId,
+    staleTime: 60_000,
     queryFn: async () => {
       if (!orgId) return null;
-      const since30 = subDays(new Date(), 30).toISOString();
-      const since7 = subDays(new Date(), 7).toISOString();
-      const sinceMonth = new Date(
-        new Date().getFullYear(),
-        new Date().getMonth(),
-        1,
-      ).toISOString();
 
-      const [recentRes, companiesRes, typesRes] = await Promise.all([
+      const [recentRes, statsRes] = await Promise.all([
         supabase
           .from("documents")
           .select("*")
@@ -71,103 +65,27 @@ function Dashboard() {
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
           .limit(8),
-        supabase.from("companies").select("id, name").eq("org_id", orgId),
-        supabase.from("document_types").select("id, name").eq("org_id", orgId),
+        supabase.rpc("get_dashboard_stats", { _org_id: orgId }),
       ]);
 
-      // Pagina ai_usage_logs por cursor — sem isso, PostgREST limita a 1000 linhas.
-      const AI_PAGE = 1000;
-      const aiLogs: Array<{ cost_brl: number | null; created_at: string }> = [];
-      let aiCursor: string | null = null;
-      while (true) {
-        let aiQuery = supabase
-          .from("ai_usage_logs")
-          .select("cost_brl, created_at")
-          .eq("org_id", orgId)
-          .gte("created_at", sinceMonth)
-          .order("created_at", { ascending: false })
-          .limit(AI_PAGE);
-        if (aiCursor) aiQuery = aiQuery.lt("created_at", aiCursor);
-        const { data: aiData, error: aiErr } = await aiQuery;
-        if (aiErr) throw aiErr;
-        const aiRows = (aiData ?? []) as Array<{ cost_brl: number | null; created_at: string }>;
-        aiLogs.push(...aiRows);
-        if (aiRows.length < AI_PAGE) break;
-        aiCursor = aiRows[aiRows.length - 1].created_at;
-      }
-
-      // Pagina por cursor para evitar o teto visual de 9.999 registros em consultas por range.
-      const PAGE = 1000;
-      const all: Array<{ id: string; status: string; created_at: string; document_type_id: string | null; company_id: string | null }> = [];
-      let cursor: string | null = null;
-      while (true) {
-        let documentsQuery = supabase
-          .from("documents")
-          .select("id, status, created_at, document_type_id, company_id")
-          .eq("org_id", orgId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false })
-          .limit(PAGE);
-
-        if (cursor) documentsQuery = documentsQuery.lt("created_at", cursor);
-
-        const { data, error } = await documentsQuery;
-        if (error) throw error;
-        const rows = (data ?? []) as any[];
-        all.push(...rows);
-        if (rows.length < PAGE) break;
-        cursor = rows[rows.length - 1].created_at;
-      }
-
-      const types = typesRes.data ?? [];
-
-      const companies = companiesRes.data ?? [];
-      const typeMap = new Map(types.map((t: any) => [t.id, t.name]));
-      const companyMap = new Map(companies.map((c: any) => [c.id, c.name]));
-
-      const counts = { pending: 0, processing: 0, processed: 0, failed: 0 };
-      let last30 = 0;
-      let last7 = 0;
-      const typeAgg = new Map<string, number>();
-      const companyAgg = new Map<string, number>();
-
-      for (const d of all as any[]) {
-        counts[d.status as keyof typeof counts] =
-          (counts[d.status as keyof typeof counts] ?? 0) + 1;
-        if (d.created_at >= since30) last30++;
-        if (d.created_at >= since7) last7++;
-        const tName = typeMap.get(d.document_type_id) ?? "Sem tipo";
-        typeAgg.set(tName, (typeAgg.get(tName) ?? 0) + 1);
-        const cName = companyMap.get(d.company_id) ?? "Sem empresa";
-        companyAgg.set(cName, (companyAgg.get(cName) ?? 0) + 1);
-      }
-
-      const aiCostMonth = aiLogs.reduce(
-        (s: number, l) => s + Number(l.cost_brl ?? 0),
-        0,
-      );
+      if (statsRes.error) throw statsRes.error;
+      const s = (statsRes.data ?? {}) as Record<string, any>;
 
       return {
-        total: all.length,
-        pending: counts.pending,
-        processing: counts.processing,
-        processed: counts.processed,
-        failed: counts.failed,
-        last30,
-        last7,
-        aiCostMonth,
-        aiCallsMonth: aiLogs.length,
+        total: Number(s.total ?? 0),
+        pending: Number(s.pending ?? 0),
+        processing: Number(s.processing ?? 0),
+        processed: Number(s.processed ?? 0),
+        failed: Number(s.failed ?? 0),
+        last30: Number(s.last30 ?? 0),
+        last7: Number(s.last7 ?? 0),
+        aiCostMonth: Number(s.ai_cost_month ?? 0),
+        aiCallsMonth: Number(s.ai_calls_month ?? 0),
         recent: (recentRes.data ?? []) as DocumentRow[],
-        byType: Array.from(typeAgg.entries())
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 6),
-        byCompany: Array.from(companyAgg.entries())
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 6),
-        companiesCount: companies.length,
-        typesCount: types.length,
+        byType: (s.by_type ?? []).map((r: any) => ({ name: r.name, count: Number(r.count) })),
+        byCompany: (s.by_company ?? []).map((r: any) => ({ name: r.name, count: Number(r.count) })),
+        companiesCount: Number(s.companies_count ?? 0),
+        typesCount: Number(s.types_count ?? 0),
       };
     },
   });
