@@ -134,6 +134,15 @@ function exportLogsXlsx(rows: AiLogRow[]) {
 
 
 
+function useDebounced<T>(value: T, delay = 300): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
+}
+
 function AuditPage() {
   const { data: profile } = useProfileBundle();
   const orgId = profile?.currentOrg?.id ?? null;
@@ -143,28 +152,46 @@ function AuditPage() {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
   const queryClient = useQueryClient();
+  const debouncedSearch = useDebounced(search, 300);
 
-  const { data: logs = [], isLoading } = useQuery({
-    queryKey: ["ai-usage-logs", orgId],
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, companyFilter, docTypeFilter]);
+
+  const filterKey = { debouncedSearch, companyFilter, docTypeFilter };
+
+  const { data: summary, isLoading: summaryLoading } = useQuery({
+    queryKey: ["ai-audit-summary", orgId, filterKey],
     enabled: !!orgId,
-    queryFn: async (): Promise<AiLogRow[]> => {
-      const PAGE = 1000;
-      const all: AiLogRow[] = [];
-      for (let from = 0; ; from += PAGE) {
-        const { data, error } = await supabase
-          .from("ai_usage_logs")
-          .select(
-            "id, created_at, company_name, document_type_name, file_name, model, prompt_tokens, completion_tokens, total_tokens, cost_brl, duration_ms, corrected_chars, extracted_chars, success, error_message",
-          )
-          .eq("org_id", orgId!)
-          .order("created_at", { ascending: false })
-          .range(from, from + PAGE - 1);
-        if (error) throw error;
-        const rows = (data ?? []) as AiLogRow[];
-        all.push(...rows);
-        if (rows.length < PAGE) break;
-      }
-      return all;
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_ai_audit_summary", {
+        _org_id: orgId!,
+        _company: companyFilter,
+        _doc_type: docTypeFilter,
+        _search: debouncedSearch,
+      });
+      if (error) throw error;
+      return data as any;
+    },
+  });
+
+  const { data: pageData, isLoading: pageLoading } = useQuery({
+    queryKey: ["ai-audit-logs", orgId, filterKey, page],
+    enabled: !!orgId,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_ai_audit_logs", {
+        _org_id: orgId!,
+        _company: companyFilter,
+        _doc_type: docTypeFilter,
+        _search: debouncedSearch,
+        _limit: PAGE_SIZE,
+        _offset: (page - 1) * PAGE_SIZE,
+      });
+      if (error) throw error;
+      return data as { rows: AiLogRow[]; count: number };
     },
   });
 
@@ -181,115 +208,73 @@ function AuditPage() {
     },
   });
 
-
-  const companyOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const l of logs) if (l.company_name) set.add(l.company_name);
-    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [logs]);
-
-  const docTypeOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const l of logs) {
-      if (!l.document_type_name) continue;
-      if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) continue;
-      set.add(l.document_type_name);
-    }
-    return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [logs, companyFilter]);
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return logs.filter((l) => {
-      if (companyFilter !== "__all__" && (l.company_name ?? "") !== companyFilter) return false;
-      if (docTypeFilter !== "__all__" && (l.document_type_name ?? "") !== docTypeFilter) return false;
-      if (!q) return true;
-      return (
-        l.file_name.toLowerCase().includes(q) ||
-        (l.company_name ?? "").toLowerCase().includes(q) ||
-        (l.document_type_name ?? "").toLowerCase().includes(q)
-      );
-    });
-  }, [logs, search, companyFilter, docTypeFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paged = useMemo(
-    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [filtered, page],
-  );
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, companyFilter, docTypeFilter]);
-
-  useEffect(() => {
-    if (docTypeFilter !== "__all__" && !docTypeOptions.includes(docTypeFilter)) {
-      setDocTypeFilter("__all__");
-    }
-  }, [docTypeOptions, docTypeFilter]);
+  const isLoading = summaryLoading || pageLoading;
+  const paged: AiLogRow[] = pageData?.rows ?? [];
+  const filteredCount = pageData?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(filteredCount / PAGE_SIZE));
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
-  const totals = useMemo(() => {
-    const t = {
-      files: filtered.length,
-      success: 0,
-      failed: 0,
-      prompt: 0,
-      completion: 0,
-      total: 0,
-      cost: 0,
-      durationCount: 0,
-      durationTotal: 0,
-      extracted: 0,
-      corrected: 0,
-      accuracySum: 0,
-      accuracyCount: 0,
-    };
-    for (const l of filtered) {
-      if (l.success) t.success++;
-      else t.failed++;
-      t.prompt += l.prompt_tokens;
-      t.completion += l.completion_tokens;
-      t.total += l.total_tokens;
-      t.cost += l.cost_brl ?? 0;
-      if (l.duration_ms != null) {
-        t.durationCount++;
-        t.durationTotal += l.duration_ms;
-      }
-      t.extracted += l.extracted_chars ?? 0;
-      t.corrected += l.corrected_chars ?? 0;
-      if (l.extracted_chars && l.extracted_chars > 0) {
-        t.accuracySum +=
-          (Math.max(0, l.extracted_chars - (l.corrected_chars ?? 0)) / l.extracted_chars) * 100;
-        t.accuracyCount++;
-      }
-    }
-    return t;
-  }, [filtered]);
+  const companyOptions: string[] = summary?.company_options ?? [];
+  const docTypeOptions: string[] = summary?.doc_type_options ?? [];
 
-  const byCompany = useMemo(() => {
-    const map = new Map<string, { files: number; tokens: number; cost: number }>();
-    for (const l of filtered) {
-      const k = l.company_name ?? "—";
-      const cur = map.get(k) ?? { files: 0, tokens: 0, cost: 0 };
-      cur.files += 1;
-      cur.tokens += l.total_tokens;
-      cur.cost += l.cost_brl ?? 0;
-      map.set(k, cur);
+  useEffect(() => {
+    if (docTypeFilter !== "__all__" && docTypeOptions.length > 0 && !docTypeOptions.includes(docTypeFilter)) {
+      setDocTypeFilter("__all__");
     }
-    return [...map.entries()].sort((a, b) => b[1].cost - a[1].cost);
-  }, [filtered]);
+  }, [docTypeOptions, docTypeFilter]);
+
+  const t = summary?.totals ?? {};
+  const totals = {
+    files: Number(t.files ?? 0),
+    success: Number(t.success ?? 0),
+    failed: Number(t.failed ?? 0),
+    prompt: Number(t.prompt ?? 0),
+    completion: Number(t.completion ?? 0),
+    total: Number(t.total ?? 0),
+    cost: Number(t.cost ?? 0),
+    durationCount: Number(t.duration_count ?? 0),
+    durationTotal: Number(t.duration_total ?? 0),
+    extracted: Number(t.extracted ?? 0),
+    corrected: Number(t.corrected ?? 0),
+    accuracySum: Number(t.accuracy_sum ?? 0),
+    accuracyCount: Number(t.accuracy_count ?? 0),
+  };
+
+  const byCompany: [string, { files: number; tokens: number; cost: number }][] =
+    (summary?.by_company ?? []).map((r: any) => [
+      r.name,
+      { files: Number(r.files), tokens: Number(r.tokens), cost: Number(r.cost) },
+    ]);
+
+  // Export baixa todas as linhas filtradas (limite server-side de 5000).
+  async function handleExport() {
+    if (!orgId) return;
+    const { data, error } = await supabase.rpc("get_ai_audit_logs", {
+      _org_id: orgId,
+      _company: companyFilter,
+      _doc_type: docTypeFilter,
+      _search: debouncedSearch,
+      _limit: 5000,
+      _offset: 0,
+    });
+    if (error) {
+      toast.error("Falha ao exportar", { description: error.message });
+      return;
+    }
+    exportLogsXlsx(((data as any)?.rows ?? []) as AiLogRow[]);
+  }
 
   const deleteLog = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("ai_usage_logs").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["ai-usage-logs", orgId] });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ai-audit-summary", orgId] });
+      queryClient.invalidateQueries({ queryKey: ["ai-audit-logs", orgId] });
       toast.success("Registro excluído", {
         description: "O registro de auditoria foi removido permanentemente.",
       });
