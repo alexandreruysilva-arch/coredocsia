@@ -191,7 +191,7 @@ function AuditPage() {
         _offset: (page - 1) * PAGE_SIZE,
       });
       if (error) throw error;
-      return data as { rows: AiLogRow[]; count: number };
+      return data as unknown as { rows: AiLogRow[]; count: number };
     },
   });
 
