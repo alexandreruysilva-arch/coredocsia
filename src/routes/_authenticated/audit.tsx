@@ -578,10 +578,10 @@ function AuditPage() {
                 ))}
               </TableBody>
             </Table>
-            {filtered.length > PAGE_SIZE && (
+            {filteredCount > PAGE_SIZE && (
               <div className="flex items-center justify-between pt-3 mt-3 border-t border-border">
                 <span className="text-xs text-muted-foreground">
-                  Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} de {filtered.length}
+                  Mostrando {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredCount)} de {filteredCount}
                 </span>
                 <div className="flex items-center gap-2">
                   <Button
