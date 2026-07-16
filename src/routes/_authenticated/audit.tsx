@@ -465,7 +465,7 @@ function AuditPage() {
 
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : filtered.length === 0 ? (
+        ) : filteredCount === 0 ? (
           <p className="text-sm text-muted-foreground">
             Nenhuma indexação por IA registrada ainda.
           </p>
