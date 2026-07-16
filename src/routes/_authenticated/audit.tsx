@@ -454,8 +454,8 @@ function AuditPage() {
               variant="outline"
               size="sm"
               className="gap-2"
-              disabled={filtered.length === 0}
-              onClick={() => exportLogsXlsx(filtered)}
+              disabled={filteredCount === 0}
+              onClick={handleExport}
             >
               <Download className="h-4 w-4" /> Exportar XLSX
             </Button>
