@@ -950,6 +950,26 @@ export type Database = {
         Returns: undefined
       }
       exec_sql: { Args: { sql_query: string }; Returns: Json }
+      get_ai_audit_logs: {
+        Args: {
+          _company?: string
+          _doc_type?: string
+          _limit?: number
+          _offset?: number
+          _org_id: string
+          _search?: string
+        }
+        Returns: Json
+      }
+      get_ai_audit_summary: {
+        Args: {
+          _company?: string
+          _doc_type?: string
+          _org_id: string
+          _search?: string
+        }
+        Returns: Json
+      }
       get_dashboard_stats: { Args: { _org_id: string }; Returns: Json }
       get_document_stats: {
         Args: {
@@ -1003,6 +1023,8 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       upsert_doc_type_row: {
         Args: { _document_id: string; _type_id: string; _values: Json }
         Returns: undefined
